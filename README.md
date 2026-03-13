@@ -29,14 +29,14 @@ C:\xampp\htdocs\
 Eseguire:
 
 ```bash
-git clone https://github.com/CSMEnterprise/web_app.git
+git clone https://github.com/CSMEnterprise/WEB_APP.git
 ```
 
 La struttura risultante sarà simile alla seguente:
 
 ```
 htdocs
-└── web-app
+└── WEB_APP
     ├── public
     ├── src
     ├── config
@@ -53,7 +53,7 @@ htdocs
 Il progetto utilizza una struttura che separa il codice interno dai file accessibili dal browser.
 
 ```
-web-app
+WEB_APP
 │
 ├── public
 │   ├── index.php
@@ -119,9 +119,9 @@ e aggiungere:
 ```
 <VirtualHost *:80>
     ServerName web_app.local
-    DocumentRoot "C:/xampp/htdocs/web_app/public"
+    DocumentRoot "C:/xampp/htdocs/WEB_APP/public"
 
-    <Directory "C:/xampp/htdocs/web_app/public">
+    <Directory "C:/xampp/htdocs/WEB_APP/public">
         AllowOverride All
         Require all granted
     </Directory>
@@ -141,7 +141,7 @@ C:\Windows\System32\drivers\etc\hosts
 e aggiungere:
 
 ```
-127.0.0.1 web_app.local
+127.0.0.1 WEB_APP.local
 ```
 
 ---
@@ -160,13 +160,13 @@ Aprire il pannello XAMPP e avviare:
 Aprire il browser:
 
 ```
-http://web_app.local
+http://WEB_APP.local
 ```
 
 Apache utilizzerà automaticamente:
 
 ```
-web-app/public/index.php
+WEB_APP/public/index.php
 ```
 
 come punto di ingresso.
@@ -182,7 +182,7 @@ git checkout Develop
 git pull origin Develop
 ```
 
-2. **Effettuare modifiche** su `develop`.
+2. **Effettuare modifiche** su `Develop`.
 
 3. **Commit e push delle modifiche**:
 
