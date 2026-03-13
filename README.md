@@ -11,6 +11,8 @@ Web-App per la gestione marketplace sviluppata in PHP con Apache/XAMPP.
    ```bash
    git clone https://github.com/CSMEnterprise/web-app.git
 ## Contribuire
-1. Creare un branch a partire da `develop`:
+1. Creare un branch a partire da `Develop`:
    ```bash
    git checkout -b feature/nome-feature
+## Attenzione
+   Lavorare sempre sul branch Develop 
