@@ -1,19 +1,18 @@
 <?php
 $pageTitle = 'Esito pagamento';
-$success = $success ?? true;
 require __DIR__ . '/../layout/header.php';
 ?>
 
-<section class="empty-state">
-    <?php if ($success): ?>
-        <h1>Pagamento completato</h1>
-        <p>Il tuo acquisto è stato registrato correttamente.</p>
+<div class="card">
+    <h1>Esito pagamento</h1>
+
+    <?php if (($status ?? '') === 'ok'): ?>
+        <div class="alert alert-success">Pagamento completato correttamente.</div>
     <?php else: ?>
-        <h1>Pagamento non riuscito</h1>
-        <p>Si è verificato un problema durante il pagamento.</p>
+        <div class="alert alert-error">Pagamento non completato.</div>
     <?php endif; ?>
 
-    <a class="btn" href="index.php?action=annunci">Torna agli annunci</a>
-</section>
+    <a class="btn" href="index.php?route=annunci">Torna agli annunci</a>
+</div>
 
 <?php require __DIR__ . '/../layout/footer.php'; ?>

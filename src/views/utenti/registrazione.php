@@ -1,47 +1,35 @@
 <?php
 $pageTitle = 'Registrazione';
 require __DIR__ . '/../layout/header.php';
+require __DIR__ . '/../partials/flash.php';
 ?>
 
-<section class="card auth-card">
-    <h1>Crea account</h1>
-    <p class="muted">Registrati per pubblicare annunci, acquistare prodotti e gestire preferiti.</p>
+<div class="card">
+    <h1>Registrazione</h1>
 
-    <form method="post" action="index.php?action=register" class="form">
-        <div class="grid-2">
-            <label>
-                Username
-                <input type="text" name="username" required maxlength="100">
-            </label>
+    <form method="post" action="index.php?route=register-post">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required>
 
-            <label>
-                Nome
-                <input type="text" name="nome" maxlength="100">
-            </label>
-        </div>
+        <label for="nome">Nome</label>
+        <input type="text" id="nome" name="nome">
 
-        <label>
-            Email
-            <input type="email" name="email" required autocomplete="email">
-        </label>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
 
-        <label>
-            Password
-            <input type="password" name="password" required autocomplete="new-password">
-        </label>
+        <label for="telefono">Telefono</label>
+        <input type="text" id="telefono" name="telefono">
 
-        <label>
-            Telefono
-            <input type="text" name="telefono" maxlength="20">
-        </label>
+        <label for="indirizzo">Indirizzo</label>
+        <textarea id="indirizzo" name="indirizzo"></textarea>
 
-        <label>
-            Indirizzo
-            <textarea name="indirizzo" rows="3"></textarea>
-        </label>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
 
-        <button class="btn" type="submit">Registrati</button>
+        <button class="btn" type="submit">Crea account</button>
     </form>
-</section>
+
+    <p>Hai già un account? <a href="index.php?route=login">Accedi</a></p>
+</div>
 
 <?php require __DIR__ . '/../layout/footer.php'; ?>

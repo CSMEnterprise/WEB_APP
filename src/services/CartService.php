@@ -4,102 +4,94 @@ require_once __DIR__ . '/BaseService.php';
 
 class CartService extends BaseService
 {
-    public function getOrCreateCartId(int $userId): int
+    public function getOrCreateCartId(int $idUtente): int
     {
-        $this->requirePositiveInt($userId, 'id_utente');
+        $this->requirePositiveId($idUtente, 'Utente');
 
-        $cart = $this->fetchOne(
-            'SELECT id_carrello FROM carrello WHERE id_utente = :id_utente LIMIT 1',
-            [':id_utente' => $userId]
-        );
+        $stmt = $this->db->prepare("
+            SELECT id_carrello
+            FROM carrello
+            WHERE id_utente = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$idUtente]);
+
+        $cart = $stmt->fetch();
 
         if ($cart) {
             return (int) $cart['id_carrello'];
         }
 
-        $this->execute(
-            'INSERT INTO carrello (id_utente) VALUES (:id_utente)',
-            [':id_utente' => $userId]
-        );
+        $stmt = $this->db->prepare("
+            INSERT INTO carrello (id_utente)
+            VALUES (?)
+        ");
+        $stmt->execute([$idUtente]);
 
         return $this->lastInsertId();
     }
 
-    public function addItem(int $userId, int $annuncioId): bool
+    public function getCarrelloUtente(int $idUtente): array
     {
-        $this->requirePositiveInt($annuncioId, 'id_annuncio');
-        $cartId = $this->getOrCreateCartId($userId);
+        $idCarrello = $this->getOrCreateCartId($idUtente);
 
-        $annuncio = $this->fetchOne(
-            "SELECT id_annuncio, stato FROM annuncio WHERE id_annuncio = :id LIMIT 1",
-            [':id' => $annuncioId]
-        );
+        $stmt = $this->db->prepare("
+            SELECT e.id_elemento_carrello, a.*
+            FROM elemento_carrello e
+            JOIN annuncio a ON a.id_annuncio = e.id_annuncio
+            WHERE e.id_carrello = ?
+            ORDER BY e.data_aggiunta DESC
+        ");
+        $stmt->execute([$idCarrello]);
 
-        if (!$annuncio || $annuncio['stato'] !== 'attivo') {
-            throw new ServiceException('Annuncio non disponibile.');
+        return $stmt->fetchAll();
+    }
+
+    public function getTotale(int $idUtente): float
+    {
+        $items = $this->getCarrelloUtente($idUtente);
+        $totale = 0;
+
+        foreach ($items as $item) {
+            $totale += (float) ($item['prezzo'] ?? 0);
         }
 
-        return $this->execute(
-            'INSERT IGNORE INTO elemento_carrello (id_carrello, id_annuncio)
-             VALUES (:id_carrello, :id_annuncio)',
-            [
-                ':id_carrello' => $cartId,
-                ':id_annuncio' => $annuncioId,
-            ]
-        );
+        return $totale;
     }
 
-    public function items(int $userId): array
+    public function aggiungiAnnuncio(int $idUtente, int $idAnnuncio): void
     {
-        $cartId = $this->getOrCreateCartId($userId);
+        $this->requirePositiveId($idAnnuncio, 'Annuncio');
 
-        return $this->fetchAll(
-            'SELECT ec.*, a.titolo, a.prezzo, a.stato, a.modalita_consegna,
-                    img.url AS immagine_principale
-             FROM elemento_carrello ec
-             INNER JOIN annuncio a ON a.id_annuncio = ec.id_annuncio
-             LEFT JOIN immagine img ON img.id_annuncio = a.id_annuncio AND img.ordine = 0
-             WHERE ec.id_carrello = :id_carrello
-             ORDER BY ec.data_aggiunta DESC',
-            [':id_carrello' => $cartId]
-        );
+        $idCarrello = $this->getOrCreateCartId($idUtente);
+
+        $stmt = $this->db->prepare("
+            INSERT IGNORE INTO elemento_carrello
+            (id_carrello, id_annuncio)
+            VALUES (?, ?)
+        ");
+        $stmt->execute([$idCarrello, $idAnnuncio]);
     }
 
-    public function removeItem(int $userId, int $annuncioId): bool
+    public function rimuoviAnnuncio(int $idUtente, int $idAnnuncio): void
     {
-        $cartId = $this->getOrCreateCartId($userId);
+        $idCarrello = $this->getOrCreateCartId($idUtente);
 
-        return $this->execute(
-            'DELETE FROM elemento_carrello
-             WHERE id_carrello = :id_carrello AND id_annuncio = :id_annuncio',
-            [
-                ':id_carrello' => $cartId,
-                ':id_annuncio' => $annuncioId,
-            ]
-        );
+        $stmt = $this->db->prepare("
+            DELETE FROM elemento_carrello
+            WHERE id_carrello = ? AND id_annuncio = ?
+        ");
+        $stmt->execute([$idCarrello, $idAnnuncio]);
     }
 
-    public function clear(int $userId): bool
+    public function svuota(int $idUtente): void
     {
-        $cartId = $this->getOrCreateCartId($userId);
+        $idCarrello = $this->getOrCreateCartId($idUtente);
 
-        return $this->execute(
-            'DELETE FROM elemento_carrello WHERE id_carrello = :id_carrello',
-            [':id_carrello' => $cartId]
-        );
-    }
-
-    public function total(int $userId): float
-    {
-        $cartId = $this->getOrCreateCartId($userId);
-        $row = $this->fetchOne(
-            "SELECT COALESCE(SUM(a.prezzo), 0) AS totale
-             FROM elemento_carrello ec
-             INNER JOIN annuncio a ON a.id_annuncio = ec.id_annuncio
-             WHERE ec.id_carrello = :id_carrello AND a.stato = 'attivo'",
-            [':id_carrello' => $cartId]
-        );
-
-        return (float) ($row['totale'] ?? 0);
+        $stmt = $this->db->prepare("
+            DELETE FROM elemento_carrello
+            WHERE id_carrello = ?
+        ");
+        $stmt->execute([$idCarrello]);
     }
 }

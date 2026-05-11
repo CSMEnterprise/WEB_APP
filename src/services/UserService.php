@@ -4,87 +4,53 @@ require_once __DIR__ . '/BaseService.php';
 
 class UserService extends BaseService
 {
-    public function findById(int $userId): ?array
+    public function findById(int $idUtente): ?array
     {
-        $this->requirePositiveInt($userId, 'id_utente');
+        $this->requirePositiveId($idUtente, 'Utente');
 
-        $user = $this->fetchOne(
-            'SELECT id_utente, email, username, nome, telefono, indirizzo, propic, stato_ban, data_registrazione
-             FROM utente_registrato
-             WHERE id_utente = :id',
-            [':id' => $userId]
-        );
+        $stmt = $this->db->prepare("
+            SELECT id_utente, email, username, nome, telefono, indirizzo, propic, stato_ban, data_registrazione
+            FROM utente_registrato
+            WHERE id_utente = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$idUtente]);
 
-        return $user;
+        return $stmt->fetch() ?: null;
     }
 
-    public function updateProfile(int $userId, array $data): bool
+    public function getAll(): array
     {
-        $this->requirePositiveInt($userId, 'id_utente');
+        $stmt = $this->db->query("
+            SELECT id_utente, email, username, nome, telefono, indirizzo, stato_ban, data_registrazione
+            FROM utente_registrato
+            ORDER BY data_registrazione DESC
+        ");
 
-        return $this->execute(
-            'UPDATE utente_registrato
-             SET nome = :nome,
-                 telefono = :telefono,
-                 indirizzo = :indirizzo,
-                 propic = :propic
-             WHERE id_utente = :id',
-            [
-                ':nome' => trim($data['nome'] ?? '') ?: null,
-                ':telefono' => trim($data['telefono'] ?? '') ?: null,
-                ':indirizzo' => trim($data['indirizzo'] ?? '') ?: null,
-                ':propic' => trim($data['propic'] ?? '') ?: null,
-                ':id' => $userId,
-            ]
-        );
+        return $stmt->fetchAll();
     }
 
-    public function changePassword(int $userId, string $currentPassword, string $newPassword): bool
+    public function banna(int $idUtente): void
     {
-        $this->requirePositiveInt($userId, 'id_utente');
+        $this->requirePositiveId($idUtente, 'Utente');
 
-        if (strlen($newPassword) < 8) {
-            throw new ServiceException('La nuova password deve contenere almeno 8 caratteri.');
-        }
-
-        $user = $this->fetchOne(
-            'SELECT password_hash FROM utente_registrato WHERE id_utente = :id',
-            [':id' => $userId]
-        );
-
-        if (!$user || !password_verify($currentPassword, $user['password_hash'])) {
-            throw new ServiceException('Password attuale non corretta.');
-        }
-
-        return $this->execute(
-            'UPDATE utente_registrato SET password_hash = :hash WHERE id_utente = :id',
-            [
-                ':hash' => password_hash($newPassword, PASSWORD_DEFAULT),
-                ':id' => $userId,
-            ]
-        );
+        $stmt = $this->db->prepare("
+            UPDATE utente_registrato
+            SET stato_ban = 1
+            WHERE id_utente = ?
+        ");
+        $stmt->execute([$idUtente]);
     }
 
-    public function ban(int $userId): bool
+    public function sblocca(int $idUtente): void
     {
-        return $this->setBanStatus($userId, true);
-    }
+        $this->requirePositiveId($idUtente, 'Utente');
 
-    public function unban(int $userId): bool
-    {
-        return $this->setBanStatus($userId, false);
-    }
-
-    private function setBanStatus(int $userId, bool $banned): bool
-    {
-        $this->requirePositiveInt($userId, 'id_utente');
-
-        return $this->execute(
-            'UPDATE utente_registrato SET stato_ban = :ban WHERE id_utente = :id',
-            [
-                ':ban' => $banned ? 1 : 0,
-                ':id' => $userId,
-            ]
-        );
+        $stmt = $this->db->prepare("
+            UPDATE utente_registrato
+            SET stato_ban = 0
+            WHERE id_utente = ?
+        ");
+        $stmt->execute([$idUtente]);
     }
 }

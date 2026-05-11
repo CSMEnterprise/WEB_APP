@@ -1,26 +1,28 @@
 <?php
-$pageTitle = 'Pagamento';
-$annuncio = $annuncio ?? null;
-$totale = $totale ?? ($annuncio['prezzo'] ?? $annuncio->prezzo ?? 0);
+$pageTitle = 'Checkout';
 require __DIR__ . '/../layout/header.php';
+require __DIR__ . '/../partials/flash.php';
 ?>
 
-<section class="card auth-card">
-    <h1>Conferma pagamento</h1>
-    <p class="muted">Controlla il riepilogo prima di procedere.</p>
+<h1>Checkout</h1>
 
-    <div class="summary-line">
-        <span>Importo totale</span>
-        <strong>€ <?= number_format((float)$totale, 2, ',', '.') ?></strong>
+<?php if (!empty($annuncio)): ?>
+    <div class="card">
+        <h2><?= e($annuncio['titolo'] ?? '') ?></h2>
+        <p><?= e($annuncio['descrizione'] ?? '') ?></p>
+        <p class="price">Totale: € <?= number_format((float)($totale ?? 0), 2, ',', '.') ?></p>
+
+        <form method="post" action="index.php?route=pagamento-conferma">
+            <input type="hidden" name="id_annuncio" value="<?= e($annuncio['id_annuncio'] ?? '') ?>">
+
+            <label for="paypal_transaction_id">ID transazione PayPal</label>
+            <input type="text" id="paypal_transaction_id" name="paypal_transaction_id" placeholder="Campo simulato per progetto universitario">
+
+            <button class="btn" type="submit">Conferma pagamento</button>
+        </form>
     </div>
-
-    <form method="post" action="index.php?action=pagamento" class="form">
-        <?php if ($annuncio): ?>
-            <input type="hidden" name="id_annuncio" value="<?= e($annuncio['id_annuncio'] ?? $annuncio->id_annuncio ?? '') ?>">
-        <?php endif; ?>
-
-        <button class="btn full" type="submit">Conferma pagamento</button>
-    </form>
-</section>
+<?php else: ?>
+    <div class="alert alert-error">Pagamento non disponibile.</div>
+<?php endif; ?>
 
 <?php require __DIR__ . '/../layout/footer.php'; ?>

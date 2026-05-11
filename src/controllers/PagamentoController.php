@@ -1,48 +1,45 @@
 <?php
 
+require_once __DIR__ . '/../services/PaymentService.php';
+
 class PagamentoController
 {
-    public function crea(int $idUtente, int $idAnnuncio): void
+    private PaymentService $paymentService;
+
+    public function __construct(PDO $db)
     {
-        global $pdo;
+        $this->paymentService = new PaymentService($db);
+    }
 
+    public function checkout(int $idUtente, int $idAnnuncio): void
+    {
         try {
-            $pdo->beginTransaction();
+            $pagamento = $this->paymentService->preparaPagamento($idUtente, $idAnnuncio);
+            $annuncio = $pagamento['annuncio'];
+            $totale = $pagamento['totale'];
 
-            $stmt = $pdo->prepare("
-                SELECT prezzo
-                FROM Annuncio
-                WHERE id_annuncio = ?
-            ");
-
-            $stmt->execute([$idAnnuncio]);
-
-            $annuncio = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if (!$annuncio) {
-                throw new Exception("Annuncio non trovato");
-            }
-
-            $stmt = $pdo->prepare("
-                INSERT INTO Pagamento
-                (id_utente, id_annuncio, importo, stato)
-                VALUES (?, ?, ?, ?)
-            ");
-
-            $stmt->execute([
-                $idUtente,
-                $idAnnuncio,
-                $annuncio['prezzo'],
-                'in_attesa'
-            ]);
-
-            $pdo->commit();
-
-            echo "Pagamento creato correttamente. Stato: in attesa";
-
+            require __DIR__ . '/../views/pagamenti/checkout.php';
         } catch (Exception $e) {
-            $pdo->rollBack();
-            echo "Errore pagamento: " . $e->getMessage();
+            $errore = $e->getMessage();
+            require __DIR__ . '/../views/errors/400.php';
         }
+    }
+
+    public function conferma(array $data, int $idUtente): void
+    {
+        try {
+            $idPagamento = $this->paymentService->confermaPagamento($data, $idUtente);
+            header('Location: index.php?route=pagamento-esito&status=ok&id=' . $idPagamento);
+            exit;
+        } catch (Exception $e) {
+            header('Location: index.php?route=pagamento-esito&status=errore');
+            exit;
+        }
+    }
+
+    public function esito(): void
+    {
+        $status = $_GET['status'] ?? 'errore';
+        require __DIR__ . '/../views/pagamenti/esito.php';
     }
 }
