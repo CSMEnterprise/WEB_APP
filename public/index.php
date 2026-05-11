@@ -2,10 +2,34 @@
 
 session_start();
 
+/*
+|--------------------------------------------------------------------------
+| File di configurazione e middleware
+|--------------------------------------------------------------------------
+*/
+
 require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../middleware/auth.php';
-require_once __DIR__ . '/../middleware/admin.php';
-require_once __DIR__ . '/../middleware/business.php';
+
+require_once __DIR__ . '/../src/middleware/auth.php';
+require_once __DIR__ . '/../src/middleware/admin.php';
+require_once __DIR__ . '/../src/middleware/business.php';
+
+/*
+|--------------------------------------------------------------------------
+| Funzione helper per caricare i controller
+|--------------------------------------------------------------------------
+*/
+
+function loadController(string $controllerName): void
+{
+    require_once __DIR__ . '/../src/controllers/' . $controllerName . '.php';
+}
+
+/*
+|--------------------------------------------------------------------------
+| Router principale
+|--------------------------------------------------------------------------
+*/
 
 $action = $_GET['action'] ?? 'home';
 
@@ -16,63 +40,114 @@ switch ($action) {
         break;
 
     case 'login':
-        require_once '../controllers/UtenteController.php';
+        loadController('UtenteController');
+
         $controller = new UtenteController();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $controller->login($_POST);
         } else {
-            require '../utenti/login.php';
+            require __DIR__ . '/../src/views/utenti/login.php';
         }
+
         break;
 
     case 'register':
-        require_once '../controllers/UtenteController.php';
+        loadController('UtenteController');
+
         $controller = new UtenteController();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $controller->register($_POST);
         } else {
-            require '../utenti/registrazione.php';
+            require __DIR__ . '/../src/views/utenti/registrazione.php';
         }
+
         break;
 
     case 'profilo':
         checkAuth();
-        require_once '../controllers/UtenteController.php';
-        (new UtenteController())->profilo();
+
+        loadController('UtenteController');
+
+        $controller = new UtenteController();
+        $controller->profilo();
+
         break;
 
     case 'annunci':
-        require_once '../controllers/AnnuncioController.php';
-        (new AnnuncioController())->lista();
+        loadController('AnnuncioController');
+
+        $controller = new AnnuncioController();
+        $controller->lista();
+
         break;
 
     case 'annuncio':
-        require_once '../controllers/AnnuncioController.php';
-        (new AnnuncioController())->dettaglio($_GET['id']);
+        loadController('AnnuncioController');
+
+        $idAnnuncio = $_GET['id'] ?? null;
+
+        if ($idAnnuncio === null) {
+            http_response_code(400);
+            echo "Errore: ID annuncio mancante";
+            break;
+        }
+
+        $controller = new AnnuncioController();
+        $controller->dettaglio($idAnnuncio);
+
         break;
 
     case 'carrello_add':
         checkAuth();
-        require_once '../controllers/CarrelloController.php';
-        (new CarrelloController())->aggiungi($_SESSION['user_id'], $_GET['id']);
+
+        loadController('CarrelloController');
+
+        $idAnnuncio = $_GET['id'] ?? null;
+
+        if ($idAnnuncio === null) {
+            http_response_code(400);
+            echo "Errore: ID annuncio mancante";
+            break;
+        }
+
+        $controller = new CarrelloController();
+        $controller->aggiungi($_SESSION['user_id'], $idAnnuncio);
+
         break;
 
     case 'carrello':
         checkAuth();
-        require_once '../controllers/CarrelloController.php';
-        (new CarrelloController())->lista($_SESSION['user_id']);
+
+        loadController('CarrelloController');
+
+        $controller = new CarrelloController();
+        $controller->lista($_SESSION['user_id']);
+
         break;
 
     case 'pagamento':
         checkAuth();
-        require_once '../controllers/PagamentoController.php';
-        (new PagamentoController())->crea($_SESSION['user_id'], $_GET['id']);
+
+        loadController('PagamentoController');
+
+        $idAnnuncio = $_GET['id'] ?? null;
+
+        if ($idAnnuncio === null) {
+            http_response_code(400);
+            echo "Errore: ID annuncio mancante";
+            break;
+        }
+
+        $controller = new PagamentoController();
+        $controller->crea($_SESSION['user_id'], $idAnnuncio);
+
         break;
 
     case 'admin_stats':
         checkAdmin();
+
         echo "Dashboard admin";
         break;
 
