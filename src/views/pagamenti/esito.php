@@ -13,7 +13,7 @@ require __DIR__ . '/../layout/header.php';
         <p>Si è verificato un problema durante il pagamento.</p>
     <?php endif; ?>
 
-    <a class="btn" href="index.php?route=annunci">Torna agli annunci</a>
+    <a class="btn" href="index.php?action=annunci">Torna agli annunci</a>
 </section>
 
 <?php require __DIR__ . '/../layout/footer.php'; ?>

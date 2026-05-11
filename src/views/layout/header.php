@@ -24,17 +24,17 @@ $isLogged = isset($_SESSION['user_id']);
 <body>
 <header class="site-header">
     <div class="container nav">
-        <a class="logo" href="index.php?route=home">NerdVault</a>
+        <a class="logo" href="index.php?action=home">NerdVault</a>
 
         <nav class="menu">
-            <a href="index.php?route=annunci">Annunci</a>
+            <a href="index.php?action=annunci">Annunci</a>
             <?php if ($isLogged): ?>
-                <a href="index.php?route=profilo">Profilo</a>
-                <a href="index.php?route=carrello">Carrello</a>
-                <a href="index.php?route=logout">Logout</a>
+                <a href="index.php?action=profilo">Profilo</a>
+                <a href="index.php?action=carrello">Carrello</a>
+                <a href="index.php?action=logout">Logout</a>
             <?php else: ?>
-                <a href="index.php?route=login">Login</a>
-                <a class="btn btn-small" href="index.php?route=register">Registrati</a>
+                <a href="index.php?action=login">Login</a>
+                <a class="btn btn-small" href="index.php?action=register">Registrati</a>
             <?php endif; ?>
         </nav>
     </div>

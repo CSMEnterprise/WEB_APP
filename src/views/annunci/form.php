@@ -3,7 +3,7 @@ $pageTitle = $pageTitle ?? 'Nuovo annuncio';
 $categorie = $categorie ?? [];
 $annuncio = $annuncio ?? [];
 $isEdit = !empty($annuncio);
-$action = $action ?? ($isEdit ? 'index.php?route=annuncio-update' : 'index.php?route=annuncio-store');
+$action = $action ?? ($isEdit ? 'index.php?action=annuncio-update' : 'index.php?action=annuncio-store');
 
 require __DIR__ . '/../layout/header.php';
 ?>

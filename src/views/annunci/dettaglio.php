@@ -10,7 +10,7 @@ if (!$annuncio):
     <div class="empty-state">
         <h1>Annuncio non trovato</h1>
         <p>L’annuncio richiesto non esiste o non è più disponibile.</p>
-        <a class="btn" href="index.php?route=annunci">Torna agli annunci</a>
+        <a class="btn" href="index.php?action=annunci">Torna agli annunci</a>
     </div>
 <?php
 require __DIR__ . '/../layout/footer.php';
@@ -54,11 +54,11 @@ $stato = $annuncio['stato'] ?? $annuncio->stato ?? '';
 
         <div class="actions">
             <?php if (isset($_SESSION['user_id'])): ?>
-                <a class="btn" href="index.php?route=carrello-add&id=<?= e($id) ?>">Aggiungi al carrello</a>
-                <a class="btn btn-secondary" href="index.php?route=preferito-add&id=<?= e($id) ?>">Preferito</a>
-                <a class="link-danger" href="index.php?route=segnalazione-create&id_annuncio=<?= e($id) ?>">Segnala</a>
+                <a class="btn" href="index.php?action=carrello-add&id=<?= e($id) ?>">Aggiungi al carrello</a>
+                <a class="btn btn-secondary" href="index.php?action=preferito_add&id=<?= e($id) ?>">Preferito</a>
+                <a class="link-danger" href="index.php?action=segnalazione_create&id_annuncio=<?= e($id) ?>">Segnala</a>
             <?php else: ?>
-                <a class="btn" href="index.php?route=login">Accedi per acquistare</a>
+                <a class="btn" href="index.php?action=login">Accedi per acquistare</a>
             <?php endif; ?>
         </div>
     </div>

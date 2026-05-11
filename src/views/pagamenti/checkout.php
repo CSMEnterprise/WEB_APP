@@ -14,7 +14,7 @@ require __DIR__ . '/../layout/header.php';
         <strong>€ <?= number_format((float)$totale, 2, ',', '.') ?></strong>
     </div>
 
-    <form method="post" action="index.php?route=pagamento-store" class="form">
+    <form method="post" action="index.php?action=pagamento" class="form">
         <?php if ($annuncio): ?>
             <input type="hidden" name="id_annuncio" value="<?= e($annuncio['id_annuncio'] ?? $annuncio->id_annuncio ?? '') ?>">
         <?php endif; ?>
