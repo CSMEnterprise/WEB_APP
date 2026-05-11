@@ -1,7 +1,7 @@
 <?php
 $pageTitle = 'Account business';
 $business = $business ?? [];
-$action = $action ?? 'index.php?route=business-store';
+$action = $action ?? 'index.php?action=business_store';
 require __DIR__ . '/../layout/header.php';
 ?>
 

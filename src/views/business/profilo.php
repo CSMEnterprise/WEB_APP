@@ -8,7 +8,7 @@ if (!$business):
     <div class="empty-state">
         <h1>Nessun account business</h1>
         <p>Puoi creare un account business per pubblicare annunci come azienda.</p>
-        <a class="btn" href="index.php?route=business-create">Crea account business</a>
+        <a class="btn" href="index.php?action=business_create">Crea account business</a>
     </div>
 <?php
 require __DIR__ . '/../layout/footer.php';

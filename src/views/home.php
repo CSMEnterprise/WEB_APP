@@ -12,9 +12,9 @@ require __DIR__ . '/layout/header.php';
             gadget e prodotti da collezione.
         </p>
         <div class="actions">
-            <a class="btn" href="index.php?route=annunci">Sfoglia annunci</a>
+            <a class="btn" href="index.php?action=annunci">Sfoglia annunci</a>
             <?php if (!isset($_SESSION['user_id'])): ?>
-                <a class="btn btn-secondary" href="index.php?route=register">Crea account</a>
+                <a class="btn btn-secondary" href="index.php?action=register">Crea account</a>
             <?php endif; ?>
         </div>
     </div>

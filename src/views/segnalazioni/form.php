@@ -7,7 +7,7 @@ require __DIR__ . '/../layout/header.php';
     <h1>Segnala contenuto</h1>
     <p class="muted">Usa questo modulo per segnalare annunci, utenti, business o feedback non corretti.</p>
 
-    <form method="post" action="index.php?route=segnalazione-store" class="form">
+    <form method="post" action="index.php?action=segnalazione_store" class="form">
         <input type="hidden" name="id_annuncio" value="<?= e($_GET['id_annuncio'] ?? '') ?>">
         <input type="hidden" name="id_utente_segnalato" value="<?= e($_GET['id_utente'] ?? '') ?>">
         <input type="hidden" name="id_business" value="<?= e($_GET['id_business'] ?? '') ?>">

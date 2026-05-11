@@ -12,12 +12,12 @@ require __DIR__ . '/../layout/header.php';
     </div>
 
     <?php if (isset($_SESSION['user_id'])): ?>
-        <a class="btn" href="index.php?route=annuncio-create">Nuovo annuncio</a>
+        <a class="btn" href="index.php?action=annuncio-create">Nuovo annuncio</a>
     <?php endif; ?>
 </div>
 
 <form method="get" action="index.php" class="filters card">
-    <input type="hidden" name="route" value="annunci">
+    <input type="hidden" name="action" value="annunci">
 
     <label>
         Cerca
@@ -56,7 +56,7 @@ require __DIR__ . '/../layout/header.php';
                 $img = $annuncio['immagine'] ?? $annuncio['url'] ?? null;
             ?>
             <article class="product-card">
-                <a href="index.php?route=annuncio&id=<?= e($id) ?>" class="product-image">
+                <a href="index.php?action=annuncio&id=<?= e($id) ?>" class="product-image">
                     <?php if ($img): ?>
                         <img src="<?= e($img) ?>" alt="<?= e($titolo) ?>">
                     <?php else: ?>
@@ -70,9 +70,9 @@ require __DIR__ . '/../layout/header.php';
                     <p class="price">€ <?= number_format((float)$prezzo, 2, ',', '.') ?></p>
 
                     <div class="card-actions">
-                        <a class="btn btn-small" href="index.php?route=annuncio&id=<?= e($id) ?>">Dettagli</a>
+                        <a class="btn btn-small" href="index.php?action=annuncio&id=<?= e($id) ?>">Dettagli</a>
                         <?php if (isset($_SESSION['user_id'])): ?>
-                            <a class="btn btn-small btn-secondary" href="index.php?route=carrello-add&id=<?= e($id) ?>">Carrello</a>
+                            <a class="btn btn-small btn-secondary" href="index.php?action=carrello-add&id=<?= e($id) ?>">Carrello</a>
                         <?php endif; ?>
                     </div>
                 </div>
