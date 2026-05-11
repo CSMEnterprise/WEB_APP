@@ -4,84 +4,90 @@ require_once __DIR__ . '/BaseService.php';
 
 class SegnalazioneService extends BaseService
 {
-    private const TIPOLOGIE = ['Spam', 'Truffa', 'Contenuto_inappropriato', 'Altro'];
-    private const STATI = ['Aperta', 'In_revisione', 'Risolta'];
-
-    public function create(int $reporterId, array $data): int
+    public function crea(array $data, int $idSegnalante): int
     {
-        $this->requirePositiveInt($reporterId, 'id_segnalante');
+        $this->requirePositiveId($idSegnalante, 'Segnalante');
 
-        if (!in_array($data['tipologia'] ?? '', self::TIPOLOGIE, true)) {
+        $tipologia = $this->clean($data['tipologia'] ?? '');
+        $descrizione = $this->clean($data['descrizione'] ?? '');
+
+        $idAnnuncio = $this->nullablePositiveInt($data['id_annuncio'] ?? null);
+        $idUtenteSegnalato = $this->nullablePositiveInt($data['id_utente_segnalato'] ?? null);
+        $idBusiness = $this->nullablePositiveInt($data['id_business'] ?? null);
+        $idFeedback = $this->nullablePositiveInt($data['id_feedback'] ?? null);
+
+        $targets = array_filter([$idAnnuncio, $idUtenteSegnalato, $idBusiness, $idFeedback], fn($v) => $v !== null);
+
+        if ($tipologia === '' || !in_array($tipologia, ['Spam', 'Truffa', 'Contenuto_inappropriato', 'Altro'], true)) {
             throw new ServiceException('Tipologia segnalazione non valida.');
         }
 
-        if (empty($data['id_annuncio']) && empty($data['id_utente_segnalato']) && empty($data['id_business']) && empty($data['id_feedback'])) {
-            throw new ServiceException('La segnalazione deve riferirsi ad almeno un oggetto.');
+        if (count($targets) !== 1) {
+            throw new ServiceException('Devi segnalare esattamente un elemento.');
         }
 
-        $this->execute(
-            'INSERT INTO segnalazione
-                (id_segnalante, id_annuncio, id_utente_segnalato, id_business, id_feedback, tipologia, descrizione)
-             VALUES
-                (:id_segnalante, :id_annuncio, :id_utente_segnalato, :id_business, :id_feedback, :tipologia, :descrizione)',
-            [
-                ':id_segnalante' => $reporterId,
-                ':id_annuncio' => !empty($data['id_annuncio']) ? (int) $data['id_annuncio'] : null,
-                ':id_utente_segnalato' => !empty($data['id_utente_segnalato']) ? (int) $data['id_utente_segnalato'] : null,
-                ':id_business' => !empty($data['id_business']) ? (int) $data['id_business'] : null,
-                ':id_feedback' => !empty($data['id_feedback']) ? (int) $data['id_feedback'] : null,
-                ':tipologia' => $data['tipologia'],
-                ':descrizione' => trim($data['descrizione'] ?? '') ?: null,
-            ]
-        );
+        $stmt = $this->db->prepare("
+            INSERT INTO segnalazione
+            (id_segnalante, id_annuncio, id_utente_segnalato, id_business, id_feedback, tipologia, descrizione, stato)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'Aperta')
+        ");
+
+        $stmt->execute([
+            $idSegnalante,
+            $idAnnuncio,
+            $idUtenteSegnalato,
+            $idBusiness,
+            $idFeedback,
+            $tipologia,
+            $descrizione !== '' ? $descrizione : null
+        ]);
 
         return $this->lastInsertId();
     }
 
-    public function all(?string $status = null): array
+    public function getAll(): array
     {
-        $params = [];
-        $where = '';
+        $stmt = $this->db->query("
+            SELECT s.*, u.username AS segnalante_username
+            FROM segnalazione s
+            JOIN utente_registrato u ON u.id_utente = s.id_segnalante
+            ORDER BY s.data_segnalazione DESC
+        ");
 
-        if ($status !== null) {
-            if (!in_array($status, self::STATI, true)) {
-                throw new ServiceException('Stato segnalazione non valido.');
-            }
-            $where = 'WHERE s.stato = :stato';
-            $params[':stato'] = $status;
-        }
-
-        return $this->fetchAll(
-            "SELECT s.*, u.username AS segnalante_username
-             FROM segnalazione s
-             INNER JOIN utente_registrato u ON u.id_utente = s.id_segnalante
-             {$where}
-             ORDER BY s.data_segnalazione DESC",
-            $params
-        );
+        return $stmt->fetchAll();
     }
 
-    public function updateStatus(int $reportId, string $status, int $adminId): bool
+    public function chiudi(int $idSegnalazione): void
     {
-        $this->requirePositiveInt($reportId, 'id_segnalazione');
-        $this->requirePositiveInt($adminId, 'id_admin');
+        $this->requirePositiveId($idSegnalazione, 'Segnalazione');
 
-        if (!in_array($status, self::STATI, true)) {
-            throw new ServiceException('Stato segnalazione non valido.');
+        $stmt = $this->db->prepare("
+            UPDATE segnalazione
+            SET stato = 'Risolta', data_risoluzione = CURRENT_TIMESTAMP
+            WHERE id_segnalazione = ?
+        ");
+        $stmt->execute([$idSegnalazione]);
+    }
+
+    public function elimina(int $idSegnalazione): void
+    {
+        $this->requirePositiveId($idSegnalazione, 'Segnalazione');
+
+        $stmt = $this->db->prepare("
+            DELETE FROM segnalazione
+            WHERE id_segnalazione = ?
+        ");
+        $stmt->execute([$idSegnalazione]);
+    }
+
+    private function nullablePositiveInt($value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
         }
 
-        return $this->execute(
-            'UPDATE segnalazione
-             SET stato = :stato,
-                 id_admin = :id_admin,
-                 data_risoluzione = CASE WHEN :stato_case = "Risolta" THEN CURRENT_TIMESTAMP ELSE data_risoluzione END
-             WHERE id_segnalazione = :id',
-            [
-                ':stato' => $status,
-                ':stato_case' => $status,
-                ':id_admin' => $adminId,
-                ':id' => $reportId,
-            ]
-        );
+        $intValue = (int) $value;
+
+        return $intValue > 0 ? $intValue : null;
     }
 }

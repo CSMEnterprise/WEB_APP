@@ -13,45 +13,20 @@ abstract class BaseService
         $this->db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     }
 
-    protected function fetchOne(string $sql, array $params = []): ?array
-    {
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-        $row = $stmt->fetch();
-
-        return $row === false ? null : $row;
-    }
-
-    protected function fetchAll(string $sql, array $params = []): array
-    {
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-
-        return $stmt->fetchAll();
-    }
-
-    protected function execute(string $sql, array $params = []): bool
-    {
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute($params);
-    }
-
     protected function lastInsertId(): int
     {
         return (int) $this->db->lastInsertId();
     }
 
-    protected function requirePositiveInt(int $value, string $fieldName): void
+    protected function requirePositiveId(int $id, string $fieldName = 'ID'): void
     {
-        if ($value <= 0) {
-            throw new ServiceException("Il campo {$fieldName} non è valido.");
+        if ($id <= 0) {
+            throw new ServiceException($fieldName . ' non valido.');
         }
     }
 
-    protected function requireNotEmpty(?string $value, string $fieldName): void
+    protected function clean(?string $value): string
     {
-        if (trim((string) $value) === '') {
-            throw new ServiceException("Il campo {$fieldName} è obbligatorio.");
-        }
+        return trim((string) $value);
     }
 }

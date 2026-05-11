@@ -1,131 +1,102 @@
 <?php
 
 require_once __DIR__ . '/BaseService.php';
+require_once __DIR__ . '/AnnuncioService.php';
 
 class PaymentService extends BaseService
 {
-    public function create(int $buyerId, int $annuncioId, ?string $paypalTransactionId = null): int
+    private AnnuncioService $annuncioService;
+
+    public function __construct(PDO $db)
     {
-        $this->requirePositiveInt($buyerId, 'id_acquirente');
-        $this->requirePositiveInt($annuncioId, 'id_annuncio');
+        parent::__construct($db);
+        $this->annuncioService = new AnnuncioService($db);
+    }
 
-        $annuncio = $this->fetchOne(
-            "SELECT id_annuncio, prezzo, stato, id_utente
-             FROM annuncio
-             WHERE id_annuncio = :id
-             LIMIT 1",
-            [':id' => $annuncioId]
-        );
+    public function preparaPagamento(int $idUtente, int $idAnnuncio): array
+    {
+        $this->requirePositiveId($idUtente, 'Utente');
+        $this->requirePositiveId($idAnnuncio, 'Annuncio');
 
-        if (!$annuncio || $annuncio['stato'] !== 'attivo') {
-            throw new ServiceException('Annuncio non disponibile per il pagamento.');
+        $annuncio = $this->annuncioService->findById($idAnnuncio);
+
+        if (!$annuncio) {
+            throw new ServiceException('Annuncio non trovato.');
         }
 
-        if ((int) $annuncio['id_utente'] === $buyerId) {
+        if (($annuncio['stato'] ?? '') !== 'attivo') {
+            throw new ServiceException('Annuncio non acquistabile.');
+        }
+
+        if ((int)($annuncio['id_utente'] ?? 0) === $idUtente) {
             throw new ServiceException('Non puoi acquistare un tuo annuncio.');
         }
 
-        $this->execute(
-            "INSERT INTO pagamento (id_annuncio, id_acquirente, importo_totale, stato, paypal_transaction_id)
-             VALUES (:id_annuncio, :id_acquirente, :importo_totale, 'In_attesa', :paypal_transaction_id)",
-            [
-                ':id_annuncio' => $annuncioId,
-                ':id_acquirente' => $buyerId,
-                ':importo_totale' => $annuncio['prezzo'],
-                ':paypal_transaction_id' => $paypalTransactionId,
-            ]
-        );
-
-        return $this->lastInsertId();
+        return [
+            'annuncio' => $annuncio,
+            'totale' => (float) $annuncio['prezzo']
+        ];
     }
 
-    public function complete(int $paymentId, ?string $paypalTransactionId = null): bool
+    public function confermaPagamento(array $data, int $idUtente): int
     {
-        $this->requirePositiveInt($paymentId, 'id_pagamento');
+        $this->requirePositiveId($idUtente, 'Utente');
 
-        $payment = $this->findById($paymentId);
-        if (!$payment) {
-            throw new ServiceException('Pagamento non trovato.');
-        }
+        $idAnnuncio = (int) ($data['id_annuncio'] ?? 0);
+        $paypalTransactionId = $this->clean($data['paypal_transaction_id'] ?? '');
+
+        $preparazione = $this->preparaPagamento($idUtente, $idAnnuncio);
+        $annuncio = $preparazione['annuncio'];
+        $totale = $preparazione['totale'];
 
         $this->db->beginTransaction();
 
         try {
-            $this->execute(
-                "UPDATE pagamento
-                 SET stato = 'Completato',
-                     paypal_transaction_id = COALESCE(:paypal_transaction_id, paypal_transaction_id)
-                 WHERE id_pagamento = :id",
-                [
-                    ':paypal_transaction_id' => $paypalTransactionId,
-                    ':id' => $paymentId,
-                ]
-            );
+            $stmt = $this->db->prepare("
+                INSERT INTO pagamento
+                (id_annuncio, id_acquirente, importo_totale, stato, paypal_transaction_id)
+                VALUES (?, ?, ?, 'Completato', ?)
+            ");
 
-            $this->execute(
-                "UPDATE annuncio SET stato = 'venduto' WHERE id_annuncio = :id_annuncio",
-                [':id_annuncio' => $payment['id_annuncio']]
-            );
+            $stmt->execute([
+                $idAnnuncio,
+                $idUtente,
+                $totale,
+                $paypalTransactionId !== '' ? $paypalTransactionId : null
+            ]);
+
+            $idPagamento = $this->lastInsertId();
+
+            $stmt = $this->db->prepare("
+                UPDATE annuncio
+                SET stato = 'venduto'
+                WHERE id_annuncio = ?
+            ");
+            $stmt->execute([$idAnnuncio]);
 
             $this->db->commit();
-            return true;
+
+            return $idPagamento;
+
         } catch (Throwable $e) {
             $this->db->rollBack();
-            throw $e;
+            throw new ServiceException('Errore durante la conferma del pagamento.');
         }
     }
 
-    public function cancel(int $paymentId): bool
+    public function findById(int $idPagamento): ?array
     {
-        return $this->changeStatus($paymentId, 'Annullato');
-    }
+        $this->requirePositiveId($idPagamento, 'Pagamento');
 
-    public function refund(int $paymentId): bool
-    {
-        return $this->changeStatus($paymentId, 'Rimborsato');
-    }
+        $stmt = $this->db->prepare("
+            SELECT p.*, a.titolo
+            FROM pagamento p
+            JOIN annuncio a ON a.id_annuncio = p.id_annuncio
+            WHERE p.id_pagamento = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$idPagamento]);
 
-    public function findById(int $paymentId): ?array
-    {
-        $this->requirePositiveInt($paymentId, 'id_pagamento');
-
-        return $this->fetchOne(
-            'SELECT p.*, a.titolo AS annuncio_titolo, u.username AS acquirente_username
-             FROM pagamento p
-             INNER JOIN annuncio a ON a.id_annuncio = p.id_annuncio
-             INNER JOIN utente_registrato u ON u.id_utente = p.id_acquirente
-             WHERE p.id_pagamento = :id',
-            [':id' => $paymentId]
-        );
-    }
-
-    public function byUser(int $buyerId): array
-    {
-        $this->requirePositiveInt($buyerId, 'id_acquirente');
-
-        return $this->fetchAll(
-            'SELECT p.*, a.titolo AS annuncio_titolo
-             FROM pagamento p
-             INNER JOIN annuncio a ON a.id_annuncio = p.id_annuncio
-             WHERE p.id_acquirente = :id
-             ORDER BY p.data DESC',
-            [':id' => $buyerId]
-        );
-    }
-
-    private function changeStatus(int $paymentId, string $status): bool
-    {
-        $allowed = ['In_attesa', 'Completato', 'Annullato', 'Rimborsato'];
-        if (!in_array($status, $allowed, true)) {
-            throw new ServiceException('Stato pagamento non valido.');
-        }
-
-        return $this->execute(
-            'UPDATE pagamento SET stato = :stato WHERE id_pagamento = :id',
-            [
-                ':stato' => $status,
-                ':id' => $paymentId,
-            ]
-        );
+        return $stmt->fetch() ?: null;
     }
 }

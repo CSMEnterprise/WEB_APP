@@ -1,6 +1,7 @@
-<?php if (!empty($_SESSION['flash'])): ?>
-    <div class="alert alert-<?= e($_SESSION['flash']['type'] ?? 'info') ?>">
-        <?= e($_SESSION['flash']['message'] ?? '') ?>
-    </div>
-    <?php unset($_SESSION['flash']); ?>
+<?php if (!empty($errore)): ?>
+    <div class="alert alert-error"><?= e($errore) ?></div>
+<?php endif; ?>
+
+<?php if (!empty($successo)): ?>
+    <div class="alert alert-success"><?= e($successo) ?></div>
 <?php endif; ?>

@@ -1,67 +1,33 @@
 <?php
-$pageTitle = 'Dettaglio annuncio';
-$annuncio = $annuncio ?? null;
-$immagini = $immagini ?? [];
-$feedback = $feedback ?? [];
+$pageTitle = $annuncio['titolo'] ?? 'Dettaglio annuncio';
 require __DIR__ . '/../layout/header.php';
-
-if (!$annuncio):
-?>
-    <div class="empty-state">
-        <h1>Annuncio non trovato</h1>
-        <p>L’annuncio richiesto non esiste o non è più disponibile.</p>
-        <a class="btn" href="index.php?action=annunci">Torna agli annunci</a>
-    </div>
-<?php
-require __DIR__ . '/../layout/footer.php';
-return;
-endif;
-
-$id = $annuncio['id_annuncio'] ?? $annuncio->id_annuncio ?? '';
-$titolo = $annuncio['titolo'] ?? $annuncio->titolo ?? 'Annuncio';
-$descrizione = $annuncio['descrizione'] ?? $annuncio->descrizione ?? '';
-$prezzo = $annuncio['prezzo'] ?? $annuncio->prezzo ?? 0;
-$statoConservazione = $annuncio['stato_conservazione'] ?? $annuncio->stato_conservazione ?? '';
-$consegna = $annuncio['modalita_consegna'] ?? $annuncio->modalita_consegna ?? '';
-$stato = $annuncio['stato'] ?? $annuncio->stato ?? '';
 ?>
 
-<section class="detail-layout">
-    <div class="gallery card">
-        <?php if (!empty($immagini)): ?>
-            <?php foreach ($immagini as $img): ?>
-                <img src="<?= e($img['url'] ?? $img->url ?? '') ?>" alt="<?= e($titolo) ?>">
-            <?php endforeach; ?>
-        <?php else: ?>
-            <div class="placeholder-large">NerdVault</div>
-        <?php endif; ?>
-    </div>
+<?php if (!empty($annuncio)): ?>
+    <article class="card">
+        <h1><?= e($annuncio['titolo'] ?? '') ?></h1>
 
-    <div class="card detail-info">
-        <p class="badge"><?= e($stato) ?></p>
-        <h1><?= e($titolo) ?></h1>
-        <p class="price price-large">€ <?= number_format((float)$prezzo, 2, ',', '.') ?></p>
+        <p class="muted"><?= e($annuncio['categoria_nome'] ?? '') ?></p>
+        <p><?= nl2br(e($annuncio['descrizione'] ?? '')) ?></p>
 
-        <dl class="info-list">
-            <dt>Stato conservazione</dt>
-            <dd><?= e($statoConservazione) ?></dd>
+        <p class="price">€ <?= number_format((float)($annuncio['prezzo'] ?? 0), 2, ',', '.') ?></p>
+        <p><strong>Conservazione:</strong> <?= e($annuncio['stato_conservazione'] ?? '') ?></p>
+        <p><strong>Consegna:</strong> <?= e($annuncio['modalita_consegna'] ?? '') ?></p>
+        <p><strong>Stato vendita:</strong> <?= e($annuncio['stato'] ?? '') ?></p>
+        <p><strong>Venditore:</strong> <?= e($annuncio['venditore_username'] ?? '') ?></p>
 
-            <dt>Modalità consegna</dt>
-            <dd><?= e(str_replace('_', ' ', $consegna)) ?></dd>
-        </dl>
+        <?php if (!empty($_SESSION['user_id'])): ?>
+            <a class="btn" href="index.php?route=carrello-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Aggiungi al carrello</a>
+            <a class="btn btn-secondary" href="index.php?route=checkout&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Acquista</a>
+            <a class="btn btn-secondary" href="index.php?route=segnalazione-create&id_annuncio=<?= e($annuncio['id_annuncio'] ?? '') ?>">Segnala</a>
 
-        <p><?= nl2br(e($descrizione)) ?></p>
-
-        <div class="actions">
-            <?php if (isset($_SESSION['user_id'])): ?>
-                <a class="btn" href="index.php?action=carrello-add&id=<?= e($id) ?>">Aggiungi al carrello</a>
-                <a class="btn btn-secondary" href="index.php?action=preferito_add&id=<?= e($id) ?>">Preferito</a>
-                <a class="link-danger" href="index.php?action=segnalazione_create&id_annuncio=<?= e($id) ?>">Segnala</a>
-            <?php else: ?>
-                <a class="btn" href="index.php?action=login">Accedi per acquistare</a>
+            <?php if ((int)($annuncio['id_utente'] ?? 0) === (int)($_SESSION['user_id'] ?? 0)): ?>
+                <a class="btn btn-danger" href="index.php?route=annuncio-delete&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Elimina</a>
             <?php endif; ?>
-        </div>
-    </div>
-</section>
+        <?php endif; ?>
+    </article>
+<?php else: ?>
+    <div class="alert alert-error">Annuncio non trovato.</div>
+<?php endif; ?>
 
 <?php require __DIR__ . '/../layout/footer.php'; ?>

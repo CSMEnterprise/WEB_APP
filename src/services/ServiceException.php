@@ -1,5 +1,5 @@
 <?php
 
-class ServiceException extends RuntimeException
+class ServiceException extends Exception
 {
 }

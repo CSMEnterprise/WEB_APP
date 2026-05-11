@@ -1,52 +1,34 @@
 <?php
 $pageTitle = 'Carrello';
-$items = $items ?? ($annunciCarrello ?? []);
-$totale = $totale ?? array_sum(array_map(fn($item) => (float)($item['prezzo'] ?? $item->prezzo ?? 0), $items));
 require __DIR__ . '/../layout/header.php';
 ?>
 
-<div class="page-heading">
-    <div>
-        <h1>Carrello</h1>
-        <p class="muted">Riepilogo degli articoli selezionati.</p>
-    </div>
-</div>
+<h1>Carrello</h1>
 
-<?php if (empty($items)): ?>
-    <div class="empty-state">
-        <h2>Il carrello è vuoto</h2>
-        <p>Aggiungi un annuncio al carrello per procedere con l’acquisto.</p>
-        <a class="btn" href="index.php?action=annunci">Vai agli annunci</a>
-    </div>
-<?php else: ?>
-    <section class="cart-layout">
-        <div class="card">
-            <?php foreach ($items as $item): ?>
-                <?php
-                    $id = $item['id_annuncio'] ?? $item->id_annuncio ?? '';
-                    $titolo = $item['titolo'] ?? $item->titolo ?? 'Annuncio';
-                    $prezzo = $item['prezzo'] ?? $item->prezzo ?? 0;
-                ?>
-                <div class="cart-row">
-                    <div>
-                        <h2><?= e($titolo) ?></h2>
-                        <p class="muted">ID annuncio: <?= e($id) ?></p>
-                    </div>
-
-                    <div class="cart-price">
-                        <strong>€ <?= number_format((float)$prezzo, 2, ',', '.') ?></strong>
-                        <a class="link-danger" href="index.php?action=carrello-remove&id=<?= e($id) ?>">Rimuovi</a>
-                    </div>
+<?php if (!empty($carrello)): ?>
+    <section class="grid">
+        <div>
+            <?php foreach ($carrello as $item): ?>
+                <div class="card">
+                    <h2><?= e($item['titolo'] ?? '') ?></h2>
+                    <p class="muted">ID annuncio: <?= e($item['id_annuncio'] ?? '') ?></p>
+                    <p class="price">€ <?= number_format((float)($item['prezzo'] ?? 0), 2, ',', '.') ?></p>
+                    <a class="btn btn-danger" href="index.php?route=carrello-remove&id=<?= e($item['id_annuncio'] ?? '') ?>">Rimuovi</a>
+                    <a class="btn" href="index.php?route=checkout&id=<?= e($item['id_annuncio'] ?? '') ?>">Acquista</a>
                 </div>
             <?php endforeach; ?>
         </div>
 
-        <aside class="card summary">
+        <aside class="card">
             <h2>Totale</h2>
-            <p class="price price-large">€ <?= number_format((float)$totale, 2, ',', '.') ?></p>
-            <p class="muted">Il router attuale crea il pagamento partendo dal singolo annuncio. Usa il pulsante <strong>Paga</strong> sulla riga dell’articolo.</p>
+            <p class="price">€ <?= number_format((float)($totale ?? 0), 2, ',', '.') ?></p>
+            <a class="btn btn-danger" href="index.php?route=carrello-clear">Svuota carrello</a>
         </aside>
     </section>
+<?php else: ?>
+    <div class="card">
+        <p>Il carrello è vuoto.</p>
+    </div>
 <?php endif; ?>
 
 <?php require __DIR__ . '/../layout/footer.php'; ?>

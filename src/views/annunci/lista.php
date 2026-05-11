@@ -1,84 +1,39 @@
 <?php
 $pageTitle = 'Annunci';
-$annunci = $annunci ?? [];
-$categorie = $categorie ?? [];
 require __DIR__ . '/../layout/header.php';
 ?>
 
-<div class="page-heading">
-    <div>
-        <h1>Annunci</h1>
-        <p class="muted">Sfoglia gli articoli disponibili su NerdVault.</p>
-    </div>
+<div class="nav" style="align-items:flex-start;">
+    <h1>Annunci disponibili</h1>
 
-    <?php if (isset($_SESSION['user_id'])): ?>
-        <a class="btn" href="index.php?action=annuncio-create">Nuovo annuncio</a>
+    <?php if (!empty($_SESSION['user_id'])): ?>
+        <a class="btn" href="index.php?route=annuncio-create">Crea annuncio</a>
     <?php endif; ?>
 </div>
 
-<form method="get" action="index.php" class="filters card">
-    <input type="hidden" name="action" value="annunci">
-
-    <label>
-        Cerca
-        <input type="search" name="q" value="<?= e($_GET['q'] ?? '') ?>" placeholder="Titolo, descrizione...">
-    </label>
-
-    <label>
-        Categoria
-        <select name="categoria">
-            <option value="">Tutte</option>
-            <?php foreach ($categorie as $categoria): ?>
-                <option value="<?= e($categoria['id_categoria'] ?? $categoria->id_categoria ?? '') ?>"
-                    <?= (string)($_GET['categoria'] ?? '') === (string)($categoria['id_categoria'] ?? $categoria->id_categoria ?? '') ? 'selected' : '' ?>>
-                    <?= e($categoria['nome'] ?? $categoria->nome ?? '') ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </label>
-
-    <button class="btn btn-secondary" type="submit">Filtra</button>
-</form>
-
-<?php if (empty($annunci)): ?>
-    <div class="empty-state">
-        <h2>Nessun annuncio trovato</h2>
-        <p>Quando saranno presenti annunci attivi, li vedrai in questa pagina.</p>
-    </div>
-<?php else: ?>
-    <section class="cards-grid">
+<?php if (!empty($annunci)): ?>
+    <section class="grid">
         <?php foreach ($annunci as $annuncio): ?>
-            <?php
-                $id = $annuncio['id_annuncio'] ?? $annuncio->id_annuncio ?? '';
-                $titolo = $annuncio['titolo'] ?? $annuncio->titolo ?? 'Annuncio';
-                $prezzo = $annuncio['prezzo'] ?? $annuncio->prezzo ?? 0;
-                $stato = $annuncio['stato_conservazione'] ?? $annuncio->stato_conservazione ?? '';
-                $img = $annuncio['immagine'] ?? $annuncio['url'] ?? null;
-            ?>
-            <article class="product-card">
-                <a href="index.php?action=annuncio&id=<?= e($id) ?>" class="product-image">
-                    <?php if ($img): ?>
-                        <img src="<?= e($img) ?>" alt="<?= e($titolo) ?>">
-                    <?php else: ?>
-                        <span>NerdVault</span>
-                    <?php endif; ?>
-                </a>
+            <article class="card">
+                <h2><?= e($annuncio['titolo'] ?? 'Annuncio') ?></h2>
+                <p class="muted"><?= e($annuncio['categoria_nome'] ?? 'Senza categoria') ?></p>
+                <p><?= e($annuncio['descrizione'] ?? '') ?></p>
+                <p class="price">€ <?= number_format((float)($annuncio['prezzo'] ?? 0), 2, ',', '.') ?></p>
+                <p><strong>Stato:</strong> <?= e($annuncio['stato_conservazione'] ?? '') ?></p>
+                <p><strong>Venditore:</strong> <?= e($annuncio['venditore_username'] ?? '') ?></p>
 
-                <div class="product-body">
-                    <h2><?= e($titolo) ?></h2>
-                    <p class="muted"><?= e($stato) ?></p>
-                    <p class="price">€ <?= number_format((float)$prezzo, 2, ',', '.') ?></p>
+                <a class="btn" href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Dettagli</a>
 
-                    <div class="card-actions">
-                        <a class="btn btn-small" href="index.php?action=annuncio&id=<?= e($id) ?>">Dettagli</a>
-                        <?php if (isset($_SESSION['user_id'])): ?>
-                            <a class="btn btn-small btn-secondary" href="index.php?action=carrello-add&id=<?= e($id) ?>">Carrello</a>
-                        <?php endif; ?>
-                    </div>
-                </div>
+                <?php if (!empty($_SESSION['user_id'])): ?>
+                    <a class="btn btn-secondary" href="index.php?route=carrello-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Carrello</a>
+                <?php endif; ?>
             </article>
         <?php endforeach; ?>
     </section>
+<?php else: ?>
+    <div class="card">
+        <p>Nessun annuncio disponibile.</p>
+    </div>
 <?php endif; ?>
 
 <?php require __DIR__ . '/../layout/footer.php'; ?>

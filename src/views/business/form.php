@@ -1,66 +1,33 @@
 <?php
-$pageTitle = 'Account business';
-$business = $business ?? [];
-$action = $action ?? 'index.php?action=business_store';
+$pageTitle = 'Crea account business';
 require __DIR__ . '/../layout/header.php';
+require __DIR__ . '/../partials/flash.php';
 ?>
 
-<section class="card">
-    <h1>Account business</h1>
-    <p class="muted">Compila i dati dell’azienda o dello store.</p>
+<div class="card">
+    <h1>Crea account business</h1>
 
-    <form method="post" action="<?= e($action) ?>" enctype="multipart/form-data" class="form">
-        <div class="grid-2">
-            <label>
-                Partita IVA
-                <input type="text" name="p_iva" required maxlength="20"
-                       value="<?= e($business['p_iva'] ?? $business->p_iva ?? '') ?>">
-            </label>
+    <form method="post" action="index.php?route=business-store">
+        <label for="nome_azienda">Nome azienda</label>
+        <input type="text" id="nome_azienda" name="nome_azienda" required>
 
-            <label>
-                Nome azienda
-                <input type="text" name="nome_azienda" required maxlength="255"
-                       value="<?= e($business['nome_azienda'] ?? $business->nome_azienda ?? '') ?>">
-            </label>
-        </div>
+        <label for="p_iva">Partita IVA</label>
+        <input type="text" id="p_iva" name="p_iva" required>
 
-        <label>
-            Email aziendale
-            <input type="email" name="email_aziendale" required
-                   value="<?= e($business['email_aziendale'] ?? $business->email_aziendale ?? '') ?>">
-        </label>
+        <label for="email_aziendale">Email aziendale</label>
+        <input type="email" id="email_aziendale" name="email_aziendale" required>
 
-        <label>
-            Descrizione
-            <textarea name="descrizione" rows="5"><?= e($business['descrizione'] ?? $business->descrizione ?? '') ?></textarea>
-        </label>
+        <label for="telefono">Telefono</label>
+        <input type="text" id="telefono" name="telefono">
 
-        <div class="grid-2">
-            <label>
-                Telefono
-                <input type="text" name="telefono" maxlength="20"
-                       value="<?= e($business['telefono'] ?? $business->telefono ?? '') ?>">
-            </label>
+        <label for="indirizzo">Indirizzo</label>
+        <textarea id="indirizzo" name="indirizzo"></textarea>
 
-            <label>
-                Link social
-                <input type="url" name="link_social"
-                       value="<?= e($business['link_social'] ?? $business->link_social ?? '') ?>">
-            </label>
-        </div>
+        <label for="descrizione">Descrizione</label>
+        <textarea id="descrizione" name="descrizione"></textarea>
 
-        <label>
-            Indirizzo
-            <textarea name="indirizzo" rows="3"><?= e($business['indirizzo'] ?? $business->indirizzo ?? '') ?></textarea>
-        </label>
-
-        <label>
-            Logo
-            <input type="file" name="logo" accept="image/*">
-        </label>
-
-        <button class="btn" type="submit">Salva account business</button>
+        <button class="btn" type="submit">Crea account business</button>
     </form>
-</section>
+</div>
 
 <?php require __DIR__ . '/../layout/footer.php'; ?>

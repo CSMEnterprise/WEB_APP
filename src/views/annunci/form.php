@@ -1,87 +1,50 @@
 <?php
-$pageTitle = $pageTitle ?? 'Nuovo annuncio';
-$categorie = $categorie ?? [];
-$annuncio = $annuncio ?? [];
-$isEdit = !empty($annuncio);
-$action = $action ?? ($isEdit ? 'index.php?action=annuncio-update' : 'index.php?action=annuncio-store');
-
+$pageTitle = 'Crea annuncio';
 require __DIR__ . '/../layout/header.php';
+require __DIR__ . '/../partials/flash.php';
 ?>
 
-<section class="card">
-    <h1><?= e($pageTitle) ?></h1>
+<div class="card">
+    <h1>Crea annuncio</h1>
 
-    <form method="post" action="<?= e($action) ?>" enctype="multipart/form-data" class="form">
-        <?php if ($isEdit): ?>
-            <input type="hidden" name="id_annuncio" value="<?= e($annuncio['id_annuncio'] ?? $annuncio->id_annuncio ?? '') ?>">
-        <?php endif; ?>
+    <form method="post" action="index.php?route=annuncio-store">
+        <label for="titolo">Titolo</label>
+        <input type="text" id="titolo" name="titolo" required>
 
-        <label>
-            Titolo
-            <input type="text" name="titolo" required maxlength="255"
-                   value="<?= e($annuncio['titolo'] ?? $annuncio->titolo ?? '') ?>">
-        </label>
+        <label for="descrizione">Descrizione</label>
+        <textarea id="descrizione" name="descrizione" required></textarea>
 
-        <label>
-            Descrizione
-            <textarea name="descrizione" rows="6"><?= e($annuncio['descrizione'] ?? $annuncio->descrizione ?? '') ?></textarea>
-        </label>
+        <label for="id_categoria">Categoria</label>
+        <select id="id_categoria" name="id_categoria" required>
+            <option value="">Seleziona categoria</option>
+            <?php foreach (($categorie ?? []) as $categoria): ?>
+                <option value="<?= e($categoria['id_categoria'] ?? '') ?>">
+                    <?= e($categoria['nome'] ?? '') ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
 
-        <div class="grid-2">
-            <label>
-                Categoria
-                <select name="id_categoria" required>
-                    <option value="">Seleziona categoria</option>
-                    <?php foreach ($categorie as $categoria): ?>
-                        <?php $catId = $categoria['id_categoria'] ?? $categoria->id_categoria ?? ''; ?>
-                        <option value="<?= e($catId) ?>"
-                            <?= (string)($annuncio['id_categoria'] ?? $annuncio->id_categoria ?? '') === (string)$catId ? 'selected' : '' ?>>
-                            <?= e($categoria['nome'] ?? $categoria->nome ?? '') ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </label>
+        <label for="stato_conservazione">Stato conservazione</label>
+        <select id="stato_conservazione" name="stato_conservazione" required>
+            <option value="Nuovo">Nuovo</option>
+            <option value="Ottimo">Ottimo</option>
+            <option value="Buono">Buono</option>
+            <option value="Discreto">Discreto</option>
+            <option value="Da restaurare">Da restaurare</option>
+        </select>
 
-            <label>
-                Prezzo
-                <input type="number" name="prezzo" min="0" step="0.01" required
-                       value="<?= e($annuncio['prezzo'] ?? $annuncio->prezzo ?? '') ?>">
-            </label>
-        </div>
+        <label for="prezzo">Prezzo</label>
+        <input type="number" id="prezzo" name="prezzo" min="0.01" step="0.01" required>
 
-        <div class="grid-2">
-            <label>
-                Stato conservazione
-                <select name="stato_conservazione" required>
-                    <?php foreach (['Nuovo','Ottimo','Buono','Discreto','Da restaurare'] as $stato): ?>
-                        <option value="<?= e($stato) ?>"
-                            <?= ($annuncio['stato_conservazione'] ?? $annuncio->stato_conservazione ?? '') === $stato ? 'selected' : '' ?>>
-                            <?= e($stato) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </label>
+        <label for="modalita_consegna">Modalità consegna</label>
+        <select id="modalita_consegna" name="modalita_consegna" required>
+            <option value="Spedizione">Spedizione</option>
+            <option value="Ritiro_a_mano">Ritiro a mano</option>
+            <option value="Entrambi">Entrambi</option>
+        </select>
 
-            <label>
-                Modalità consegna
-                <select name="modalita_consegna" required>
-                    <?php foreach (['Spedizione','Ritiro_a_mano','Entrambi'] as $modalita): ?>
-                        <option value="<?= e($modalita) ?>"
-                            <?= ($annuncio['modalita_consegna'] ?? $annuncio->modalita_consegna ?? '') === $modalita ? 'selected' : '' ?>>
-                            <?= e(str_replace('_', ' ', $modalita)) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </label>
-        </div>
-
-        <label>
-            Immagini
-            <input type="file" name="immagini[]" accept="image/*" multiple>
-        </label>
-
-        <button class="btn" type="submit">Salva annuncio</button>
+        <button class="btn" type="submit">Pubblica</button>
     </form>
-</section>
+</div>
 
 <?php require __DIR__ . '/../layout/footer.php'; ?>

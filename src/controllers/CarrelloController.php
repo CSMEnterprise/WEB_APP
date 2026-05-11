@@ -1,43 +1,45 @@
 <?php
 
+require_once __DIR__ . '/../services/CartService.php';
+
 class CarrelloController
 {
-    public function aggiungi(int $idUtente, int $idAnnuncio): void
+    private CartService $cartService;
+
+    public function __construct(PDO $db)
     {
-        global $pdo;
-
-        try {
-            $stmt = $pdo->prepare("
-                INSERT INTO Carrello 
-                (id_utente, id_annuncio)
-                VALUES (?, ?)
-            ");
-
-            $stmt->execute([$idUtente, $idAnnuncio]);
-
-            header("Location: index.php?action=carrello");
-            exit;
-
-        } catch (PDOException $e) {
-            echo "Errore: annuncio già presente nel carrello";
-        }
+        $this->cartService = new CartService($db);
     }
 
     public function lista(int $idUtente): void
     {
-        global $pdo;
-
-        $stmt = $pdo->prepare("
-            SELECT a.*
-            FROM Carrello c
-            JOIN Annuncio a ON c.id_annuncio = a.id_annuncio
-            WHERE c.id_utente = ?
-        ");
-
-        $stmt->execute([$idUtente]);
-
-        $annunciCarrello = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $carrello = $this->cartService->getCarrelloUtente($idUtente);
+        $totale = $this->cartService->getTotale($idUtente);
 
         require __DIR__ . '/../views/carrello/lista.php';
+    }
+
+    public function aggiungi(int $idUtente, int $idAnnuncio): void
+    {
+        $this->cartService->aggiungiAnnuncio($idUtente, $idAnnuncio);
+
+        header('Location: index.php?route=carrello');
+        exit;
+    }
+
+    public function rimuovi(int $idUtente, int $idAnnuncio): void
+    {
+        $this->cartService->rimuoviAnnuncio($idUtente, $idAnnuncio);
+
+        header('Location: index.php?route=carrello');
+        exit;
+    }
+
+    public function svuota(int $idUtente): void
+    {
+        $this->cartService->svuota($idUtente);
+
+        header('Location: index.php?route=carrello');
+        exit;
     }
 }

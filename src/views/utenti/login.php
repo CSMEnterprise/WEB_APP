@@ -1,30 +1,23 @@
 <?php
 $pageTitle = 'Login';
 require __DIR__ . '/../layout/header.php';
+require __DIR__ . '/../partials/flash.php';
 ?>
 
-<section class="card auth-card">
-    <h1>Accedi</h1>
-    <p class="muted">Inserisci le tue credenziali per entrare nel marketplace.</p>
+<div class="card">
+    <h1>Login</h1>
 
-    <form method="post" action="index.php?action=login" class="form">
-        <label>
-            Email
-            <input type="email" name="email" required autocomplete="email">
-        </label>
+    <form method="post" action="index.php?route=login-post">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
 
-        <label>
-            Password
-            <input type="password" name="password" required autocomplete="current-password">
-        </label>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
 
         <button class="btn" type="submit">Accedi</button>
     </form>
 
-    <p class="muted">
-        Non hai ancora un account?
-        <a href="index.php?action=register">Registrati</a>
-    </p>
-</section>
+    <p>Non hai un account? <a href="index.php?route=register">Registrati</a></p>
+</div>
 
 <?php require __DIR__ . '/../layout/footer.php'; ?>
