@@ -1,0 +1,7 @@
+Problemi da risolvere sito web:
+- UI di tutto
+- Regex sulla password alla registrazione
+- Controllo di una mail valida (alla fine)
+- Registrazione utente normale sistemare i campi [path: ]
+- modificare attributo indirizzo registrato come array per averne di più
+- 
