@@ -5,9 +5,36 @@ require __DIR__ . '/../layout/header.php';
 
 <h1>Profilo utente</h1>
 
+<?php if (!empty($errore)): ?>
+    <div class="alert alert-error"><?= e($errore) ?></div>
+<?php endif; ?>
+
 <?php if (!empty($utente)): ?>
-    <div class="card">
-        <p><strong>Username:</strong> <?= e($utente['username'] ?? '') ?></p>
+    <div class="card" style="display:flex; align-items:center; gap:24px; flex-wrap:wrap;">
+
+        <!-- Avatar cliccabile -->
+        <form method="post" action="index.php?route=profilo-propic-store"
+              enctype="multipart/form-data" id="propic-form">
+            <input type="file" id="propic-input" name="propic"
+                   accept="image/jpeg,image/png,image/webp" hidden>
+            <div onclick="document.getElementById('propic-input').click()"
+                 title="Clicca per cambiare foto profilo"
+                 style="width:100px;height:100px;border-radius:50%;overflow:hidden;
+                        background:#e5e7eb;cursor:pointer;flex-shrink:0;
+                        display:flex;align-items:center;justify-content:center;
+                        border:3px solid #2563eb;">
+                <?php if (!empty($utente['propic'])): ?>
+                    <img src="<?= e($utente['propic']) ?>" alt="Foto profilo"
+                         style="width:100%;height:100%;object-fit:cover;">
+                <?php else: ?>
+                    <span style="font-size:40px;">👤</span>
+                <?php endif; ?>
+            </div>
+            <p class="muted" style="font-size:11px;text-align:center;margin:4px 0 0;">Clicca per cambiare</p>
+        </form>
+
+        <div>
+            <p><strong>Username:</strong> <?= e($utente['username'] ?? '') ?></p>
         <p><strong>Email:</strong> <?= e($utente['email'] ?? '') ?></p>
         <p><strong>Telefono:</strong> <?= e($utente['telefono'] ?? '') ?></p>
 
@@ -22,7 +49,8 @@ require __DIR__ . '/../layout/header.php';
                 )) ?>
             </p>
         <?php endif; ?>
-    </div>
+        </div><!-- chiude il div testo -->
+    </div><!-- chiude la card -->
 
     <p>
         <button type="button" class="btn" onclick="toggleIndirizzoForm()">
@@ -208,6 +236,12 @@ require __DIR__ . '/../layout/header.php';
             const form = document.getElementById('indirizzoForm');
             form.style.display = form.style.display === 'none' ? 'block' : 'none';
         }
+
+        document.getElementById('propic-input').addEventListener('change', function () {
+            if (this.files.length > 0) {
+                document.getElementById('propic-form').submit();
+            }
+        });
     </script>
 <?php else: ?>
     <div class="alert alert-error">Utente non trovato.</div>

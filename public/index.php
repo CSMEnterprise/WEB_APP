@@ -209,6 +209,12 @@ try {
             (new UtenteController($pdo))->profilo(currentUserId(), 'venduto');
             break;
 
+        case 'profilo-propic-store':
+            requireAuth();
+            denyAdmin();
+            (new UtenteController($pdo))->aggiornaFotoProfilo($_FILES, currentUserId());
+            break;
+
         case 'profilo-indirizzo-store':
             requireAuth();
             (new UtenteController($pdo))->salvaIndirizzoSpedizione($_POST, currentUserId());
