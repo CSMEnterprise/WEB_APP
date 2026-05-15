@@ -17,9 +17,6 @@ require __DIR__ . '/../partials/flash.php';
         <label for="telefono">Telefono</label>
         <input type="text" id="telefono" name="telefono">
 
-        <label for="indirizzo">Indirizzo</label>
-        <textarea id="indirizzo" name="indirizzo"></textarea>
-
         <label for="password">Password</label>
         <input
             type="password"
