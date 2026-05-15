@@ -11,20 +11,20 @@ require __DIR__ . '/../partials/flash.php';
         <label for="username">Username</label>
         <input type="text" id="username" name="username" required>
 
-        <label for="nome">Nome</label>
-        <input type="text" id="nome" name="nome">
-
         <label for="email">Email</label>
         <input type="email" id="email" name="email" required>
 
         <label for="telefono">Telefono</label>
         <input type="text" id="telefono" name="telefono">
 
-        <label for="indirizzo">Indirizzo</label>
-        <textarea id="indirizzo" name="indirizzo"></textarea>
-
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" required>
+        <input
+            type="password"
+            id="password"
+            name="password"
+            pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}"
+            title="La password deve contenere almeno 10 caratteri, una lettera maiuscola e un carattere speciale."
+            required>
 
         <button class="btn" type="submit">Crea account</button>
     </form>

@@ -53,4 +53,29 @@ class UserService extends BaseService
         ");
         $stmt->execute([$idUtente]);
     }
+
+    public function updateIndirizzoSpedizione(int $idUtente, array $data): void
+    {
+        $this->requirePositiveId($idUtente, 'Utente');
+
+        $nome = $this->clean($data['nome'] ?? '');
+        $indirizzo = $this->clean($data['indirizzo'] ?? '');
+
+        if ($nome === '' || $indirizzo === '') {
+            throw new ServiceException('Nome, cognome e indirizzo di spedizione sono obbligatori.');
+        }
+
+        $stmt = $this->db->prepare("
+            UPDATE utente_registrato
+            SET nome = ?,
+                indirizzo = ?
+            WHERE id_utente = ?
+        ");
+
+        $stmt->execute([
+            $nome,
+            $indirizzo,
+            $idUtente
+        ]);
+    }
 }
