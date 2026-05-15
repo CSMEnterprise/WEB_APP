@@ -2,26 +2,34 @@
 
 require_once __DIR__ . '/../services/AnnuncioService.php';
 require_once __DIR__ . '/../services/CategoryService.php';
+require_once __DIR__ . '/../services/FeedbackService.php';
+require_once __DIR__ . '/../services/UserService.php';
 
 class AnnuncioController
 {
-    private AnnuncioService $annuncioService;
-    private CategoryService $categoryService;
+    private AnnuncioService  $annuncioService;
+    private CategoryService  $categoryService;
+    private FeedbackService  $feedbackService;
+    private UserService      $userService;
 
     public function __construct(PDO $db)
     {
         $this->annuncioService = new AnnuncioService($db);
         $this->categoryService = new CategoryService($db);
+        $this->feedbackService = new FeedbackService($db);
+        $this->userService     = new UserService($db);
     }
 
     public function lista(): void
     {
-        $q = $_GET['q'] ?? '';
+        $q = trim($_GET['q'] ?? '');
 
-        if (trim($q) !== '') {
+        if ($q !== '') {
             $annunci = $this->annuncioService->searchAnnunci($q);
+            $utenti  = $this->userService->search($q);
         } else {
             $annunci = $this->annuncioService->getAnnunciAttivi();
+            $utenti  = [];
         }
 
         require __DIR__ . '/../views/annunci/lista.php';
@@ -36,6 +44,10 @@ class AnnuncioController
             require __DIR__ . '/../views/errors/404.php';
             return;
         }
+
+        $idVenditore        = (int) ($annuncio['id_utente'] ?? 0);
+        $feedbackVenditore  = $idVenditore > 0 ? $this->feedbackService->getByVenditoreId($idVenditore) : [];
+        $mediaVenditore     = $idVenditore > 0 ? $this->feedbackService->getMediaVoto($idVenditore) : 0.0;
 
         require __DIR__ . '/../views/annunci/dettaglio.php';
     }

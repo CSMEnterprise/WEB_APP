@@ -69,6 +69,38 @@ class FeedbackService extends BaseService
         return $stmt->fetchAll();
     }
 
+    public function hasFeedback(int $idPagamento, int $idAutore): bool
+    {
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*)
+            FROM feedback
+            WHERE id_pagamento = ? AND id_autore = ?
+        ");
+        $stmt->execute([$idPagamento, $idAutore]);
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
+    public function getByVenditoreId(int $idVenditore): array
+    {
+        $this->requirePositiveId($idVenditore, 'Venditore');
+
+        $stmt = $this->db->prepare("
+            SELECT
+                f.*,
+                u.username  AS autore,
+                a.titolo    AS annuncio_titolo,
+                a.id_annuncio AS annuncio_id
+            FROM feedback f
+            JOIN utente_registrato u ON u.id_utente   = f.id_autore
+            JOIN pagamento p         ON p.id_pagamento = f.id_pagamento
+            JOIN annuncio a          ON a.id_annuncio  = p.id_annuncio
+            WHERE a.id_utente = ?
+            ORDER BY f.data_feedback DESC
+        ");
+        $stmt->execute([$idVenditore]);
+        return $stmt->fetchAll();
+    }
+
     public function getMediaVoto(int $idUtente): float
     {
         $this->requirePositiveId($idUtente, 'Utente');
