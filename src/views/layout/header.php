@@ -54,13 +54,15 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         a { color: var(--text); text-decoration: none; }
         h1, h2, h3 { margin-top: 0; font-weight: 700; }
 
         /* ── LAYOUT ────────────────────────────────────────── */
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-        main.container { padding-top: 32px; padding-bottom: 48px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; width: 100%; }
+        main.container { padding-top: 32px; padding-bottom: 48px; flex: 1; }
 
         /* ── HEADER ────────────────────────────────────────── */
         .site-header {
@@ -70,18 +72,29 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
             -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border);
         }
-        .nav {
-            display: flex; align-items: center;
-            justify-content: space-between;
-            gap: 20px; height: 68px;
+        .header-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 12px 24px 20px;
+        }
+        .header-top {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .header-main {
+            display: flex;
+            align-items: center;
+            gap: 32px;
         }
         .logo {
-            font-weight: 800; font-size: 22px; letter-spacing: -.02em;
-            background: linear-gradient(135deg, #a78bfa, var(--gold));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-weight: 800; font-size: 26px; letter-spacing: -.02em;
+            color: #ffffff;
             white-space: nowrap;
+            text-decoration: none;
         }
-        .menu { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+        .menu { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
         .menu a {
             color: var(--muted); font-size: 14px; font-weight: 500;
             padding: 6px 12px; border-radius: 8px;
@@ -91,31 +104,41 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
 
         /* ── SEARCH ────────────────────────────────────────── */
         .search-form {
+            display: flex; align-items: stretch;
+            flex: 1; max-width: none; gap: 8px;
+        }
+        .search-input-group {
             display: flex; align-items: center;
-            flex: 1; max-width: 620px;
+            flex: 1;
             background: var(--bg-input);
             border: 1px solid var(--border);
-            border-radius: 10px; overflow: hidden;
+            border-radius: 8px;
+            overflow: hidden;
             transition: border-color .2s;
         }
-        .search-form:focus-within { border-color: var(--accent); }
-        .search-form input,
-        .search-form select {
-            width: 100%; margin: 0; padding: 10px 14px;
+        .search-input-group:focus-within { border-color: var(--accent); }
+        .search-input-group input {
+            flex: 1;
+            width: 100%; max-width: none; margin: 0; padding: 10px 14px;
             background: transparent; border: 0;
             color: var(--text); font-family: inherit; font-size: 14px;
             outline: none;
         }
-        .search-form input::placeholder { color: var(--muted); }
-        .search-form select {
+        .search-input-group input::placeholder { color: var(--muted); }
+        .search-input-group select {
+            width: auto; margin: 0; padding: 10px 14px;
+            background: transparent; border: 0;
             border-left: 1px solid var(--border);
+            color: var(--text); font-family: inherit; font-size: 14px;
+            outline: none; cursor: pointer;
             max-width: 180px;
         }
 
         .search-form button {
-            margin: 0; padding: 10px 16px; border: 0;
+            margin: 0; padding: 10px 20px; border: 0;
             background: var(--accent); color: #fff;
             font-size: 14px; font-weight: 600; cursor: pointer;
+            border-radius: 8px;
             transition: background .2s; white-space: nowrap;
         }
         .search-form button:hover { background: var(--accent-h); }
@@ -171,10 +194,10 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
 
         /* ── BUTTONS ───────────────────────────────────────── */
         .btn {
-            display: inline-block; padding: 10px 18px;
-            border-radius: 8px; font-weight: 600; font-size: 14px;
+            display: inline-flex; align-items: center; justify-content: center; padding: 10px 18px;
+            border-radius: 8px; font-weight: 600; font-size: 14px; font-family: inherit;
             background: linear-gradient(135deg, var(--accent), var(--accent-h));
-            color: #fff; text-decoration: none; border: 0; cursor: pointer;
+            color: #fff; text-decoration: none; border: 1px solid transparent; cursor: pointer;
             transition: opacity .2s, transform .15s;
         }
         .btn:hover { opacity: .88; transform: translateY(-1px); }
@@ -290,8 +313,14 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
             .cart-layout { grid-template-columns: 1fr; }
             .cart-summary { position: static; }
             .register-choice-list { grid-template-columns: 1fr; }
-            .nav { flex-wrap: wrap; height: auto; padding: 12px 0; }
-            .search-form { max-width: 100%; order: 3; flex: 0 0 100%; }
+            .header-inner { padding: 12px 0; gap: 16px; }
+            .header-top { justify-content: center; }
+            .header-main { flex-direction: column; align-items: stretch; gap: 12px; }
+            .logo { text-align: center; }
+            .search-form { flex-direction: column; }
+            .search-input-group { flex-direction: column; width: 100%; }
+            .search-input-group select { border-left: none; border-top: 1px solid var(--border); max-width: 100%; }
+            .search-form button { width: 100%; }
         }
     </style>
 </head>
@@ -299,71 +328,77 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
 <body>
 
 <header class="site-header">
-    <div class="container nav">
+    <div class="container header-inner">
 
-        <a class="logo" href="index.php?route=home">NerdVault</a>
+        <div class="header-top">
+            <nav class="menu">
+                <a href="index.php?route=home">Home</a>
+                <a href="index.php?route=annunci">Annunci</a>
 
-        <form class="search-form" method="GET" action="index.php">
-            <input type="hidden" name="route" value="annunci">
-
-            <input 
-                type="search" 
-                name="q" 
-                placeholder="Cerca annunci..."
-                value="<?= e($_GET['q'] ?? '') ?>"
-            >
-
-            <select name="id_categoria" aria-label="Categoria">
-                <option value="">Tutte le categorie</option>
-                <?php foreach ($categorieHeader as $categoria): ?>
-                    <option
-                        value="<?= e($categoria['id_categoria'] ?? '') ?>"
-                        <?= (int)($_GET['id_categoria'] ?? 0) === (int)($categoria['id_categoria'] ?? 0) ? 'selected' : '' ?>>
-                        <?= e($categoria['nome'] ?? '') ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-
-            <button type="submit">Cerca</button>
-        </form>
-
-        <nav class="menu">
-            <a href="index.php?route=home">Home</a>
-            <a href="index.php?route=annunci">Annunci</a>
-
-            <?php if ($isLogged): ?>
-                <?php if (!empty($_SESSION['is_admin'])): ?>
-                    <?php if ((int)($_SESSION['livello_sicurezza'] ?? 1) === 2): ?>
-                        <a href="index.php?route=admin-dashboard">Dashboard</a>
-                    <?php endif; ?>
-                    <a href="index.php?route=admin-utenti">Utenti</a>
-                    <a href="index.php?route=admin-segnalazioni">Segnalazioni</a>
-                <?php else: ?>
-                    <a href="index.php?route=carrello">Carrello</a>
-                    <a href="index.php?route=wishlist">Wishlist</a>
-                    <a href="index.php?route=business">Business</a>
-                <?php endif; ?>
-                <a href="index.php?route=logout">Logout</a>
-                <?php if (empty($_SESSION['is_admin'])): ?>
-                    <a href="index.php?route=profilo"
-                       style="display:flex;align-items:center;gap:8px;text-decoration:none;color:white;
-                              border-left:1px solid #374151;padding-left:12px;margin-left:4px;">
-                        <?php if (!empty($_SESSION['propic'])): ?>
-                            <img src="<?= e($_SESSION['propic']) ?>" alt="Foto profilo"
-                                 style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #fff;">
-                        <?php else: ?>
-                            <span style="width:32px;height:32px;border-radius:50%;background:#4b5563;
-                                         display:flex;align-items:center;justify-content:center;font-size:16px;
-                                         border:2px solid #fff;">👤</span>
+                <?php if ($isLogged): ?>
+                    <?php if (!empty($_SESSION['is_admin'])): ?>
+                        <?php if ((int)($_SESSION['livello_sicurezza'] ?? 1) === 2): ?>
+                            <a href="index.php?route=admin-dashboard">Dashboard</a>
                         <?php endif; ?>
-                        <span><?= e($_SESSION['username'] ?? '') ?></span>
-                    </a>
+                        <a href="index.php?route=admin-utenti">Utenti</a>
+                        <a href="index.php?route=admin-segnalazioni">Segnalazioni</a>
+                    <?php else: ?>
+                        <a href="index.php?route=carrello">Carrello</a>
+                        <a href="index.php?route=wishlist">Wishlist</a>
+                        <a href="index.php?route=business">Business</a>
+                    <?php endif; ?>
+                    <a href="index.php?route=logout">Logout</a>
+                    <?php if (empty($_SESSION['is_admin'])): ?>
+                        <a href="index.php?route=profilo"
+                           style="display:flex;align-items:center;gap:8px;text-decoration:none;color:white;
+                                  border-left:1px solid #374151;padding-left:12px;margin-left:4px;">
+                            <?php if (!empty($_SESSION['propic'])): ?>
+                                <img src="<?= e($_SESSION['propic']) ?>" alt="Foto profilo"
+                                     style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #fff;">
+                            <?php else: ?>
+                                <span style="width:32px;height:32px;border-radius:50%;background:#4b5563;
+                                             display:flex;align-items:center;justify-content:center;font-size:16px;
+                                             border:2px solid #fff;">👤</span>
+                            <?php endif; ?>
+                            <span><?= e($_SESSION['username'] ?? '') ?></span>
+                        </a>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <a href="index.php?route=login">Login</a>
+                    <a href="index.php?route=register">Registrati</a>
                 <?php endif; ?>
-            <?php else: ?>
-                <a href="index.php?route=login">Login</a>
-                <a href="index.php?route=register">Registrati</a>
-            <?php endif; ?>
-        </nav>
+            </nav>
+        </div>
+
+        <div class="header-main">
+            <a class="logo" href="index.php?route=home">NerdVault</a>
+
+            <form class="search-form" method="GET" action="index.php">
+                <input type="hidden" name="route" value="annunci">
+
+                <div class="search-input-group">
+                    <input 
+                        type="search" 
+                        name="q" 
+                        placeholder="Cerca annunci..."
+                        value="<?= e($_GET['q'] ?? '') ?>"
+                    >
+
+                    <select name="id_categoria" aria-label="Categoria">
+                        <option value="">Tutte le categorie</option>
+                        <?php foreach ($categorieHeader as $categoria): ?>
+                            <option
+                                value="<?= e($categoria['id_categoria'] ?? '') ?>"
+                                <?= (int)($_GET['id_categoria'] ?? 0) === (int)($categoria['id_categoria'] ?? 0) ? 'selected' : '' ?>>
+                                <?= e($categoria['nome'] ?? '') ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <button type="submit">Cerca</button>
+            </form>
+        </div>
 
     </div>
 </header>
