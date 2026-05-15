@@ -60,16 +60,13 @@ class AuthService extends BaseService
         $username = $this->clean($data['username'] ?? '');
         $email = $this->clean($data['email'] ?? '');
         $password = (string) ($data['password'] ?? '');
+        $passwordConfirm = (string) ($data['password_confirm'] ?? '');
         $nome = $this->clean($data['nome'] ?? '');
         $telefono = $this->clean($data['telefono'] ?? '');
 
         if ($isBusinessRegistration) {
-            if ($username === '') {
-                throw new ServiceException('Il nome azienda è obbligatorio.');
-            }
-
-            if ($email === '' || $password === '' || $telefono === '' || $nome === '') {
-                throw new ServiceException('Nome referente, email aziendale, password e telefono sono obbligatori.');
+            if ($username === '' || $email === '' || $password === '' || $telefono === '') {
+                throw new ServiceException('Username, email accesso, password e telefono sono obbligatori.');
             }
         } else {
             if ($username === '' || $email === '' || $password === '' || $telefono === '') {
@@ -77,12 +74,24 @@ class AuthService extends BaseService
             }
         }
 
+        if (!preg_match('/^[A-Za-z0-9_.-]{3,30}$/', $username)) {
+            throw new ServiceException('Lo username deve contenere 3-30 caratteri e può usare lettere, numeri, punto, trattino e underscore.');
+        }
+
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new ServiceException('Email non valida.');
         }
 
+        if (!preg_match('/^\+?[0-9 ]{8,15}$/', $telefono)) {
+            throw new ServiceException('Il telefono deve contenere 8-15 cifre e può iniziare con +.');
+        }
+
         if (!preg_match('/^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}$/', $password)) {
             throw new ServiceException('La password deve contenere almeno 10 caratteri, una lettera maiuscola e un carattere speciale.');
+        }
+
+        if ($passwordConfirm !== '' && $password !== $passwordConfirm) {
+            throw new ServiceException('Le password non coincidono.');
         }
 
         $stmt = $this->db->prepare("

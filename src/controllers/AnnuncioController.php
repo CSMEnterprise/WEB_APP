@@ -4,6 +4,7 @@ require_once __DIR__ . '/../services/AnnuncioService.php';
 require_once __DIR__ . '/../services/CategoryService.php';
 require_once __DIR__ . '/../services/FeedbackService.php';
 require_once __DIR__ . '/../services/UserService.php';
+require_once __DIR__ . '/../services/WishlistService.php';
 
 class AnnuncioController
 {
@@ -11,6 +12,7 @@ class AnnuncioController
     private CategoryService  $categoryService;
     private FeedbackService  $feedbackService;
     private UserService      $userService;
+    private WishlistService  $wishlistService;
 
     public function __construct(PDO $db)
     {
@@ -18,6 +20,7 @@ class AnnuncioController
         $this->categoryService = new CategoryService($db);
         $this->feedbackService = new FeedbackService($db);
         $this->userService     = new UserService($db);
+        $this->wishlistService = new WishlistService($db);
     }
 
     public function lista(): void
@@ -33,6 +36,10 @@ class AnnuncioController
             $annunci = $this->annuncioService->getAnnunciAttivi();
             $utenti  = [];
         }
+
+        $wishlistIds = (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin']))
+            ? $this->wishlistService->getWishlistIds((int) $_SESSION['user_id'])
+            : [];
 
         require __DIR__ . '/../views/annunci/lista.php';
     }
@@ -50,6 +57,9 @@ class AnnuncioController
         $idVenditore        = (int) ($annuncio['id_utente'] ?? 0);
         $feedbackVenditore  = $idVenditore > 0 ? $this->feedbackService->getByVenditoreId($idVenditore) : [];
         $mediaVenditore     = $idVenditore > 0 ? $this->feedbackService->getMediaVoto($idVenditore) : 0.0;
+        $wishlistIds = (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin']))
+            ? $this->wishlistService->getWishlistIds((int) $_SESSION['user_id'])
+            : [];
 
         require __DIR__ . '/../views/annunci/dettaglio.php';
     }

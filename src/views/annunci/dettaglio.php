@@ -5,8 +5,20 @@ require __DIR__ . '/../layout/header.php';
 
 <?php if (!empty($annuncio)): ?>
     <?php $isOwner = !empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && (int)($annuncio['id_utente'] ?? 0) === (int)($_SESSION['user_id'] ?? 0); ?>
+    <?php $canUseWishlist = !empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && !$isOwner; ?>
+    <?php $isInWishlist = $canUseWishlist && in_array((int)($annuncio['id_annuncio'] ?? 0), $wishlistIds ?? [], true); ?>
 
-    <article class="card">
+    <article class="card annuncio-card">
+        <?php if ($canUseWishlist): ?>
+            <a
+                class="wishlist-heart <?= $isInWishlist ? 'wishlist-heart-active' : '' ?>"
+                href="index.php?route=wishlist-toggle&id=<?= e($annuncio['id_annuncio'] ?? '') ?>"
+                title="<?= $isInWishlist ? 'Rimuovi dalla wishlist' : 'Aggiungi alla wishlist' ?>"
+                aria-label="<?= $isInWishlist ? 'Rimuovi dalla wishlist' : 'Aggiungi alla wishlist' ?>">
+                &hearts;
+            </a>
+        <?php endif; ?>
+
         <h1><?= e($annuncio['titolo'] ?? '') ?></h1>
 
         <?php if (!empty($annuncio['immagini'])): ?>
@@ -23,18 +35,28 @@ require __DIR__ . '/../layout/header.php';
         <p class="price">€ <?= number_format((float)($annuncio['prezzo'] ?? 0), 2, ',', '.') ?></p>
         <p><strong>Conservazione:</strong> <?= e($annuncio['stato_conservazione'] ?? '') ?></p>
         <p><strong>Stato vendita:</strong> <?= e(ucfirst((string)($annuncio['stato'] ?? ''))) ?></p>
+        <?php $numeroFeedbackVenditore = count($feedbackVenditore ?? []); ?>
+        <?php $stelleVenditore = (int) round((float)($mediaVenditore ?? 0)); ?>
         <p>
             <strong>Venditore:</strong>
-            <?= e($annuncio['venditore_username'] ?? '') ?>
-            <?php if (!empty($mediaVenditore)): ?>
-                <span style="color:#f59e0b; margin-left:6px;">
-                    ★ <?= number_format($mediaVenditore, 1) ?>
+            <a href="index.php?route=venditore&id=<?= e($annuncio['id_utente'] ?? '') ?>">
+                <?= e($annuncio['venditore_username'] ?? '') ?>
+            </a>
+            <?php if ($numeroFeedbackVenditore > 0): ?>
+                <span style="display:inline-flex;align-items:center;gap:4px;margin-left:8px;color:#f59e0b;" title="<?= e(number_format((float)$mediaVenditore, 1)) ?> su 5">
+                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                        <span><?= $i <= $stelleVenditore ? '&#9733;' : '&#9734;' ?></span>
+                    <?php endfor; ?>
+                    <strong style="color:var(--text);font-size:13px;"><?= e(number_format((float)$mediaVenditore, 1)) ?></strong>
+                    <span class="muted" style="font-size:13px;">(<?= e((string)$numeroFeedbackVenditore) ?>)</span>
                 </span>
+            <?php else: ?>
+                <span class="muted" style="margin-left:8px;font-size:13px;">Nessuna recensione</span>
             <?php endif; ?>
             <a class="btn btn-secondary"
                style="font-size:12px;padding:4px 10px;margin-left:10px;"
-               href="index.php?route=feedback-venditore&id=<?= e($annuncio['id_utente'] ?? '') ?>">
-                Vedi feedback
+               href="index.php?route=venditore&id=<?= e($annuncio['id_utente'] ?? '') ?>">
+                Vedi profilo
             </a>
         </p>
 
@@ -46,7 +68,6 @@ require __DIR__ . '/../layout/header.php';
                 <a class="btn btn-danger" href="index.php?route=annuncio-delete&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Elimina</a>
             <?php else: ?>
                 <a class="btn" href="index.php?route=carrello-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Aggiungi al carrello</a>
-                <a class="btn btn-secondary" href="index.php?route=wishlist-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Aggiungi alla wishlist</a>
                 <a class="btn btn-secondary" href="index.php?route=checkout&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Acquista</a>
                 <a class="btn btn-secondary" href="index.php?route=segnalazione-create&id_annuncio=<?= e($annuncio['id_annuncio'] ?? '') ?>">Segnala</a>
             <?php endif; ?>

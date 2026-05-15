@@ -129,6 +129,41 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
             transition: border-color .25s, box-shadow .25s;
         }
         .card:hover { border-color: rgba(124,58,237,.5); box-shadow: 0 0 24px rgba(124,58,237,.12); }
+        .clickable-card { cursor: pointer; }
+        .clickable-card:focus {
+            outline: 2px solid var(--accent);
+            outline-offset: 3px;
+        }
+        .annuncio-card { position: relative; }
+        .wishlist-heart {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(18,18,31,.9);
+            border: 1px solid var(--border);
+            color: #ffffff;
+            font-size: 22px;
+            line-height: 1;
+            z-index: 2;
+            transition: background .2s, color .2s, transform .15s, border-color .2s;
+        }
+        .wishlist-heart:hover {
+            background: rgba(239,68,68,.18);
+            border-color: rgba(239,68,68,.55);
+            color: #ef4444;
+            transform: scale(1.06);
+        }
+        .wishlist-heart-active {
+            background: rgba(239,68,68,.2);
+            border-color: rgba(239,68,68,.7);
+            color: #ef4444;
+        }
 
         /* ── GRID ──────────────────────────────────────────── */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
@@ -298,14 +333,12 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
 
             <?php if ($isLogged): ?>
                 <?php if (!empty($_SESSION['is_admin'])): ?>
-                    <a href="index.php?route=profilo">Profilo</a>
                     <?php if ((int)($_SESSION['livello_sicurezza'] ?? 1) === 2): ?>
                         <a href="index.php?route=admin-dashboard">Dashboard</a>
                     <?php endif; ?>
                     <a href="index.php?route=admin-utenti">Utenti</a>
                     <a href="index.php?route=admin-segnalazioni">Segnalazioni</a>
                 <?php else: ?>
-                    <a href="index.php?route=profilo">Profilo</a>
                     <a href="index.php?route=carrello">Carrello</a>
                     <a href="index.php?route=wishlist">Wishlist</a>
                     <a href="index.php?route=business">Business</a>

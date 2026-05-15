@@ -31,7 +31,7 @@ class UserService extends BaseService
         }
 
         $stmt = $this->db->prepare("
-            SELECT id_utente, username, nome, data_registrazione
+            SELECT id_utente, username, nome, propic, data_registrazione
             FROM utente_registrato
             WHERE (username LIKE CONCAT('%', ?, '%')
                OR  nome     LIKE CONCAT('%', ?, '%'))

@@ -5,6 +5,7 @@ require_once __DIR__ . '/../services/UserService.php';
 require_once __DIR__ . '/../services/AnnuncioService.php';
 require_once __DIR__ . '/../services/BusinessService.php';
 require_once __DIR__ . '/../services/PaymentService.php';
+require_once __DIR__ . '/../services/FeedbackService.php';
 
 class UtenteController
 {
@@ -13,6 +14,7 @@ class UtenteController
     private AnnuncioService $annuncioService;
     private BusinessService $businessService;
     private PaymentService $paymentService;
+    private FeedbackService $feedbackService;
     private PDO $db;
 
     public function __construct(PDO $db)
@@ -23,6 +25,7 @@ class UtenteController
         $this->annuncioService = new AnnuncioService($db);
         $this->businessService = new BusinessService($db);
         $this->paymentService = new PaymentService($db);
+        $this->feedbackService = new FeedbackService($db);
     }
 
     public function showLogin(): void
@@ -88,6 +91,7 @@ class UtenteController
         try {
             $this->db->beginTransaction();
 
+            $data['_business_registration'] = true;
             $idUtente = $this->authService->register($data);
             $this->businessService->creaAccount($data, $idUtente);
 
@@ -114,6 +118,29 @@ class UtenteController
         $cronologiaPagamenti = $this->paymentService->getCronologiaByUserId($idUtente);
 
         require __DIR__ . '/../views/utenti/profilo.php';
+    }
+
+    public function venditore(int $idVenditore): void
+    {
+        if ($idVenditore <= 0) {
+            http_response_code(404);
+            require __DIR__ . '/../views/errors/404.php';
+            return;
+        }
+
+        $venditore = $this->userService->findById($idVenditore);
+
+        if (!$venditore || !empty($venditore['stato_ban'])) {
+            http_response_code(404);
+            require __DIR__ . '/../views/errors/404.php';
+            return;
+        }
+
+        $annunciVenditore = $this->annuncioService->getByUserIdAndStato($idVenditore, 'attivo');
+        $feedbackVenditore = $this->feedbackService->getByVenditoreId($idVenditore);
+        $mediaVenditore = $this->feedbackService->getMediaVoto($idVenditore);
+
+        require __DIR__ . '/../views/utenti/venditore.php';
     }
 
     public function logout(): void

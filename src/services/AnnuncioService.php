@@ -38,9 +38,16 @@ class AnnuncioService extends BaseService
         return $stmt->fetchAll();
     }
 
-    public function getAnnunciCasuali(int $limit = 8): array
+    public function getAnnunciCasuali(int $limit = 8, ?int $excludeUserId = null): array
     {
         $limit = max(1, min($limit, 24));
+        $whereUtente = '';
+        $params = [];
+
+        if ($excludeUserId !== null && $excludeUserId > 0) {
+            $whereUtente = ' AND (a.id_utente IS NULL OR a.id_utente <> ?)';
+            $params[] = $excludeUserId;
+        }
 
         $stmt = $this->db->prepare("
             SELECT
@@ -58,10 +65,11 @@ class AnnuncioService extends BaseService
             LEFT JOIN categoria c ON c.id_categoria = a.id_categoria
             LEFT JOIN utente_registrato u ON u.id_utente = a.id_utente
             WHERE a.stato = 'attivo'
+            {$whereUtente}
             ORDER BY RAND()
             LIMIT {$limit}
         ");
-        $stmt->execute();
+        $stmt->execute($params);
 
         return $stmt->fetchAll();
     }
@@ -74,7 +82,7 @@ class AnnuncioService extends BaseService
         $categorie = $this->getCategorieInteresseUtente($idUtente);
 
         if (empty($categorie)) {
-            return $this->getAnnunciCasuali($limit);
+            return $this->getAnnunciCasuali($limit, $idUtente);
         }
 
         $placeholders = implode(',', array_fill(0, count($categorie), '?'));
@@ -105,7 +113,7 @@ class AnnuncioService extends BaseService
 
         $annunci = $stmt->fetchAll();
 
-        return !empty($annunci) ? $annunci : $this->getAnnunciCasuali($limit);
+        return !empty($annunci) ? $annunci : $this->getAnnunciCasuali($limit, $idUtente);
     }
 
     public function findById(int $idAnnuncio): ?array

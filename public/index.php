@@ -128,11 +128,14 @@ try {
 
         case 'home':
             require_once __DIR__ . '/../src/services/AnnuncioService.php';
+            require_once __DIR__ . '/../src/services/WishlistService.php';
             $homeAnnuncioService = new AnnuncioService($pdo);
             $homeTitoloAnnunci = 'Annunci scelti per te';
+            $wishlistIds = [];
 
             if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin'])) {
                 $homeAnnunci = $homeAnnuncioService->getAnnunciPerInteressiUtente(currentUserId());
+                $wishlistIds = (new WishlistService($pdo))->getWishlistIds(currentUserId());
             } else {
                 $homeTitoloAnnunci = 'Annunci in evidenza';
                 $homeAnnunci = $homeAnnuncioService->getAnnunciCasuali();
@@ -146,6 +149,10 @@ try {
             break;
         case 'annuncio':
             (new AnnuncioController($pdo))->dettaglio((int) ($_GET['id'] ?? 0));
+            break;
+
+        case 'venditore':
+            (new UtenteController($pdo))->venditore((int) ($_GET['id'] ?? 0));
             break;
 
 
@@ -315,6 +322,12 @@ try {
             requireAuth();
             denyAdmin();
             (new WishlistController($pdo))->rimuovi(currentUserId(), (int) ($_GET['id'] ?? 0));
+            break;
+
+        case 'wishlist-toggle':
+            requireAuth();
+            denyAdmin();
+            (new WishlistController($pdo))->toggle(currentUserId(), (int) ($_GET['id'] ?? 0));
             break;
 
         case 'wishlist-clear':

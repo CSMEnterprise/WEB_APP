@@ -40,6 +40,21 @@ class WishlistController
         exit;
     }
 
+    public function toggle(int $idUtente, int $idAnnuncio): void
+    {
+        try {
+            $this->wishlistService->toggleAnnuncio($idUtente, $idAnnuncio);
+
+            $redirect = $_SERVER['HTTP_REFERER'] ?? 'index.php?route=annunci';
+            header('Location: ' . $redirect);
+            exit;
+        } catch (Exception $e) {
+            http_response_code(400);
+            $errore = $e->getMessage();
+            require __DIR__ . '/../views/errors/400.php';
+        }
+    }
+
     public function svuota(int $idUtente): void
     {
         $this->wishlistService->svuota($idUtente);

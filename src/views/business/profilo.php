@@ -12,8 +12,6 @@ require __DIR__ . '/../layout/header.php';
         <p><strong>Email:</strong> <?= e($business['email_aziendale'] ?? '') ?></p>
         <p><strong>Telefono:</strong> <?= e($business['telefono'] ?? '') ?></p>
         <p><strong>Verificato:</strong> <?= !empty($business['verificato']) ? 'Sì' : 'No' ?></p>
-        <p><?= e($business['descrizione'] ?? '') ?></p>
-
         <?php if (!empty($business['via']) || !empty($business['citta'])): ?>
             <hr>
             <p><strong>Sede:</strong>

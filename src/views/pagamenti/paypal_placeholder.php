@@ -23,7 +23,12 @@ require __DIR__ . '/../partials/flash.php';
                 <?php endif; ?>
 
                 <p><strong>Annuncio:</strong> <?= e($annuncio['titolo'] ?? '') ?></p>
-                <p><strong>Venditore:</strong> <?= e($annuncio['venditore_username'] ?? '') ?></p>
+                <p>
+                    <strong>Venditore:</strong>
+                    <a href="index.php?route=venditore&id=<?= e($annuncio['id_utente'] ?? '') ?>">
+                        <?= e($annuncio['venditore_username'] ?? '') ?>
+                    </a>
+                </p>
                 <p class="price">Totale: € <?= number_format((float)($totale ?? 0), 2, ',', '.') ?></p>
             </div>
 

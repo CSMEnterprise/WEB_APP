@@ -604,7 +604,11 @@ require __DIR__ . '/../layout/header.php';
             <?php if (!empty($annunciUtente)): ?>
                 <div class="grid profile-grid">
                     <?php foreach ($annunciUtente as $annuncio): ?>
-                        <article class="card">
+                        <article
+                            class="card clickable-card"
+                            data-href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>"
+                            role="link"
+                            tabindex="0">
                             <?php if (!empty($annuncio['immagine_principale'])): ?>
                                 <img class="annuncio-card-img" src="<?= e($annuncio['immagine_principale']) ?>" alt="Foto annuncio">
                             <?php endif; ?>
