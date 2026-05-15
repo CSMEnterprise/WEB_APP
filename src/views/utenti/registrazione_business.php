@@ -13,74 +13,10 @@ require __DIR__ . '/../partials/flash.php';
 
     <form method="post" action="index.php">
         <input type="hidden" name="route" value="register-business-post">
-
-        <h2>Dati account</h2>
-
-        <label for="username">Username</label>
-        <input
-            type="text"
-            id="username"
-            name="username"
-            value="<?= e($_POST['username'] ?? '') ?>"
-            pattern="[A-Za-z0-9_.-]{3,30}"
-            minlength="3"
-            maxlength="30"
-            title="Usa 3-30 caratteri: lettere, numeri, punto, trattino o underscore."
-            required>
-
-        <label for="email">Email accesso</label>
-        <input
-            type="email"
-            id="email"
-            name="email"
-            value="<?= e($_POST['email'] ?? '') ?>"
-            required>
-
-        <label for="telefono">Telefono</label>
-        <input
-            type="text"
-            id="telefono"
-            name="telefono"
-            value="<?= e($_POST['telefono'] ?? '') ?>"
-            pattern="\+?[0-9 ]{8,15}"
-            title="Inserisci 8-15 cifre; puoi iniziare con +."
-            required>
-
-        <label for="businessPassword">Password</label>
-        <div class="password-wrapper">
-            <input
-                type="password"
-                id="businessPassword"
-                name="password"
-                pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}"
-                autocomplete="new-password"
-                title="La password deve contenere almeno 10 caratteri, una lettera maiuscola e un carattere speciale."
-                required>
-
-            <button class="btn btn-secondary btn-password-toggle" type="button" onclick="togglePasswordVisibility('businessPassword', this)">
-                Mostra
-            </button>
-        </div>
-
-        <label for="businessPasswordConfirm">Conferma password</label>
-        <div class="password-wrapper">
-            <input
-                type="password"
-                id="businessPasswordConfirm"
-                name="password_confirm"
-                pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}"
-                autocomplete="new-password"
-                title="Ripeti la stessa password scelta sopra."
-                required>
-
-            <button class="btn btn-secondary btn-password-toggle" type="button" onclick="togglePasswordVisibility('businessPasswordConfirm', this)">
-                Mostra
-            </button>
-        </div>
-
-        <hr>
+        <input type="hidden" name="_business_registration" value="1">
 
         <h2>Dati business</h2>
+        <p class="muted" style="margin-top:0;">Userai la tua email aziendale e la password scelta per accedere.</p>
 
         <label for="nome_azienda">Nome azienda</label>
         <input
@@ -113,6 +49,46 @@ require __DIR__ . '/../partials/flash.php';
             name="email_aziendale"
             value="<?= e($_POST['email_aziendale'] ?? '') ?>"
             required>
+
+        <label for="telefono">Telefono</label>
+        <input
+            type="text"
+            id="telefono"
+            name="telefono"
+            value="<?= e($_POST['telefono'] ?? '') ?>"
+            pattern="\+?[0-9 ]{8,15}"
+            title="Inserisci 8-15 cifre; puoi iniziare con +."
+            required>
+
+        <label for="businessPassword">Password</label>
+        <div class="password-wrapper">
+            <input
+                type="password"
+                id="businessPassword"
+                name="password"
+                pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}"
+                autocomplete="new-password"
+                title="La password deve contenere almeno 10 caratteri, una lettera maiuscola e un carattere speciale."
+                required>
+            <button class="btn btn-secondary btn-password-toggle" type="button" onclick="togglePasswordVisibility('businessPassword', this)">
+                Mostra
+            </button>
+        </div>
+
+        <label for="businessPasswordConfirm">Conferma password</label>
+        <div class="password-wrapper">
+            <input
+                type="password"
+                id="businessPasswordConfirm"
+                name="password_confirm"
+                pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}"
+                autocomplete="new-password"
+                title="Ripeti la stessa password scelta sopra."
+                required>
+            <button class="btn btn-secondary btn-password-toggle" type="button" onclick="togglePasswordVisibility('businessPasswordConfirm', this)">
+                Mostra
+            </button>
+        </div>
 
         <fieldset>
             <legend>Indirizzo sede</legend>

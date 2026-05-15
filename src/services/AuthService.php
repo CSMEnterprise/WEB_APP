@@ -33,9 +33,12 @@ class AuthService extends BaseService
 
         // Altrimenti cerca tra gli utenti normali
         $stmt = $this->db->prepare("
-            SELECT *
-            FROM utente_registrato
-            WHERE email = ?
+            SELECT u.*,
+                   ab.id_acc_business,
+                   ab.nome_azienda
+            FROM utente_registrato u
+            LEFT JOIN account_business ab ON ab.id_utente = u.id_utente
+            WHERE u.email = ?
             LIMIT 1
         ");
         $stmt->execute([$email]);
@@ -49,6 +52,9 @@ class AuthService extends BaseService
         if (!empty($utente['stato_ban'])) {
             throw new ServiceException('Account bloccato.');
         }
+
+        // Segna se l'utente ha un account business associato
+        $utente['_is_business'] = !empty($utente['id_acc_business']);
 
         return $utente;
     }
@@ -65,8 +71,9 @@ class AuthService extends BaseService
         $telefono = $this->clean($data['telefono'] ?? '');
 
         if ($isBusinessRegistration) {
-            if ($username === '' || $email === '' || $password === '' || $telefono === '') {
-                throw new ServiceException('Username, email accesso, password e telefono sono obbligatori.');
+            // Per il business username e email vengono generati/copiati dal controller
+            if ($username === '' || $email === '' || $password === '') {
+                throw new ServiceException('Dati di accesso mancanti. Riprova.');
             }
         } else {
             if ($username === '' || $email === '' || $password === '' || $telefono === '') {
@@ -90,7 +97,7 @@ class AuthService extends BaseService
             throw new ServiceException('La password deve contenere almeno 10 caratteri, una lettera maiuscola e un carattere speciale.');
         }
 
-        if ($passwordConfirm !== '' && $password !== $passwordConfirm) {
+        if ($password !== $passwordConfirm) {
             throw new ServiceException('Le password non coincidono.');
         }
 
