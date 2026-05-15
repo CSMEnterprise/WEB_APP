@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Creato il: Mag 04, 2026 alle 18:01
+-- Creato il: Mag 15, 2026 alle 13:12
 -- Versione del server: 10.4.32-MariaDB
 -- Versione PHP: 8.2.12
 
@@ -34,7 +34,6 @@ CREATE TABLE `account_business` (
   `nome_azienda` varchar(255) NOT NULL,
   `logo` varchar(255) DEFAULT NULL,
   `descrizione` text DEFAULT NULL,
-  `indirizzo` text DEFAULT NULL,
   `telefono` varchar(20) DEFAULT NULL,
   `email_aziendale` varchar(255) NOT NULL,
   `link_social` varchar(255) DEFAULT NULL,
@@ -42,7 +41,7 @@ CREATE TABLE `account_business` (
   `data_registrazione` timestamp NOT NULL DEFAULT current_timestamp(),
   `id_admin_verifica` int(11) DEFAULT NULL,
   `data_verifica` timestamp NULL DEFAULT NULL
-) ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -56,7 +55,7 @@ CREATE TABLE `admin` (
   `password_hash` varchar(255) NOT NULL,
   `livello_sicurezza` int(11) NOT NULL DEFAULT 1,
   `data_creazione` timestamp NOT NULL DEFAULT current_timestamp()
-) ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -71,13 +70,13 @@ CREATE TABLE `annuncio` (
   `id_categoria` int(11) NOT NULL,
   `titolo` varchar(255) NOT NULL,
   `descrizione` text DEFAULT NULL,
-  `stato_conservazione` enum('Nuovo','Ottimo','Buono','Discreto','Da restaurare') NOT NULL,
+  `stato_conservazione` enum('Nuovo','Usato') NOT NULL,
   `prezzo` decimal(10,2) NOT NULL,
-  `modalita_consegna` enum('Spedizione','Ritiro_a_mano','Entrambi') NOT NULL,
+  `modalita_consegna` enum('Consegna') NOT NULL,
   `stato` enum('attivo','venduto') NOT NULL DEFAULT 'attivo',
   `data_creazione` timestamp NOT NULL DEFAULT current_timestamp(),
   `data_scadenza` timestamp NULL DEFAULT NULL
-) ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -130,7 +129,7 @@ CREATE TABLE `feedback` (
   `valutazione` tinyint(4) NOT NULL,
   `commento` text DEFAULT NULL,
   `data_feedback` timestamp NOT NULL DEFAULT current_timestamp()
-) ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -143,6 +142,25 @@ CREATE TABLE `immagine` (
   `id_annuncio` int(11) NOT NULL,
   `url` varchar(500) NOT NULL,
   `ordine` tinyint(4) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Struttura della tabella `indirizzi`
+--
+
+CREATE TABLE `indirizzi` (
+  `id_indirizzo` int(11) NOT NULL,
+  `id_utente` int(11) DEFAULT NULL,
+  `id_business` int(11) DEFAULT NULL,
+  `via` varchar(100) DEFAULT NULL,
+  `numero` varchar(10) DEFAULT NULL,
+  `cap` char(5) DEFAULT NULL,
+  `citta` varchar(100) DEFAULT NULL,
+  `provincia` char(2) DEFAULT NULL,
+  `paese` varchar(50) NOT NULL DEFAULT 'Italia',
+  `predefinito` tinyint(1) NOT NULL DEFAULT 0
 ) ;
 
 -- --------------------------------------------------------
@@ -160,7 +178,7 @@ CREATE TABLE `modera` (
   `id_business` int(11) DEFAULT NULL,
   `azione_compiuta` text NOT NULL,
   `data_azione` timestamp NOT NULL DEFAULT current_timestamp()
-) ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -176,7 +194,7 @@ CREATE TABLE `pagamento` (
   `stato` enum('In_attesa','Completato','Annullato','Rimborsato') NOT NULL DEFAULT 'In_attesa',
   `paypal_transaction_id` varchar(255) DEFAULT NULL,
   `data` timestamp NOT NULL DEFAULT current_timestamp()
-) ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -209,7 +227,7 @@ CREATE TABLE `segnalazione` (
   `data_segnalazione` timestamp NOT NULL DEFAULT current_timestamp(),
   `id_admin` int(11) DEFAULT NULL,
   `data_risoluzione` timestamp NULL DEFAULT NULL
-) ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -224,7 +242,6 @@ CREATE TABLE `utente_registrato` (
   `password_hash` varchar(255) NOT NULL,
   `nome` varchar(100) DEFAULT NULL,
   `telefono` varchar(20) DEFAULT NULL,
-  `indirizzo` text DEFAULT NULL,
   `propic` varchar(255) DEFAULT NULL,
   `stato_ban` tinyint(1) NOT NULL DEFAULT 0,
   `data_registrazione` timestamp NOT NULL DEFAULT current_timestamp()
@@ -297,6 +314,14 @@ ALTER TABLE `feedback`
 ALTER TABLE `immagine`
   ADD PRIMARY KEY (`id_immagine`),
   ADD UNIQUE KEY `id_annuncio` (`id_annuncio`,`ordine`);
+
+--
+-- Indici per le tabelle `indirizzi`
+--
+ALTER TABLE `indirizzi`
+  ADD PRIMARY KEY (`id_indirizzo`),
+  ADD KEY `id_utente` (`id_utente`),
+  ADD KEY `id_business` (`id_business`);
 
 --
 -- Indici per le tabelle `modera`
@@ -398,6 +423,12 @@ ALTER TABLE `immagine`
   MODIFY `id_immagine` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT per la tabella `indirizzi`
+--
+ALTER TABLE `indirizzi`
+  MODIFY `id_indirizzo` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT per la tabella `modera`
 --
 ALTER TABLE `modera`
@@ -471,6 +502,13 @@ ALTER TABLE `feedback`
 --
 ALTER TABLE `immagine`
   ADD CONSTRAINT `immagine_ibfk_1` FOREIGN KEY (`id_annuncio`) REFERENCES `annuncio` (`id_annuncio`) ON DELETE CASCADE;
+
+--
+-- Limiti per la tabella `indirizzi`
+--
+ALTER TABLE `indirizzi`
+  ADD CONSTRAINT `indirizzi_ibfk_1` FOREIGN KEY (`id_utente`) REFERENCES `utente_registrato` (`id_utente`) ON DELETE CASCADE,
+  ADD CONSTRAINT `indirizzi_ibfk_2` FOREIGN KEY (`id_business`) REFERENCES `account_business` (`id_acc_business`) ON DELETE CASCADE;
 
 --
 -- Limiti per la tabella `modera`
