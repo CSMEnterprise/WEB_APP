@@ -23,7 +23,20 @@ require __DIR__ . '/../layout/header.php';
         <p class="price">€ <?= number_format((float)($annuncio['prezzo'] ?? 0), 2, ',', '.') ?></p>
         <p><strong>Conservazione:</strong> <?= e($annuncio['stato_conservazione'] ?? '') ?></p>
         <p><strong>Stato vendita:</strong> <?= e(ucfirst((string)($annuncio['stato'] ?? ''))) ?></p>
-        <p><strong>Venditore:</strong> <?= e($annuncio['venditore_username'] ?? '') ?></p>
+        <p>
+            <strong>Venditore:</strong>
+            <?= e($annuncio['venditore_username'] ?? '') ?>
+            <?php if (!empty($mediaVenditore)): ?>
+                <span style="color:#f59e0b; margin-left:6px;">
+                    ★ <?= number_format($mediaVenditore, 1) ?>
+                </span>
+            <?php endif; ?>
+            <a class="btn btn-secondary"
+               style="font-size:12px;padding:4px 10px;margin-left:10px;"
+               href="index.php?route=feedback-venditore&id=<?= e($annuncio['id_utente'] ?? '') ?>">
+                Vedi feedback
+            </a>
+        </p>
 
         <?php if (!empty($_SESSION['user_id'])): ?>
             <?php if ($isOwner): ?>

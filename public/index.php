@@ -359,9 +359,20 @@ try {
             (new FeedbackController($pdo))->lista(currentUserId());
             break;
 
+        case 'feedback-create':
+            requireAuth();
+            denyAdmin();
+            (new FeedbackController($pdo))->form((int) ($_GET['id_pagamento'] ?? 0), currentUserId());
+            break;
+
         case 'feedback-store':
             requireAuth();
+            denyAdmin();
             (new FeedbackController($pdo))->crea($_POST, currentUserId());
+            break;
+
+        case 'feedback-venditore':
+            (new FeedbackController($pdo))->listaVenditore((int) ($_GET['id'] ?? 0));
             break;
 
 
