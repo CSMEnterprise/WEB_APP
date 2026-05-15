@@ -517,6 +517,24 @@ try {
 
         /*
         |--------------------------------------------------------------------------
+        | Pagine Legali
+        |--------------------------------------------------------------------------
+        */
+
+        case 'privacy':
+            require __DIR__ . '/../src/views/legale/privacy.php';
+            break;
+
+        case 'termini':
+            require __DIR__ . '/../src/views/legale/termini.php';
+            break;
+
+        case 'cookie':
+            require __DIR__ . '/../src/views/legale/cookie.php';
+            break;
+
+        /*
+        |--------------------------------------------------------------------------
         | Rotta non trovata
         |--------------------------------------------------------------------------
         */

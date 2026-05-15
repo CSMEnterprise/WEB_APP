@@ -22,7 +22,6 @@ Problemi da risolvere sito web:
 -aggiunta pagina preferiti e logica per aggiungere articoli alla wishlist preferiti
 -menu a tendina su profilo header per visualizzare annunci ✅
 - Footer obbligato a fine pagina
-- Menu a tendina delle categoria da personalizzare il dropdown menu
 - Spostare la barra di ricerca sotto i menu per averla più lunga ✅
-- Scrivere finta privacy policy/termini e cookie
+- Scrivere finta privacy policy/termini e cookie ✅
 - Scritta nerdvault in bianco sia nella nav bar che nel footer ✅

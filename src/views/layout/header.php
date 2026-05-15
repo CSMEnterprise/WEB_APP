@@ -319,7 +319,7 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
             .logo { text-align: center; }
             .search-form { flex-direction: column; }
             .search-input-group { flex-direction: column; width: 100%; }
-            .search-input-group select { border-left: none; border-top: 1px solid var(--border); max-width: 100%; }
+            .search-input-group select { border-left: none; border-top: 1px solid var(--border); max-width: 100%; width: 100%; }
             .search-form button { width: 100%; }
         }
     </style>

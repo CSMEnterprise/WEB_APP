@@ -57,6 +57,25 @@ require __DIR__ . '/../partials/flash.php';
             </button>
         </div>
 
+        <label for="userRegisterPasswordConfirm">Conferma password</label>
+        <div class="password-wrapper">
+            <input
+                type="password"
+                id="userRegisterPasswordConfirm"
+                name="password_confirm"
+                pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}"
+                title="Ripeti la stessa password scelta sopra."
+                required
+                autocomplete="new-password">
+
+            <button
+                class="btn btn-secondary btn-password-toggle"
+                type="button"
+                onclick="togglePasswordVisibility('userRegisterPasswordConfirm', this)">
+                Mostra
+            </button>
+        </div>
+
         <button class="btn" type="submit">Crea account utente</button>
     </form>
 
