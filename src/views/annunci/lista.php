@@ -39,8 +39,19 @@ $idCategoria = (int)($_GET['id_categoria'] ?? 0);
         <h2>Utenti trovati</h2>
         <div class="grid">
             <?php foreach ($utenti as $u): ?>
-                <div class="card" style="display:flex; align-items:center; gap:14px;">
-                    <div style="font-size:36px;">👤</div>
+                <div
+                    class="card clickable-card"
+                    data-href="index.php?route=venditore&id=<?= e($u['id_utente']) ?>"
+                    role="link"
+                    tabindex="0"
+                    style="display:flex; align-items:center; gap:14px;">
+                    <div style="width:54px;height:54px;border-radius:50%;overflow:hidden;background:var(--bg-input);display:flex;align-items:center;justify-content:center;border:1px solid var(--border);flex:0 0 54px;">
+                        <?php if (!empty($u['propic'])): ?>
+                            <img src="<?= e($u['propic']) ?>" alt="Foto profilo" style="width:100%;height:100%;object-fit:cover;">
+                        <?php else: ?>
+                            <span style="font-size:26px;">&#128100;</span>
+                        <?php endif; ?>
+                    </div>
                     <div>
                         <strong><?= e($u['username'] ?? '') ?></strong>
                         <?php if (!empty($u['nome'])): ?>
@@ -48,8 +59,8 @@ $idCategoria = (int)($_GET['id_categoria'] ?? 0);
                         <?php endif; ?>
                         <a class="btn btn-secondary"
                            style="font-size:12px;padding:5px 10px;margin-top:6px;display:inline-block;"
-                           href="index.php?route=feedback-venditore&id=<?= e($u['id_utente']) ?>">
-                            Vedi feedback
+                           href="index.php?route=venditore&id=<?= e($u['id_utente']) ?>">
+                            Vedi profilo
                         </a>
                     </div>
                 </div>
@@ -66,7 +77,22 @@ $idCategoria = (int)($_GET['id_categoria'] ?? 0);
     <?php if (!empty($annunci)): ?>
         <div class="grid">
             <?php foreach ($annunci as $annuncio): ?>
-                <article class="card">
+                <article
+                    class="card clickable-card annuncio-card"
+                    data-href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>"
+                    role="link"
+                    tabindex="0">
+                    <?php if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && (int)($annuncio['id_utente'] ?? 0) !== (int)($_SESSION['user_id'] ?? 0)): ?>
+                        <?php $isInWishlist = in_array((int)($annuncio['id_annuncio'] ?? 0), $wishlistIds ?? [], true); ?>
+                        <a
+                            class="wishlist-heart <?= $isInWishlist ? 'wishlist-heart-active' : '' ?>"
+                            href="index.php?route=wishlist-toggle&id=<?= e($annuncio['id_annuncio'] ?? '') ?>"
+                            title="<?= $isInWishlist ? 'Rimuovi dalla wishlist' : 'Aggiungi alla wishlist' ?>"
+                            aria-label="<?= $isInWishlist ? 'Rimuovi dalla wishlist' : 'Aggiungi alla wishlist' ?>">
+                            &hearts;
+                        </a>
+                    <?php endif; ?>
+
                     <?php if (!empty($annuncio['immagine_principale'])): ?>
                         <img class="annuncio-card-img" src="<?= e($annuncio['immagine_principale']) ?>" alt="Foto annuncio">
                     <?php endif; ?>
@@ -76,7 +102,12 @@ $idCategoria = (int)($_GET['id_categoria'] ?? 0);
                     <p><?= e($annuncio['descrizione'] ?? '') ?></p>
                     <p class="price">€ <?= number_format((float)($annuncio['prezzo'] ?? 0), 2, ',', '.') ?></p>
                     <p><strong>Stato:</strong> <?= e($annuncio['stato_conservazione'] ?? '') ?></p>
-                    <p><strong>Venditore:</strong> <?= e($annuncio['venditore_username'] ?? '') ?></p>
+                    <p>
+                        <strong>Venditore:</strong>
+                        <a href="index.php?route=venditore&id=<?= e($annuncio['id_utente'] ?? '') ?>">
+                            <?= e($annuncio['venditore_username'] ?? '') ?>
+                        </a>
+                    </p>
 
                     <a class="btn" href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Dettagli</a>
 
@@ -85,7 +116,6 @@ $idCategoria = (int)($_GET['id_categoria'] ?? 0);
                             <p class="muted">È un tuo annuncio.</p>
                         <?php else: ?>
                             <a class="btn btn-secondary" href="index.php?route=carrello-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Aggiungi al carrello</a>
-                            <a class="btn btn-secondary" href="index.php?route=wishlist-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Aggiungi alla wishlist</a>
                         <?php endif; ?>
                     <?php endif; ?>
                 </article>

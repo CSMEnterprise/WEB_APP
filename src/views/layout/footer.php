@@ -252,6 +252,27 @@ function togglePasswordVisibility(inputId, button) {
         button.textContent = 'Mostra';
     }
 }
+
+document.addEventListener('click', function (event) {
+    const card = event.target.closest('.clickable-card[data-href]');
+
+    if (!card || event.target.closest('a, button, input, select, textarea, label, form')) {
+        return;
+    }
+
+    window.location.href = card.dataset.href;
+});
+
+document.addEventListener('keydown', function (event) {
+    const card = event.target.closest('.clickable-card[data-href]');
+
+    if (!card || !['Enter', ' '].includes(event.key)) {
+        return;
+    }
+
+    event.preventDefault();
+    window.location.href = card.dataset.href;
+});
 </script>
 
 </body>

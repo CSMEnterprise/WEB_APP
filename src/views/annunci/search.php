@@ -18,12 +18,21 @@ require_once __DIR__ . '/../layout/footer.php';
     <?php else: ?>
         <div class="grid">
             <?php foreach ($_SESSION['search_results'] as $annuncio): ?>
-                <div class="card">
+                <div
+                    class="card clickable-card"
+                    data-href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>"
+                    role="link"
+                    tabindex="0">
                     <h3><?= e($annuncio['titolo']) ?></h3>
                     <p class="muted"><?= e($annuncio['descrizione'] ?? '') ?></p>
                     <span class="price"><?= number_format($annuncio['prezzo'], 2) ?>€</span>
                     <small>Categoria: <?= e($annuncio['categoria_nome']) ?></small><br>
-                    <small>Venditore: <?= e($annuncio['venditore_username']) ?></small>
+                    <small>
+                        Venditore:
+                        <a href="index.php?route=venditore&id=<?= e($annuncio['id_utente'] ?? '') ?>">
+                            <?= e($annuncio['venditore_username']) ?>
+                        </a>
+                    </small>
                     
                     <?php if (isset($annuncio['id_annuncio'])): ?>
                         <a href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio']) ?>" class="btn btn-secondary">Dettaglio</a>

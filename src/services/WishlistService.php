@@ -44,6 +44,20 @@ class WishlistService extends BaseService
         return $stmt->fetchAll();
     }
 
+    public function getWishlistIds(int $idUtente): array
+    {
+        $this->requirePositiveId($idUtente, 'Utente');
+
+        $stmt = $this->db->prepare("
+            SELECT id_annuncio
+            FROM preferito
+            WHERE id_utente = ?
+        ");
+        $stmt->execute([$idUtente]);
+
+        return array_map('intval', array_column($stmt->fetchAll(), 'id_annuncio'));
+    }
+
     public function aggiungiAnnuncio(int $idUtente, int $idAnnuncio): void
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -80,6 +94,33 @@ class WishlistService extends BaseService
             WHERE id_utente = ? AND id_annuncio = ?
         ");
         $stmt->execute([$idUtente, $idAnnuncio]);
+    }
+
+    public function toggleAnnuncio(int $idUtente, int $idAnnuncio): bool
+    {
+        $this->requirePositiveId($idUtente, 'Utente');
+        $this->requirePositiveId($idAnnuncio, 'Annuncio');
+
+        if ($this->isInWishlist($idUtente, $idAnnuncio)) {
+            $this->rimuoviAnnuncio($idUtente, $idAnnuncio);
+            return false;
+        }
+
+        $this->aggiungiAnnuncio($idUtente, $idAnnuncio);
+        return true;
+    }
+
+    private function isInWishlist(int $idUtente, int $idAnnuncio): bool
+    {
+        $stmt = $this->db->prepare("
+            SELECT 1
+            FROM preferito
+            WHERE id_utente = ? AND id_annuncio = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$idUtente, $idAnnuncio]);
+
+        return (bool) $stmt->fetchColumn();
     }
 
     public function svuota(int $idUtente): void

@@ -14,7 +14,11 @@ require __DIR__ . '/../layout/header.php';
 <?php if (!empty($wishlist)): ?>
     <section class="grid">
         <?php foreach ($wishlist as $annuncio): ?>
-            <article class="card">
+            <article
+                class="card clickable-card"
+                data-href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>"
+                role="link"
+                tabindex="0">
                 <?php if (!empty($annuncio['immagine_principale'])): ?>
                     <img class="annuncio-card-img" src="<?= e($annuncio['immagine_principale']) ?>" alt="Foto annuncio">
                 <?php endif; ?>
@@ -24,7 +28,12 @@ require __DIR__ . '/../layout/header.php';
                 <p><?= e($annuncio['descrizione'] ?? '') ?></p>
                 <p class="price">€ <?= number_format((float)($annuncio['prezzo'] ?? 0), 2, ',', '.') ?></p>
                 <p><strong>Stato:</strong> <?= e($annuncio['stato_conservazione'] ?? '') ?></p>
-                <p><strong>Venditore:</strong> <?= e($annuncio['venditore_username'] ?? '') ?></p>
+                <p>
+                    <strong>Venditore:</strong>
+                    <a href="index.php?route=venditore&id=<?= e($annuncio['id_utente'] ?? '') ?>">
+                        <?= e($annuncio['venditore_username'] ?? '') ?>
+                    </a>
+                </p>
 
                 <div class="cart-item-actions">
                     <a class="btn btn-secondary" href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Dettagli</a>

@@ -18,14 +18,23 @@ require __DIR__ . '/../layout/header.php';
             <?php foreach ($carrello as $item): ?>
                 <?php $isOwner = (int)($item['id_utente'] ?? 0) === (int)($_SESSION['user_id'] ?? 0); ?>
 
-                <div class="card">
+                <div
+                    class="card clickable-card"
+                    data-href="index.php?route=annuncio&id=<?= e($item['id_annuncio'] ?? '') ?>"
+                    role="link"
+                    tabindex="0">
                     <?php if (!empty($item['immagine_principale'])): ?>
                         <img class="annuncio-card-img" src="<?= e($item['immagine_principale']) ?>" alt="Foto annuncio">
                     <?php endif; ?>
 
                     <h2><?= e($item['titolo'] ?? '') ?></h2>
                     <p class="price">€ <?= number_format((float)($item['prezzo'] ?? 0), 2, ',', '.') ?></p>
-                    <p><strong>Venditore:</strong> <?= e($item['venditore_username'] ?? '') ?></p>
+                    <p>
+                        <strong>Venditore:</strong>
+                        <a href="index.php?route=venditore&id=<?= e($item['id_utente'] ?? '') ?>">
+                            <?= e($item['venditore_username'] ?? '') ?>
+                        </a>
+                    </p>
                     <p><strong>Stato vendita:</strong> <?= e(ucfirst((string)($item['stato'] ?? ''))) ?></p>
 
                     <div class="cart-item-actions">

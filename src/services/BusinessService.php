@@ -28,7 +28,6 @@ class BusinessService extends BaseService
         $pIva           = $this->clean($data['p_iva'] ?? $data['partita_iva'] ?? '');
         $emailAziendale = $this->clean($data['email_aziendale'] ?? '');
         $telefono       = $this->clean($data['telefono'] ?? '');
-        $descrizione    = $this->clean($data['descrizione'] ?? '');
 
         $via        = $this->clean($data['via'] ?? '');
         $numero     = $this->clean($data['numero'] ?? '');
@@ -41,15 +40,39 @@ class BusinessService extends BaseService
             throw new ServiceException('Nome azienda, partita IVA ed email aziendale sono obbligatori.');
         }
 
+        if (!preg_match('/^[\p{L}0-9 .&\'-]{2,80}$/u', $nomeAzienda)) {
+            throw new ServiceException('Il nome azienda deve contenere 2-80 caratteri validi.');
+        }
+
+        if (!preg_match('/^[0-9]{11}$/', $pIva)) {
+            throw new ServiceException('La partita IVA deve contenere esattamente 11 cifre.');
+        }
+
         if (!filter_var($emailAziendale, FILTER_VALIDATE_EMAIL)) {
             throw new ServiceException('Email aziendale non valida.');
+        }
+
+        if ($telefono !== '' && !preg_match('/^\+?[0-9 ]{8,15}$/', $telefono)) {
+            throw new ServiceException('Il telefono deve contenere 8-15 cifre e può iniziare con +.');
+        }
+
+        if ($cap !== '' && !preg_match('/^[0-9]{5}$/', $cap)) {
+            throw new ServiceException('Il CAP deve contenere esattamente 5 cifre.');
+        }
+
+        if ($provincia !== '' && !preg_match('/^[A-Za-z]{2}$/', $provincia)) {
+            throw new ServiceException('La provincia deve contenere 2 lettere.');
+        }
+
+        if ($citta !== '' && !preg_match('/^[\p{L} .\'-]{2,80}$/u', $citta)) {
+            throw new ServiceException('La città deve contenere 2-80 caratteri validi.');
         }
 
         try {
             $stmt = $this->db->prepare("
                 INSERT INTO account_business
-                    (id_utente, p_iva, nome_azienda, email_aziendale, telefono, descrizione)
-                VALUES (?, ?, ?, ?, ?, ?)
+                    (id_utente, p_iva, nome_azienda, email_aziendale, telefono)
+                VALUES (?, ?, ?, ?, ?)
             ");
             $stmt->execute([
                 $idUtente,
@@ -57,7 +80,6 @@ class BusinessService extends BaseService
                 $nomeAzienda,
                 $emailAziendale,
                 $telefono    !== '' ? $telefono    : null,
-                $descrizione !== '' ? $descrizione : null,
             ]);
 
             $idBusiness = $this->lastInsertId();

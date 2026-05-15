@@ -26,7 +26,22 @@ require __DIR__ . '/layout/header.php';
     <?php if (!empty($homeAnnunci)): ?>
         <div class="grid">
             <?php foreach ($homeAnnunci as $annuncio): ?>
-                <article class="card">
+                <article
+                    class="card clickable-card annuncio-card"
+                    data-href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>"
+                    role="link"
+                    tabindex="0">
+                    <?php if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && (int)($annuncio['id_utente'] ?? 0) !== (int)($_SESSION['user_id'] ?? 0)): ?>
+                        <?php $isInWishlist = in_array((int)($annuncio['id_annuncio'] ?? 0), $wishlistIds ?? [], true); ?>
+                        <a
+                            class="wishlist-heart <?= $isInWishlist ? 'wishlist-heart-active' : '' ?>"
+                            href="index.php?route=wishlist-toggle&id=<?= e($annuncio['id_annuncio'] ?? '') ?>"
+                            title="<?= $isInWishlist ? 'Rimuovi dalla wishlist' : 'Aggiungi alla wishlist' ?>"
+                            aria-label="<?= $isInWishlist ? 'Rimuovi dalla wishlist' : 'Aggiungi alla wishlist' ?>">
+                            &hearts;
+                        </a>
+                    <?php endif; ?>
+
                     <?php if (!empty($annuncio['immagine_principale'])): ?>
                         <img class="annuncio-card-img" src="<?= e($annuncio['immagine_principale']) ?>" alt="Foto annuncio">
                     <?php endif; ?>
@@ -35,14 +50,18 @@ require __DIR__ . '/layout/header.php';
                     <p class="muted"><?= e($annuncio['categoria_nome'] ?? 'Senza categoria') ?></p>
                     <p><?= e($annuncio['descrizione'] ?? '') ?></p>
                     <p class="price">€ <?= number_format((float)($annuncio['prezzo'] ?? 0), 2, ',', '.') ?></p>
-                    <p><strong>Venditore:</strong> <?= e($annuncio['venditore_username'] ?? '') ?></p>
+                    <p>
+                        <strong>Venditore:</strong>
+                        <a href="index.php?route=venditore&id=<?= e($annuncio['id_utente'] ?? '') ?>">
+                            <?= e($annuncio['venditore_username'] ?? '') ?>
+                        </a>
+                    </p>
 
                     <a class="btn" href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Dettagli</a>
 
                     <?php if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin'])): ?>
                         <?php if ((int)($annuncio['id_utente'] ?? 0) !== (int)($_SESSION['user_id'] ?? 0)): ?>
                             <a class="btn btn-secondary" href="index.php?route=carrello-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Aggiungi al carrello</a>
-                            <a class="btn btn-secondary" href="index.php?route=wishlist-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Wishlist</a>
                         <?php endif; ?>
                     <?php endif; ?>
                 </article>
