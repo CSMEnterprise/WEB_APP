@@ -51,7 +51,8 @@ class PagamentoController
 
     public function esito(): void
     {
-        $status = $_GET['status'] ?? 'errore';
+        $status      = $_GET['status'] ?? 'errore';
+        $idPagamento = (int) ($_GET['id'] ?? 0);
         require __DIR__ . '/../views/pagamenti/esito.php';
     }
 }

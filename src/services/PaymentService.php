@@ -96,6 +96,31 @@ class PaymentService extends BaseService
         }
     }
 
+    public function getCronologiaByUserId(int $idUtente): array
+    {
+        $this->requirePositiveId($idUtente, 'Utente');
+
+        $stmt = $this->db->prepare("
+            SELECT
+                p.*,
+                a.titolo              AS annuncio_titolo,
+                a.id_annuncio         AS annuncio_id,
+                a.id_utente           AS venditore_id,
+                v.username            AS venditore_username,
+                f.id_feedback         AS feedback_id
+            FROM pagamento p
+            JOIN annuncio a               ON a.id_annuncio  = p.id_annuncio
+            LEFT JOIN utente_registrato v ON v.id_utente    = a.id_utente
+            LEFT JOIN feedback f          ON f.id_pagamento = p.id_pagamento
+                                        AND f.id_autore    = p.id_acquirente
+            WHERE p.id_acquirente = ?
+            ORDER BY p.data DESC
+        ");
+        $stmt->execute([$idUtente]);
+
+        return $stmt->fetchAll();
+    }
+
     public function findById(int $idPagamento): ?array
     {
         $this->requirePositiveId($idPagamento, 'Pagamento');

@@ -22,6 +22,28 @@ class UserService extends BaseService
         return $stmt->fetch() ?: null;
     }
 
+    public function search(string $q): array
+    {
+        $q = $this->clean($q);
+
+        if ($q === '') {
+            return [];
+        }
+
+        $stmt = $this->db->prepare("
+            SELECT id_utente, username, nome, data_registrazione
+            FROM utente_registrato
+            WHERE (username LIKE CONCAT('%', ?, '%')
+               OR  nome     LIKE CONCAT('%', ?, '%'))
+              AND stato_ban = 0
+            ORDER BY username ASC
+            LIMIT 20
+        ");
+        $stmt->execute([$q, $q]);
+
+        return $stmt->fetchAll();
+    }
+
     public function getAll(): array
     {
         $stmt = $this->db->query("
