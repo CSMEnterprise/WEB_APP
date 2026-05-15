@@ -67,16 +67,67 @@ class SegnalazioneService extends BaseService
         return $stmt->fetchAll();
     }
 
-    public function chiudi(int $idSegnalazione): void
+    public function getFiltrate(array $filters = []): array
+    {
+        $oggetto = $this->clean($filters['oggetto'] ?? '');
+        $tipologia = $this->clean($filters['tipologia'] ?? '');
+
+        $where = [];
+        $params = [];
+
+        $oggettiConsentiti = ['annuncio', 'utente', 'business', 'feedback'];
+        if (in_array($oggetto, $oggettiConsentiti, true)) {
+            $where[] = match ($oggetto) {
+                'annuncio' => 's.id_annuncio IS NOT NULL',
+                'utente' => 's.id_utente_segnalato IS NOT NULL',
+                'business' => 's.id_business IS NOT NULL',
+                'feedback' => 's.id_feedback IS NOT NULL',
+            };
+        }
+
+        $tipologieConsentite = ['Spam', 'Truffa', 'Contenuto_inappropriato', 'Altro'];
+        if (in_array($tipologia, $tipologieConsentite, true)) {
+            $where[] = 's.tipologia = ?';
+            $params[] = $tipologia;
+        }
+
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $stmt = $this->db->prepare("
+            SELECT
+                s.*,
+                u.username                     AS segnalante_username,
+                a.titolo                       AS annuncio_titolo,
+                us.username                    AS utente_segnalato_username,
+                ab.nome_azienda                AS business_nome,
+                f.id_feedback                  AS feedback_id
+            FROM segnalazione s
+            JOIN utente_registrato u       ON u.id_utente            = s.id_segnalante
+            LEFT JOIN annuncio a           ON a.id_annuncio           = s.id_annuncio
+            LEFT JOIN utente_registrato us ON us.id_utente            = s.id_utente_segnalato
+            LEFT JOIN account_business ab  ON ab.id_acc_business      = s.id_business
+            LEFT JOIN feedback f           ON f.id_feedback            = s.id_feedback
+            {$whereSql}
+            ORDER BY s.data_segnalazione DESC
+        ");
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
+
+    public function chiudi(int $idSegnalazione, int $idAdmin): void
     {
         $this->requirePositiveId($idSegnalazione, 'Segnalazione');
+        $this->requirePositiveId($idAdmin, 'Admin');
 
         $stmt = $this->db->prepare("
             UPDATE segnalazione
-            SET stato = 'Risolta', data_risoluzione = CURRENT_TIMESTAMP
+            SET stato = 'Risolta',
+                id_admin = ?,
+                data_risoluzione = CURRENT_TIMESTAMP
             WHERE id_segnalazione = ?
         ");
-        $stmt->execute([$idSegnalazione]);
+        $stmt->execute([$idAdmin, $idSegnalazione]);
     }
 
     public function elimina(int $idSegnalazione): void

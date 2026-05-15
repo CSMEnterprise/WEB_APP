@@ -1,51 +1,48 @@
 <?php
-$pageTitle = 'Profilo admin';
+$pageTitle = 'Dashboard moderazione';
 require __DIR__ . '/../layout/header.php';
+
+$adminFilter = $filters['admin'] ?? '';
 ?>
 
-<h1>Profilo admin</h1>
+<h1>Dashboard moderazione</h1>
 
-<section class="grid">
-    <article class="card">
-        <h2>Utenti</h2>
-        <p class="price"><?= e($stats['totUtenti'] ?? 0) ?></p>
-    </article>
+<section class="card">
+    <h2>Ricerca e filtri</h2>
 
-    <article class="card">
-        <h2>Annunci</h2>
-        <p class="price"><?= e($stats['totAnnunci'] ?? 0) ?></p>
-    </article>
+    <form method="get" action="index.php">
+        <input type="hidden" name="route" value="admin-dashboard">
 
-    <article class="card">
-        <h2>Segnalazioni aperte</h2>
-        <p class="price"><?= e($stats['totSegnalazioni'] ?? 0) ?></p>
-    </article>
+        <label for="admin">Admin</label>
+        <input
+            type="search"
+            id="admin"
+            name="admin"
+            placeholder="Cerca per email o ID admin"
+            value="<?= e($adminFilter) ?>">
 
-    <article class="card">
-        <h2>Pagamenti</h2>
-        <p class="price"><?= e($stats['totPagamenti'] ?? 0) ?></p>
-    </article>
+        <button class="btn" type="submit">Filtra</button>
+        <a class="btn btn-secondary" href="index.php?route=admin-dashboard">Reset</a>
+    </form>
 </section>
 
-<p>
-    <a class="btn" href="index.php?route=admin-utenti">Gestisci utenti</a>
-    <a class="btn btn-secondary" href="index.php?route=admin-segnalazioni">Gestisci segnalazioni</a>
-</p>
-
 <section style="margin-top: 28px;">
-    <h2>Azioni eseguite da te</h2>
+    <h2>Azioni di moderazione</h2>
 
-    <?php if (!empty($azioniModera)): ?>
+    <?php if (!empty($azioniModerazione)): ?>
         <table>
             <thead>
                 <tr>
+                    <th>ID</th>
+                    <th>Admin</th>
+                    <th>Livello</th>
                     <th>Azione</th>
-                    <th>Riferimento</th>
+                    <th>Riferimenti</th>
                     <th>Data</th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($azioniModera as $azione): ?>
+                <?php foreach ($azioniModerazione as $azione): ?>
                     <?php
                     $riferimenti = [];
 
@@ -66,6 +63,12 @@ require __DIR__ . '/../layout/header.php';
                     }
                     ?>
                     <tr>
+                        <td><?= e($azione['id_moderazione'] ?? '') ?></td>
+                        <td>
+                            #<?= e($azione['id_admin'] ?? '') ?><br>
+                            <span class="muted"><?= e($azione['admin_email'] ?? '') ?></span>
+                        </td>
+                        <td><?= e($azione['livello_sicurezza'] ?? '') ?></td>
                         <td><?= e($azione['azione_compiuta'] ?? '') ?></td>
                         <td><?= e(!empty($riferimenti) ? implode(', ', $riferimenti) : '-') ?></td>
                         <td><?= e($azione['data_azione'] ?? '') ?></td>
@@ -75,7 +78,7 @@ require __DIR__ . '/../layout/header.php';
         </table>
     <?php else: ?>
         <div class="card">
-            <p>Non hai ancora azioni di moderazione registrate.</p>
+            <p>Nessuna azione di moderazione trovata.</p>
         </div>
     <?php endif; ?>
 </section>

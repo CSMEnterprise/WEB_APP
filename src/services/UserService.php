@@ -44,13 +44,32 @@ class UserService extends BaseService
         return $stmt->fetchAll();
     }
 
-    public function getAll(): array
+    public function getAll(string $q = ''): array
     {
-        $stmt = $this->db->query("
+        $q = $this->clean($q);
+
+        $where = '';
+        $params = [];
+
+        if ($q !== '') {
+            $where = "
+                WHERE id_utente = ?
+                   OR email LIKE CONCAT('%', ?, '%')
+                   OR username LIKE CONCAT('%', ?, '%')
+                   OR nome LIKE CONCAT('%', ?, '%')
+                   OR telefono LIKE CONCAT('%', ?, '%')
+            ";
+            $id = ctype_digit($q) ? (int) $q : 0;
+            $params = [$id, $q, $q, $q, $q];
+        }
+
+        $stmt = $this->db->prepare("
             SELECT id_utente, email, username, nome, telefono, stato_ban, data_registrazione
             FROM utente_registrato
+            {$where}
             ORDER BY data_registrazione DESC
         ");
+        $stmt->execute($params);
 
         return $stmt->fetchAll();
     }

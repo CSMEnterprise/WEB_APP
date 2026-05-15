@@ -40,6 +40,7 @@ class UtenteController
                 $_SESSION['username'] = 'Admin';
                 $_SESSION['is_admin'] = true;
                 $_SESSION['propic']   = null;
+                $_SESSION['livello_sicurezza'] = (int) ($utente['livello_sicurezza'] ?? 1);
                 header('Location: index.php?route=admin');
             } else {
                 $_SESSION['user_id']  = (int) $utente['id_utente'];

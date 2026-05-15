@@ -23,9 +23,11 @@ class AnnuncioController
     public function lista(): void
     {
         $q = trim($_GET['q'] ?? '');
+        $idCategoria = (int) ($_GET['id_categoria'] ?? 0);
+        $categorie = $this->categoryService->getAll();
 
-        if ($q !== '') {
-            $annunci = $this->annuncioService->searchAnnunci($q);
+        if ($q !== '' || $idCategoria > 0) {
+            $annunci = $this->annuncioService->searchAnnunci($q, $idCategoria);
             $utenti  = $this->userService->search($q);
         } else {
             $annunci = $this->annuncioService->getAnnunciAttivi();

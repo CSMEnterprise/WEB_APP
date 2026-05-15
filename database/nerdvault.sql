@@ -54,6 +54,7 @@ CREATE TABLE `admin` (
   `email` varchar(255) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
   `livello_sicurezza` int(11) NOT NULL DEFAULT 1,
+  `stato_ban` tinyint(1) NOT NULL DEFAULT 0,
   `data_creazione` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

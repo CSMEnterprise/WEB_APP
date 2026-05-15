@@ -127,6 +127,17 @@ try {
         */
 
         case 'home':
+            require_once __DIR__ . '/../src/services/AnnuncioService.php';
+            $homeAnnuncioService = new AnnuncioService($pdo);
+            $homeTitoloAnnunci = 'Annunci scelti per te';
+
+            if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin'])) {
+                $homeAnnunci = $homeAnnuncioService->getAnnunciPerInteressiUtente(currentUserId());
+            } else {
+                $homeTitoloAnnunci = 'Annunci in evidenza';
+                $homeAnnunci = $homeAnnuncioService->getAnnunciCasuali();
+            }
+
             require __DIR__ . '/../src/views/home.php';
             break;
 
@@ -201,11 +212,16 @@ try {
         case 'utente-profilo':
         case 'profilo-annunci-attivi':
             requireAuth();
+            if (!empty($_SESSION['is_admin'])) {
+                (new AdminController($pdo))->dashboard(currentUserId());
+                break;
+            }
             (new UtenteController($pdo))->profilo(currentUserId(), 'attivo');
             break;
 
         case 'profilo-annunci-venduti':
             requireAuth();
+            denyAdmin();
             (new UtenteController($pdo))->profilo(currentUserId(), 'venduto');
             break;
 
@@ -217,6 +233,7 @@ try {
 
         case 'profilo-indirizzo-store':
             requireAuth();
+            denyAdmin();
             (new UtenteController($pdo))->salvaIndirizzoSpedizione($_POST, currentUserId());
             break;
         /*
@@ -227,16 +244,19 @@ try {
 
         case 'annuncio-create':
             requireAuth();
+            denyAdmin();
             (new AnnuncioController($pdo))->formCreazione();
             break;
 
         case 'annuncio-store':
             requireAuth();
+            denyAdmin();
             (new AnnuncioController($pdo))->crea($_POST, currentUserId(), $_FILES);
             break;
 
         case 'annuncio-delete':
             requireAuth();
+            denyAdmin();
             (new AnnuncioController($pdo))->elimina((int) ($_GET['id'] ?? 0), currentUserId());
             break;
 
@@ -249,21 +269,25 @@ try {
 
         case 'carrello':
             requireAuth();
+            denyAdmin();
             (new CarrelloController($pdo))->lista(currentUserId());
             break;
 
         case 'carrello-add':
             requireAuth();
+            denyAdmin();
             (new CarrelloController($pdo))->aggiungi(currentUserId(), (int) ($_GET['id'] ?? 0));
             break;
 
         case 'carrello-remove':
             requireAuth();
+            denyAdmin();
             (new CarrelloController($pdo))->rimuovi(currentUserId(), (int) ($_GET['id'] ?? 0));
             break;
 
         case 'carrello-clear':
             requireAuth();
+            denyAdmin();
             (new CarrelloController($pdo))->svuota(currentUserId());
             break;
 
@@ -277,21 +301,25 @@ try {
         case 'wishlist':
         case 'preferiti':
             requireAuth();
+            denyAdmin();
             (new WishlistController($pdo))->lista(currentUserId());
             break;
 
         case 'wishlist-add':
             requireAuth();
+            denyAdmin();
             (new WishlistController($pdo))->aggiungi(currentUserId(), (int) ($_GET['id'] ?? 0));
             break;
 
         case 'wishlist-remove':
             requireAuth();
+            denyAdmin();
             (new WishlistController($pdo))->rimuovi(currentUserId(), (int) ($_GET['id'] ?? 0));
             break;
 
         case 'wishlist-clear':
             requireAuth();
+            denyAdmin();
             (new WishlistController($pdo))->svuota(currentUserId());
             break;
 
@@ -304,21 +332,25 @@ try {
 
         case 'checkout':
             requireAuth();
+            denyAdmin();
             (new PagamentoController($pdo))->checkout(currentUserId(), (int) ($_GET['id'] ?? 0));
             break;
 
         case 'paypal-placeholder':
             requireAuth();
+            denyAdmin();
             (new PagamentoController($pdo))->paypalPlaceholder(currentUserId(), (int) ($_GET['id'] ?? 0));
             break;
 
         case 'paypal-cancel':
             requireAuth();
+            denyAdmin();
             (new PagamentoController($pdo))->paypalCancel();
             break;
 
         case 'pagamento-conferma':
             requireAuth();
+            denyAdmin();
             (new PagamentoController($pdo))->conferma($_POST, currentUserId());
             break;
 
@@ -337,27 +369,32 @@ try {
         case 'business':
         case 'business-profilo':
             requireAuth();
+            denyAdmin();
             (new BusinessController($pdo))->dashboard(currentUserId());
             break;
 
         case 'business-create':
             requireAuth();
+            denyAdmin();
             (new BusinessController($pdo))->formCreazione();
             break;
 
         case 'business-store':
             requireAuth();
+            denyAdmin();
             (new BusinessController($pdo))->creaAccount($_POST, currentUserId());
             break;
 
         case 'business-ordini':
             requireAuth();
+            denyAdmin();
             requireBusiness($pdo);
             (new BusinessController($pdo))->ordini(currentUserId());
             break;
 
         case 'business-indirizzo-store':
             requireAuth();
+            denyAdmin();
             requireBusiness($pdo);
             (new BusinessController($pdo))->salvaIndirizzo($_POST, currentUserId());
             break;
@@ -409,12 +446,12 @@ try {
 
         case 'segnalazione-close':
             requireAdmin();
-            (new SegnalazioneController($pdo))->chiudi((int) ($_GET['id'] ?? 0));
+            (new SegnalazioneController($pdo))->chiudi((int) ($_GET['id'] ?? 0), currentUserId());
             break;
 
         case 'segnalazione-delete':
             requireAdmin();
-            (new SegnalazioneController($pdo))->elimina((int) ($_GET['id'] ?? 0));
+            (new SegnalazioneController($pdo))->elimina((int) ($_GET['id'] ?? 0), currentUserId());
             break;
 
 
@@ -426,27 +463,42 @@ try {
 
         case 'admin':
             requireAdmin();
-            (new AdminController($pdo))->dashboard();
+            (new AdminController($pdo))->dashboard(currentUserId());
+            break;
+
+        case 'admin-dashboard':
+            requireAdminLivello2();
+            (new AdminController($pdo))->dashboardModerazione($_GET);
             break;
 
         case 'admin-utenti':
             requireAdmin();
-            (new AdminController($pdo))->utenti();
+            (new AdminController($pdo))->utenti($_GET);
             break;
 
         case 'admin-banna-utente':
             requireAdmin();
-            (new AdminController($pdo))->bannaUtente((int) ($_GET['id'] ?? 0));
+            (new AdminController($pdo))->bannaUtente((int) ($_GET['id'] ?? 0), currentUserId());
             break;
 
         case 'admin-sblocca-utente':
             requireAdmin();
-            (new AdminController($pdo))->sbloccaUtente((int) ($_GET['id'] ?? 0));
+            (new AdminController($pdo))->sbloccaUtente((int) ($_GET['id'] ?? 0), currentUserId());
+            break;
+
+        case 'admin-banna-admin':
+            requireAdminLivello2();
+            (new AdminController($pdo))->bannaAdmin((int) ($_GET['id'] ?? 0), currentUserId());
+            break;
+
+        case 'admin-sblocca-admin':
+            requireAdminLivello2();
+            (new AdminController($pdo))->sbloccaAdmin((int) ($_GET['id'] ?? 0), currentUserId());
             break;
 
         case 'admin-segnalazioni':
             requireAdmin();
-            (new AdminController($pdo))->segnalazioni();
+            (new AdminController($pdo))->segnalazioni($_GET);
             break;
 
 
