@@ -45,6 +45,7 @@ class CartService extends BaseService
         $this->requirePositiveId($idUtente, 'Utente');
 
         $idCarrello = $this->getOrCreateCartId($idUtente);
+        $this->rimuoviAnnunciNonAcquistabili($idCarrello);
 
         $stmt = $this->db->prepare("
             SELECT
@@ -64,6 +65,7 @@ class CartService extends BaseService
             LEFT JOIN categoria c ON c.id_categoria = a.id_categoria
             LEFT JOIN utente_registrato u ON u.id_utente = a.id_utente
             WHERE e.id_carrello = ?
+              AND a.stato = 'attivo'
             ORDER BY e.data_aggiunta DESC
         ");
         $stmt->execute([$idCarrello]);
@@ -129,6 +131,18 @@ class CartService extends BaseService
             WHERE id_carrello = ? AND id_annuncio = ?
         ");
         $stmt->execute([$idCarrello, $idAnnuncio]);
+    }
+
+    private function rimuoviAnnunciNonAcquistabili(int $idCarrello): void
+    {
+        $stmt = $this->db->prepare("
+            DELETE e
+            FROM elemento_carrello e
+            JOIN annuncio a ON a.id_annuncio = e.id_annuncio
+            WHERE e.id_carrello = ?
+              AND a.stato <> 'attivo'
+        ");
+        $stmt->execute([$idCarrello]);
     }
 
     public function svuota(int $idUtente): void

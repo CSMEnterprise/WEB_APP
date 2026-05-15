@@ -46,7 +46,6 @@ class PaymentService extends BaseService
         $paypalTransactionId = $this->clean($data['paypal_transaction_id'] ?? '');
 
         $preparazione = $this->preparaPagamento($idUtente, $idAnnuncio);
-        $annuncio = $preparazione['annuncio'];
         $totale = $preparazione['totale'];
 
         $this->db->beginTransaction();
@@ -71,6 +70,13 @@ class PaymentService extends BaseService
                 UPDATE annuncio
                 SET stato = 'venduto'
                 WHERE id_annuncio = ?
+            ");
+            $stmt->execute([$idAnnuncio]);
+
+            $stmt = $this->db->prepare("
+                DELETE e
+                FROM elemento_carrello e
+                WHERE e.id_annuncio = ?
             ");
             $stmt->execute([$idAnnuncio]);
 

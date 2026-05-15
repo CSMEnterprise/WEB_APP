@@ -1,19 +1,19 @@
 <?php
-$pageTitle = 'Annunci';
+$pageTitle = 'Wishlist';
 require __DIR__ . '/../layout/header.php';
 ?>
 
 <div class="nav" style="align-items:flex-start;">
-    <h1>Annunci disponibili</h1>
+    <h1>Wishlist</h1>
 
-    <?php if (!empty($_SESSION['user_id'])): ?>
-        <a class="btn" href="index.php?route=annuncio-create">Crea annuncio</a>
+    <?php if (!empty($wishlist)): ?>
+        <a class="btn btn-danger" href="index.php?route=wishlist-clear">Svuota wishlist</a>
     <?php endif; ?>
 </div>
 
-<?php if (!empty($annunci)): ?>
+<?php if (!empty($wishlist)): ?>
     <section class="grid">
-        <?php foreach ($annunci as $annuncio): ?>
+        <?php foreach ($wishlist as $annuncio): ?>
             <article class="card">
                 <?php if (!empty($annuncio['immagine_principale'])): ?>
                     <img class="annuncio-card-img" src="<?= e($annuncio['immagine_principale']) ?>" alt="Foto annuncio">
@@ -26,22 +26,16 @@ require __DIR__ . '/../layout/header.php';
                 <p><strong>Stato:</strong> <?= e($annuncio['stato_conservazione'] ?? '') ?></p>
                 <p><strong>Venditore:</strong> <?= e($annuncio['venditore_username'] ?? '') ?></p>
 
-                <a class="btn" href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Dettagli</a>
-
-                <?php if (!empty($_SESSION['user_id'])): ?>
-                    <?php if ((int)($annuncio['id_utente'] ?? 0) === (int)($_SESSION['user_id'] ?? 0)): ?>
-                        <p class="muted">È un tuo annuncio.</p>
-                    <?php else: ?>
-                        <a class="btn btn-secondary" href="index.php?route=carrello-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Aggiungi al carrello</a>
-                        <a class="btn btn-secondary" href="index.php?route=wishlist-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Aggiungi alla wishlist</a>
-                    <?php endif; ?>
-                <?php endif; ?>
+                <div class="cart-item-actions">
+                    <a class="btn btn-secondary" href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Dettagli</a>
+                    <a class="btn" href="index.php?route=carrello-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Aggiungi al carrello</a>
+                </div>
             </article>
         <?php endforeach; ?>
     </section>
 <?php else: ?>
     <div class="card">
-        <p>Nessun annuncio disponibile.</p>
+        <p>La wishlist è vuota.</p>
     </div>
 <?php endif; ?>
 
