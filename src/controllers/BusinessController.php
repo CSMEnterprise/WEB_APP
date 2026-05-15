@@ -17,7 +17,7 @@ class BusinessController
     public function dashboard(int $idUtente): void
     {
         $business = $this->businessService->findByUserId($idUtente);
-        $annunci = $this->annuncioService->getByUserId($idUtente);
+        $annunci  = $this->annuncioService->getByUserId($idUtente);
 
         require __DIR__ . '/../views/business/profilo.php';
     }
@@ -36,6 +36,29 @@ class BusinessController
         } catch (Exception $e) {
             $errore = $e->getMessage();
             require __DIR__ . '/../views/business/form.php';
+        }
+    }
+
+    public function salvaIndirizzo(array $data, int $idUtente): void
+    {
+        $business = $this->businessService->findByUserId($idUtente);
+
+        if (!$business) {
+            header('Location: index.php?route=business');
+            exit;
+        }
+
+        try {
+            $this->businessService->aggiornaIndirizzo(
+                (int) $business['id_acc_business'],
+                $data
+            );
+            header('Location: index.php?route=business');
+            exit;
+        } catch (Exception $e) {
+            $errore  = $e->getMessage();
+            $annunci = $this->annuncioService->getByUserId($idUtente);
+            require __DIR__ . '/../views/business/profilo.php';
         }
     }
 

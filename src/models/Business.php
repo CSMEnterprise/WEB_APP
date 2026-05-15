@@ -7,7 +7,12 @@ class Business {
     public $nome_azienda;
     public $logo;
     public $descrizione;
-    public $indirizzo;
+    public $via;
+    public $numero;
+    public $cap;
+    public $citta;
+    public $provincia;
+    public $paese;
     public $telefono;
     public $email_aziendale;
     public $link_social;

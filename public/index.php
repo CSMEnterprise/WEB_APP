@@ -188,6 +188,12 @@ try {
             (new BusinessController($pdo))->ordini(currentUserId());
             break;
 
+        case 'business-indirizzo-store':
+            requireAuth();
+            requireBusiness($pdo);
+            (new BusinessController($pdo))->salvaIndirizzo($_POST, currentUserId());
+            break;
+
 
         /*
         |--------------------------------------------------------------------------

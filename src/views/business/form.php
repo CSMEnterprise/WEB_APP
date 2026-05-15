@@ -20,8 +20,24 @@ require __DIR__ . '/../partials/flash.php';
         <label for="telefono">Telefono</label>
         <input type="text" id="telefono" name="telefono">
 
-        <label for="indirizzo">Indirizzo</label>
-        <textarea id="indirizzo" name="indirizzo"></textarea>
+        <fieldset>
+            <legend>Indirizzo sede</legend>
+
+            <label for="via">Via / Corso / Piazza</label>
+            <input type="text" id="via" name="via">
+
+            <label for="numero">Numero civico</label>
+            <input type="text" id="numero" name="numero">
+
+            <label for="cap">CAP</label>
+            <input type="text" id="cap" name="cap" maxlength="5">
+
+            <label for="citta">Città</label>
+            <input type="text" id="citta" name="citta">
+
+            <label for="provincia">Provincia</label>
+            <input type="text" id="provincia" name="provincia" maxlength="2">
+        </fieldset>
 
         <label for="descrizione">Descrizione</label>
         <textarea id="descrizione" name="descrizione"></textarea>
