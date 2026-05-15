@@ -19,7 +19,6 @@ require_once __DIR__ . '/../src/controllers/FeedbackController.php';
 require_once __DIR__ . '/../src/controllers/SegnalazioneController.php';
 require_once __DIR__ . '/../src/controllers/AdminController.php';
 
-
 /*
  * Recupero rotta più robusto:
  * - da query string: index.php?route=...
@@ -154,6 +153,7 @@ try {
             requireAuth();
             (new UtenteController($pdo))->salvaIndirizzoSpedizione($_POST, currentUserId());
             break;
+
         /*
         |--------------------------------------------------------------------------
         | Annunci
@@ -352,10 +352,6 @@ try {
 
     $errore = 'Errore interno del server.';
 
-    /*
-     * Durante lo sviluppo puoi mostrare l'errore reale.
-     * In produzione è meglio lasciare solo il messaggio generico.
-     */
     if (defined('APP_DEBUG') && APP_DEBUG === true) {
         $errore = $e->getMessage();
     }
