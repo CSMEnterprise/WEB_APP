@@ -13,6 +13,11 @@ require_once __DIR__ . '/../src/middleware/guest.php';
 require_once __DIR__ . '/../src/controllers/UtenteController.php';
 require_once __DIR__ . '/../src/controllers/AnnuncioController.php';
 require_once __DIR__ . '/../src/controllers/CarrelloController.php';
+require_once __DIR__ . '/../src/controllers/PagamentoController.php';
+require_once __DIR__ . '/../src/controllers/BusinessController.php';
+require_once __DIR__ . '/../src/controllers/AdminController.php';
+require_once __DIR__ . '/../src/controllers/FeedbackController.php';
+require_once __DIR__ . '/../src/controllers/SegnalazioneController.php';
 
 $route = $_GET['route'] ?? 'home';
 
@@ -84,6 +89,7 @@ try {
             requireAuth();
             (new UtenteController($pdo))->salvaIndirizzoSpedizione($_POST, currentUserId());
             break;
+
         /*
         |--------------------------------------------------------------------------
         | Annunci
@@ -281,10 +287,6 @@ try {
 
     $errore = 'Errore interno del server.';
 
-    /*
-     * Durante lo sviluppo puoi mostrare l'errore reale.
-     * In produzione è meglio lasciare solo il messaggio generico.
-     */
     if (defined('APP_DEBUG') && APP_DEBUG === true) {
         $errore = $e->getMessage();
     }
