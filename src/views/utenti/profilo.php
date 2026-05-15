@@ -149,6 +149,60 @@ require __DIR__ . '/../layout/header.php';
         <?php endif; ?>
     </section>
 
+    <section style="margin-top: 32px;">
+        <h2>Cronologia pagamenti</h2>
+
+        <?php if (!empty($cronologiaPagamenti)): ?>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Annuncio</th>
+                        <th>Venditore</th>
+                        <th>Importo</th>
+                        <th>Stato</th>
+                        <th>Data</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($cronologiaPagamenti as $p): ?>
+                        <tr>
+                            <td><?= e($p['id_pagamento']) ?></td>
+                            <td><?= e($p['annuncio_titolo'] ?? '—') ?></td>
+                            <td><?= e($p['venditore_username'] ?? '—') ?></td>
+                            <td>€ <?= number_format((float)($p['importo_totale'] ?? 0), 2, ',', '.') ?></td>
+                            <td><?= e($p['stato'] ?? '') ?></td>
+                            <td><?= e($p['data'] ?? '') ?></td>
+                            <td style="display:flex; gap:6px; flex-wrap:wrap;">
+                                <a class="btn btn-secondary"
+                                   style="font-size:12px;padding:5px 10px;"
+                                   href="index.php?route=annuncio&id=<?= e($p['annuncio_id']) ?>">
+                                    Vedi annuncio
+                                </a>
+                                <?php if (($p['stato'] ?? '') === 'Completato'): ?>
+                                    <?php if (!empty($p['feedback_id'])): ?>
+                                        <span class="muted" style="font-size:12px;padding:5px 0;">✅ Feedback inviato</span>
+                                    <?php else: ?>
+                                        <a class="btn"
+                                           style="font-size:12px;padding:5px 10px;"
+                                           href="index.php?route=feedback-create&id_pagamento=<?= e($p['id_pagamento']) ?>">
+                                            Lascia feedback
+                                        </a>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <div class="card">
+                <p>Nessun acquisto effettuato.</p>
+            </div>
+        <?php endif; ?>
+    </section>
+
     <script>
         function toggleIndirizzoForm() {
             const form = document.getElementById('indirizzoForm');

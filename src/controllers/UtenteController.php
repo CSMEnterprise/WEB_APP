@@ -4,6 +4,7 @@ require_once __DIR__ . '/../services/AuthService.php';
 require_once __DIR__ . '/../services/UserService.php';
 require_once __DIR__ . '/../services/AnnuncioService.php';
 require_once __DIR__ . '/../services/BusinessService.php';
+require_once __DIR__ . '/../services/PaymentService.php';
 
 class UtenteController
 {
@@ -11,6 +12,7 @@ class UtenteController
     private UserService $userService;
     private AnnuncioService $annuncioService;
     private BusinessService $businessService;
+    private PaymentService $paymentService;
     private PDO $db;
 
     public function __construct(PDO $db)
@@ -20,6 +22,7 @@ class UtenteController
         $this->userService = new UserService($db);
         $this->annuncioService = new AnnuncioService($db);
         $this->businessService = new BusinessService($db);
+        $this->paymentService = new PaymentService($db);
     }
 
     public function showLogin(): void
@@ -105,6 +108,7 @@ class UtenteController
         $filtroAnnunci = $filtroAnnunci === 'venduto' ? 'venduto' : 'attivo';
         $annunciUtente = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
         $titoloAnnunciProfilo = $filtroAnnunci === 'venduto' ? 'Annunci venduti' : 'Annunci attivi';
+        $cronologiaPagamenti = $this->paymentService->getCronologiaByUserId($idUtente);
 
         require __DIR__ . '/../views/utenti/profilo.php';
     }
