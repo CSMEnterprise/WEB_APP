@@ -18,14 +18,23 @@ require __DIR__ . '/../partials/flash.php';
         <label for="telefono">Telefono</label>
         <input type="text" id="telefono" name="telefono">
 
-        <label for="password">Password</label>
-        <input
-            type="password"
-            id="password"
-            name="password"
-            pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}"
-            title="La password deve contenere almeno 10 caratteri, una lettera maiuscola e un carattere speciale."
-            required>
+        <label for="registerPassword">Password</label>
+        <div class="password-wrapper">
+            <input
+                type="password"
+                id="registerPassword"
+                name="password"
+                pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}"
+                title="La password deve contenere almeno 10 caratteri, una lettera maiuscola e un carattere speciale."
+                required>
+
+            <button
+                class="btn btn-password-toggle"
+                type="button"
+                onclick="togglePasswordVisibility('registerPassword', this)">
+                Mostra
+            </button>
+        </div>
 
         <button class="btn" type="submit">Crea account</button>
     </form>

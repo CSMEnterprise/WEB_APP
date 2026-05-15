@@ -65,6 +65,10 @@ $isLogged = isset($_SESSION['user_id']);
         .alert-error { background: #fee2e2; color: #991b1b; }
         .alert-success { background: #dcfce7; color: #166534; }
         input, select, textarea { width: 100%; max-width: 520px; padding: 10px; margin: 6px 0 14px; border: 1px solid #ccc; border-radius: 8px; }
+        .password-wrapper { display: flex; align-items: flex-start; gap: 8px; max-width: 542px; margin: 6px 0 14px; }
+        .password-wrapper input { flex: 1; max-width: none; margin: 0; }
+        .btn-password-toggle { white-space: nowrap; padding: 10px 12px; margin: 0; background: #4b5563; }
+        .btn-password-toggle:hover { background: #374151; }
         label { display: block; font-weight: bold; }
         table { width: 100%; border-collapse: collapse; background: white; }
         th, td { padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: left; }
