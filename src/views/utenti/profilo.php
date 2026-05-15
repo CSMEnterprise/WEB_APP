@@ -90,9 +90,30 @@ require __DIR__ . '/../layout/header.php';
     </div>
 
     <section class="profile-annunci">
-        <div class="nav" style="align-items:flex-start;">
-            <h2>I miei annunci pubblicati</h2>
+        <?php
+            $filtroAnnunci = $filtroAnnunci ?? 'attivo';
+            $titoloAnnunciProfilo = $titoloAnnunciProfilo ?? 'Annunci attivi';
+            $isAttivi = $filtroAnnunci === 'attivo';
+            $isVenduti = $filtroAnnunci === 'venduto';
+        ?>
+
+        <div class="nav" style="align-items:flex-start; gap: 12px; flex-wrap: wrap;">
+            <h2><?= e($titoloAnnunciProfilo) ?></h2>
             <a class="btn" href="index.php?route=annuncio-create">Nuovo annuncio</a>
+        </div>
+
+        <div class="card" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <strong>Mostra:</strong>
+            <a
+                class="btn <?= $isAttivi ? '' : 'btn-secondary' ?>"
+                href="index.php?route=profilo-annunci-attivi">
+                Annunci attivi
+            </a>
+            <a
+                class="btn <?= $isVenduti ? '' : 'btn-secondary' ?>"
+                href="index.php?route=profilo-annunci-venduti">
+                Annunci venduti
+            </a>
         </div>
 
         <?php if (!empty($annunciUtente)): ?>
@@ -110,13 +131,20 @@ require __DIR__ . '/../layout/header.php';
                         <p><strong>Stato vendita:</strong> <?= e($annuncio['stato'] ?? '') ?></p>
 
                         <a class="btn" href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Dettagli</a>
-                        <a class="btn btn-danger" href="index.php?route=annuncio-delete&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Elimina</a>
+
+                        <?php if ($isAttivi): ?>
+                            <a class="btn btn-danger" href="index.php?route=annuncio-delete&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Elimina</a>
+                        <?php endif; ?>
                     </article>
                 <?php endforeach; ?>
             </div>
         <?php else: ?>
             <div class="card">
-                <p>Non hai ancora pubblicato annunci.</p>
+                <?php if ($isVenduti): ?>
+                    <p>Non hai ancora annunci venduti.</p>
+                <?php else: ?>
+                    <p>Non hai annunci attivi.</p>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
     </section>
