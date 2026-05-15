@@ -40,7 +40,6 @@ class AuthService extends BaseService
         $password = (string) ($data['password'] ?? '');
         $nome = $this->clean($data['nome'] ?? '');
         $telefono = $this->clean($data['telefono'] ?? '');
-        $indirizzo = $this->clean($data['indirizzo'] ?? '');
 
         if ($username === '' || $email === '' || $password === '') {
             throw new ServiceException('Username, email e password sono obbligatori.');
@@ -56,8 +55,8 @@ class AuthService extends BaseService
 
         $stmt = $this->db->prepare("
             INSERT INTO utente_registrato
-            (email, username, password_hash, nome, telefono, indirizzo)
-            VALUES (?, ?, ?, ?, ?, ?)
+            (email, username, password_hash, nome, telefono)
+            VALUES (?, ?, ?, ?, ?)
         ");
 
         try {
@@ -67,7 +66,6 @@ class AuthService extends BaseService
                 password_hash($password, PASSWORD_DEFAULT),
                 $nome !== '' ? $nome : null,
                 $telefono !== '' ? $telefono : null,
-                $indirizzo !== '' ? $indirizzo : null
             ]);
         } catch (PDOException $e) {
             throw new ServiceException('Email o username già utilizzati.');
