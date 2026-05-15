@@ -71,9 +71,9 @@ CREATE TABLE `annuncio` (
   `id_categoria` int(11) NOT NULL,
   `titolo` varchar(255) NOT NULL,
   `descrizione` text DEFAULT NULL,
-  `stato_conservazione` enum('Nuovo','Ottimo','Buono','Discreto','Da restaurare') NOT NULL,
+  `stato_conservazione` enum('Nuovo','Usato') NOT NULL,
   `prezzo` decimal(10,2) NOT NULL,
-  `modalita_consegna` enum('Spedizione','Ritiro_a_mano','Entrambi') NOT NULL,
+  `modalita_consegna` enum('Consegna') NOT NULL DEFAULT 'Consegna',
   `stato` enum('attivo','venduto') NOT NULL DEFAULT 'attivo',
   `data_creazione` timestamp NOT NULL DEFAULT current_timestamp(),
   `data_scadenza` timestamp NULL DEFAULT NULL
