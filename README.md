@@ -1,122 +1,174 @@
-# Web-App
-Web-App per la gestione marketplace sviluppata in PHP con Apache/XAMPP.
+# NerdVault - WEB_APP
+
+NerdVault e' una web app marketplace sviluppata in PHP per la gestione di annunci, utenti, wishlist, carrello, pagamenti simulati, account business, feedback, segnalazioni e area amministratore.
+
+Il progetto usa una struttura MVC leggera senza framework esterni: `public/index.php` funziona da front controller, mentre controller, servizi, viste, middleware e configurazione sono separati nella cartella `src`.
+
 ## Tecnologie
+
 - PHP 8.x
 - Apache
-- MySQL
-- HTML5, CSS3, JavaScript
-- XAMPP per ambiente locale
-Ecco la versione aggiornata del README con l’indicazione chiara di lavorare sempre sul branch `develop`:
+- MySQL / MariaDB
+- PDO
+- HTML, CSS e JavaScript
+- XAMPP per l'ambiente locale
 
----
+## Struttura del progetto
 
-# Configurazione ambiente locale con XAMPP e Apache
-
-Questa sezione descrive come configurare l’ambiente di sviluppo locale per eseguire la web-app utilizzando **XAMPP** e **Apache**.
-
----
-
-# 1. Clonare la repository
-
-Clonare la repository nella cartella `htdocs` di XAMPP.
-
-Percorso tipico su Windows:
-
-```bash
-C:\xampp\htdocs\
+```text
+WEB_APP/
+|-- public/
+|   |-- index.php
+|   `-- uploads/
+|       `-- annunci/
+|-- src/
+|   |-- config/
+|   |   `-- db.php
+|   |-- controllers/
+|   |-- helpers/
+|   |-- middleware/
+|   |-- models/
+|   |-- services/
+|   `-- views/
+|       |-- admin/
+|       |-- annunci/
+|       |-- auth/
+|       |-- business/
+|       |-- carrello/
+|       |-- errors/
+|       |-- feedback/
+|       |-- layout/
+|       |-- pagamenti/
+|       |-- partials/
+|       |-- segnalazioni/
+|       |-- utenti/
+|       `-- wishlist/
+|-- database/
+|   |-- nerdvault.sql
+|   `-- migrazione_foto_annunci.sql
+|-- INFO/
+|   |-- categorie.txt
+|   |-- Struttura DB.txt
+|   |-- ToDo WEB_APP.txt
+|   `-- altri file di documentazione
+|-- assets/
+|-- .github/
+`-- README.md
 ```
 
-Eseguire:
+## Cartelle principali
+
+- `public/`: contiene il punto di ingresso dell'applicazione. Apache deve servire questa cartella, non la root del progetto.
+- `public/uploads/`: contiene i file caricati dagli utenti, per esempio le immagini degli annunci.
+- `src/config/`: contiene la configurazione dell'applicazione, inclusa la connessione al database.
+- `src/controllers/`: riceve le richieste dal router e coordina servizi e viste.
+- `src/services/`: contiene la logica applicativa e le query al database tramite PDO.
+- `src/models/`: contiene classi modello semplici.
+- `src/views/`: contiene le pagine PHP renderizzate dall'applicazione.
+- `src/middleware/`: contiene i controlli di accesso per utenti autenticati, admin, business e guest.
+- `src/helpers/`: contiene funzioni comuni, come l'escape HTML.
+- `database/`: contiene dump e migrazioni SQL.
+- `INFO/`: contiene documentazione, appunti, schema DB e materiali del progetto.
+
+## Funzionalita' principali
+
+- Registrazione utente normale
+- Registrazione account business
+- Login e logout
+- Profilo utente
+- Creazione, elenco, dettaglio ed eliminazione annunci
+- Upload immagini per gli annunci
+- Ricerca annunci
+- Wishlist
+- Carrello
+- Checkout e pagamento simulato
+- Feedback
+- Segnalazioni
+- Dashboard amministratore
+- Gestione utenti da admin
+- Gestione segnalazioni da admin
+
+## Configurazione locale con XAMPP
+
+### 1. Clonare il progetto
+
+Clonare la repository dentro la cartella `htdocs` di XAMPP:
 
 ```bash
+cd C:\xampp\htdocs
 git clone https://github.com/CSMEnterprise/WEB_APP.git
 ```
 
-La struttura risultante sarà simile alla seguente:
-
-```
-htdocs
-└── WEB_APP
-    ├── public
-    ├── src
-    ├── config
-    ├── database
-    ├── assets
-    ├── README.md
-    └── .github
-```
-
----
-
-# 2. Struttura del progetto
-
-Il progetto utilizza una struttura che separa il codice interno dai file accessibili dal browser.
-
-```
-WEB_APP
-│
-├── public
-│   ├── index.php
-│   ├── css
-│   ├── js
-│   └── images
-│
-├── src
-│   ├── controllers
-│   ├── models
-│   └── services
-│
-├── config
-│   └── database.php
-│
-├── database
-│   └── schema.sql
-│
-├── assets
-│
-└── README.md
-```
-
-### Descrizione cartelle
-
-* **public/** → File accessibili dal browser (entry point dell’applicazione).
-* **src/** → Codice sorgente dell’applicazione (controller, modelli, logica).
-* **config/** → File di configurazione dell’applicazione (database, impostazioni).
-* **database/** → Script SQL per creare il database.
-* **assets/** → Risorse statiche (CSS, JS, immagini).
-
----
-
-# 3. Lavorare sempre sul branch `develop`
-
-Tutte le modifiche devono essere effettuate **sul branch `develop`**.
-Il branch `main` rimane stabile e contiene solo il codice verificato pronto per la produzione.
-
-**Flusso consigliato:**
+Entrare nella cartella del progetto:
 
 ```bash
-# passare a develop
-git checkout Develop
+cd WEB_APP
+```
 
-# aggiornare il branch locale
+### 2. Usare il branch di sviluppo
+
+Il branch di lavoro del progetto e' `Develop`:
+
+```bash
+git checkout Develop
 git pull origin Develop
 ```
 
----
+### 3. Importare il database
 
-# 4. Configurare Apache (Virtual Host)
+1. Avviare MySQL/MariaDB da XAMPP.
+2. Aprire phpMyAdmin.
+3. Creare un database chiamato:
 
-Per motivi di sicurezza e organizzazione, Apache deve servire **solo la cartella `public`**.
-
-Aprire il file:
-
-```
-xampp/apache/conf/extra/httpd-vhosts.conf
+```text
+nerdvault
 ```
 
-e aggiungere:
+4. Importare il file:
 
+```text
+database/nerdvault.sql
 ```
+
+Se necessario, applicare anche eventuali migrazioni presenti in `database/`, per esempio:
+
+```text
+database/migrazione_foto_annunci.sql
+```
+
+### 4. Configurare la connessione al database
+
+La connessione PDO e' configurata in:
+
+```text
+src/config/db.php
+```
+
+Configurazione locale predefinita:
+
+```php
+$host = 'localhost';
+$port = '3306';
+$dbname = 'nerdvault';
+$username = 'root';
+$password = '';
+```
+
+Questi valori sono adatti alla configurazione standard di XAMPP. Se il database usa credenziali diverse, modificarle in quel file.
+
+### 5. Configurare Apache
+
+Per sicurezza, Apache deve servire solo la cartella `public`.
+
+Aprire:
+
+```text
+C:\xampp\apache\conf\extra\httpd-vhosts.conf
+```
+
+Aggiungere un virtual host:
+
+```apache
 <VirtualHost *:80>
     ServerName web_app.local
     DocumentRoot "C:/xampp/htdocs/WEB_APP/public"
@@ -128,84 +180,129 @@ e aggiungere:
 </VirtualHost>
 ```
 
----
+### 6. Configurare il file hosts
 
-# 5. Configurare il file hosts
+Aprire come amministratore:
 
-Aprire:
-
-```
+```text
 C:\Windows\System32\drivers\etc\hosts
 ```
 
-e aggiungere:
+Aggiungere:
 
-```
-127.0.0.1 WEB_APP.local
-```
-
----
-
-# 6. Avviare il server
-
-Aprire il pannello XAMPP e avviare:
-
-* Apache
-* MySQL (se necessario)
-
----
-
-# 7. Avviare l'applicazione
-
-Aprire il browser:
-
-```
-http://WEB_APP.local
+```text
+127.0.0.1 web_app.local
 ```
 
-Apache utilizzerà automaticamente:
+### 7. Avviare l'applicazione
 
+Avviare da XAMPP:
+
+- Apache
+- MySQL
+
+Poi aprire nel browser:
+
+```text
+http://web_app.local
 ```
-WEB_APP/public/index.php
+
+In alternativa, se non si configura un virtual host, e' possibile usare:
+
+```text
+http://localhost/WEB_APP/public/
 ```
 
-come punto di ingresso.
+## Routing
 
----
+Il routing e' gestito in:
 
-# 8. Workflow di sviluppo
+```text
+public/index.php
+```
 
-1. **Aggiornare il branch develop**:
+Le rotte vengono lette da:
+
+- query string: `index.php?route=annunci`
+- campi hidden nei form POST: `<input name="route" value="...">`
+- `PATH_INFO`, se configurato da Apache
+
+Esempi:
+
+```text
+index.php?route=home
+index.php?route=annunci
+index.php?route=annuncio&id=1
+index.php?route=login
+index.php?route=register
+index.php?route=carrello
+index.php?route=wishlist
+index.php?route=admin
+```
+
+## Flusso MVC
+
+Il flusso principale dell'applicazione e':
+
+```text
+Browser
+  -> public/index.php
+  -> middleware, se richiesto
+  -> controller
+  -> service
+  -> database
+  -> view
+  -> HTML restituito al browser
+```
+
+Esempio per la lista annunci:
+
+```text
+public/index.php
+  -> AnnuncioController::lista()
+  -> AnnuncioService::getAnnunciAttivi()
+  -> src/views/annunci/lista.php
+```
+
+## Verifica sintassi PHP
+
+Con XAMPP su Windows e' possibile controllare la sintassi dei file PHP con:
+
+```powershell
+Get-ChildItem -Recurse -Filter *.php | ForEach-Object { C:\xampp\php\php.exe -l $_.FullName }
+```
+
+## Note per lo sviluppo
+
+- Usare sempre `public/index.php` come punto di ingresso.
+- Non includere direttamente file dentro `src/` dal browser.
+- Usare i servizi in `src/services/` per la logica applicativa e le query.
+- Usare `e()` per stampare dati dinamici nelle viste.
+- Gli upload degli utenti devono restare dentro `public/uploads/`.
+- Prima di lavorare, aggiornare sempre il branch `Develop`.
+
+## Workflow Git consigliato
 
 ```bash
 git checkout Develop
 git pull origin Develop
+git status
 ```
 
-2. **Effettuare modifiche** su `Develop`.
-
-3. **Commit e push delle modifiche**:
+Dopo le modifiche:
 
 ```bash
 git add .
-git commit -m "descrizione modifiche"
+git commit -m "Descrizione modifica"
 git push origin Develop
 ```
 
-4. Le modifiche vengono poi integrate nel branch `main` tramite Pull Request.
+## Avvertenze
 
----
+Il progetto e' configurato per ambiente locale XAMPP. Prima di un eventuale deploy online e' consigliato:
 
-# 9. Note
-
-I file come:
-
-* `README.md`
-* `.github/`
-* `.git/`
-
-sono utilizzati per la gestione del progetto e della repository e **non interferiscono con il funzionamento del server Apache**.
-
----
-
-Se vuoi, posso anche creare **una sezione finale con “Buone pratiche Git” per il team**, così tutti i membri sapranno esattamente come gestire branch, feature e Pull Request. Vuoi che lo faccia?
+- disattivare `APP_DEBUG` in produzione;
+- spostare le credenziali database fuori dal codice versionato;
+- aggiungere protezione CSRF ai form e alle azioni che modificano dati;
+- evitare azioni distruttive via GET;
+- non versionare file caricati dagli utenti o file generati automaticamente.
