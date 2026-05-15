@@ -17,8 +17,15 @@ class AnnuncioController
 
     public function lista(): void
     {
+    $q = $_GET['q'] ?? '';
+
+    if (trim($q) !== '') {
+        $annunci = $this->annuncioService->searchAnnunci($q);
+    } else {
         $annunci = $this->annuncioService->getAnnunciAttivi();
-        require __DIR__ . '/../views/annunci/lista.php';
+    }
+
+    require __DIR__ . '/../views/annunci/lista.php';
     }
 
     public function dettaglio(int $idAnnuncio): void
