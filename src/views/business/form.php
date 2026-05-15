@@ -7,7 +7,8 @@ require __DIR__ . '/../partials/flash.php';
 <div class="card">
     <h1>Crea account business</h1>
 
-    <form method="post" action="index.php?route=business-store">
+    <form method="post" action="index.php">
+        <input type="hidden" name="route" value="business-store">
         <label for="nome_azienda">Nome azienda</label>
         <input type="text" id="nome_azienda" name="nome_azienda" required>
 

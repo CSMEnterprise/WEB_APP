@@ -35,7 +35,8 @@ require __DIR__ . '/../layout/header.php';
     <div id="indirizzoForm" class="card" style="display: none;">
         <h2>Indirizzo sede</h2>
 
-        <form method="post" action="index.php?route=business-indirizzo-store">
+        <form method="post" action="index.php">
+            <input type="hidden" name="route" value="business-indirizzo-store">
             <label for="via">Via / Corso / Piazza</label>
             <input
                 type="text"

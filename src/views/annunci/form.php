@@ -7,7 +7,8 @@ require __DIR__ . '/../partials/flash.php';
 <div class="card">
     <h1>Crea annuncio</h1>
 
-    <form method="post" action="index.php?route=annuncio-store" enctype="multipart/form-data">
+    <form method="post" action="index.php" enctype="multipart/form-data">
+        <input type="hidden" name="route" value="annuncio-store">
         <label for="titolo">Titolo</label>
         <input type="text" id="titolo" name="titolo" required>
 
@@ -45,7 +46,8 @@ require __DIR__ . '/../partials/flash.php';
                 name="immagini[]"
                 accept="image/jpeg,image/png,image/webp"
                 multiple
-                hidden>
+                hidden
+            >
 
             <label class="btn btn-secondary photo-upload-btn" for="immagini">
                 Scegli foto
@@ -61,39 +63,39 @@ require __DIR__ . '/../partials/flash.php';
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const input = document.getElementById('immagini');
-        const preview = document.getElementById('photo-preview');
-        const maxFiles = 5;
+document.addEventListener('DOMContentLoaded', function () {
+    const input = document.getElementById('immagini');
+    const preview = document.getElementById('photo-preview');
+    const maxFiles = 5;
 
-        input.addEventListener('change', function() {
-            preview.innerHTML = '';
+    input.addEventListener('change', function () {
+        preview.innerHTML = '';
 
-            const files = Array.from(input.files).slice(0, maxFiles);
+        const files = Array.from(input.files).slice(0, maxFiles);
 
-            files.forEach(function(file) {
-                if (!file.type.startsWith('image/')) {
-                    return;
-                }
+        files.forEach(function (file) {
+            if (!file.type.startsWith('image/')) {
+                return;
+            }
 
-                const reader = new FileReader();
+            const reader = new FileReader();
 
-                reader.onload = function(event) {
-                    const item = document.createElement('div');
-                    item.className = 'photo-preview-item';
+            reader.onload = function (event) {
+                const item = document.createElement('div');
+                item.className = 'photo-preview-item';
 
-                    const img = document.createElement('img');
-                    img.src = event.target.result;
-                    img.alt = file.name;
+                const img = document.createElement('img');
+                img.src = event.target.result;
+                img.alt = file.name;
 
-                    item.appendChild(img);
-                    preview.appendChild(item);
-                };
+                item.appendChild(img);
+                preview.appendChild(item);
+            };
 
-                reader.readAsDataURL(file);
-            });
+            reader.readAsDataURL(file);
         });
     });
+});
 </script>
 
 <?php require __DIR__ . '/../layout/footer.php'; ?>

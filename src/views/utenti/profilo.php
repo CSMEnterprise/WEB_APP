@@ -36,7 +36,8 @@ require __DIR__ . '/../layout/header.php';
     <div id="indirizzoForm" class="card" style="display: none;">
         <h2>Indirizzo di spedizione</h2>
 
-        <form method="post" action="index.php?route=profilo-indirizzo-store">
+        <form method="post" action="index.php">
+            <input type="hidden" name="route" value="profilo-indirizzo-store">
             <label for="nome">Nome e cognome</label>
             <input
                 type="text"
@@ -88,6 +89,38 @@ require __DIR__ . '/../layout/header.php';
         </form>
     </div>
 
+    <section class="profile-annunci">
+        <div class="nav" style="align-items:flex-start;">
+            <h2>I miei annunci pubblicati</h2>
+            <a class="btn" href="index.php?route=annuncio-create">Nuovo annuncio</a>
+        </div>
+
+        <?php if (!empty($annunciUtente)): ?>
+            <div class="grid">
+                <?php foreach ($annunciUtente as $annuncio): ?>
+                    <article class="card">
+                        <?php if (!empty($annuncio['immagine_principale'])): ?>
+                            <img class="annuncio-card-img" src="<?= e($annuncio['immagine_principale']) ?>" alt="Foto annuncio">
+                        <?php endif; ?>
+
+                        <h3><?= e($annuncio['titolo'] ?? 'Annuncio') ?></h3>
+                        <p class="muted"><?= e($annuncio['categoria_nome'] ?? 'Senza categoria') ?></p>
+                        <p class="price">€ <?= number_format((float)($annuncio['prezzo'] ?? 0), 2, ',', '.') ?></p>
+                        <p><strong>Conservazione:</strong> <?= e($annuncio['stato_conservazione'] ?? '') ?></p>
+                        <p><strong>Stato vendita:</strong> <?= e($annuncio['stato'] ?? '') ?></p>
+
+                        <a class="btn" href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Dettagli</a>
+                        <a class="btn btn-danger" href="index.php?route=annuncio-delete&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Elimina</a>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <div class="card">
+                <p>Non hai ancora pubblicato annunci.</p>
+            </div>
+        <?php endif; ?>
+    </section>
+
     <script>
         function toggleIndirizzoForm() {
             const form = document.getElementById('indirizzoForm');
@@ -97,3 +130,5 @@ require __DIR__ . '/../layout/header.php';
 <?php else: ?>
     <div class="alert alert-error">Utente non trovato.</div>
 <?php endif; ?>
+
+<?php require __DIR__ . '/../layout/footer.php'; ?>
