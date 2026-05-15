@@ -79,6 +79,51 @@ class UserService extends BaseService
         $stmt->execute([$idUtente]);
     }
 
+    public function updatePropic(int $idUtente, array $file): string
+    {
+        $this->requirePositiveId($idUtente, 'Utente');
+
+        $maxSize     = 3 * 1024 * 1024;
+        $allowedMime = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+
+        if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            throw new ServiceException('Errore durante il caricamento della foto.');
+        }
+
+        if (($file['size'] ?? 0) > $maxSize) {
+            throw new ServiceException('La foto deve pesare al massimo 3 MB.');
+        }
+
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime  = $finfo->file($file['tmp_name']);
+
+        if (!isset($allowedMime[$mime])) {
+            throw new ServiceException('Puoi caricare solo immagini JPG, PNG o WEBP.');
+        }
+
+        $ext      = $allowedMime[$mime];
+        $dir      = __DIR__ . '/../../public/uploads/propic/';
+        $publicDir = 'uploads/propic/';
+
+        if (!is_dir($dir) && !mkdir($dir, 0775, true)) {
+            throw new ServiceException('Impossibile creare la cartella per le foto profilo.');
+        }
+
+        $filename = 'user_' . $idUtente . '_' . bin2hex(random_bytes(8)) . '.' . $ext;
+        $dest     = $dir . $filename;
+
+        if (!move_uploaded_file($file['tmp_name'], $dest)) {
+            throw new ServiceException('Impossibile salvare la foto profilo.');
+        }
+
+        $url = $publicDir . $filename;
+
+        $stmt = $this->db->prepare("UPDATE utente_registrato SET propic = ? WHERE id_utente = ?");
+        $stmt->execute([$url, $idUtente]);
+
+        return $url;
+    }
+
     public function updateIndirizzoSpedizione(int $idUtente, array $data): void
     {
         $this->requirePositiveId($idUtente, 'Utente');

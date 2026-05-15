@@ -39,10 +39,12 @@ class UtenteController
                 $_SESSION['user_id']  = (int) $utente['id_admin'];
                 $_SESSION['username'] = 'Admin';
                 $_SESSION['is_admin'] = true;
+                $_SESSION['propic']   = null;
                 header('Location: index.php?route=admin');
             } else {
                 $_SESSION['user_id']  = (int) $utente['id_utente'];
                 $_SESSION['username'] = $utente['username'];
+                $_SESSION['propic']   = $utente['propic'] ?? null;
                 header('Location: index.php?route=profilo');
             }
             exit;
@@ -118,6 +120,24 @@ class UtenteController
         session_destroy();
         header('Location: index.php?route=home');
         exit;
+    }
+
+    public function aggiornaFotoProfilo(array $files, int $idUtente): void
+    {
+        try {
+            $url = $this->userService->updatePropic($idUtente, $files['propic'] ?? []);
+            $_SESSION['propic'] = $url;
+            header('Location: index.php?route=profilo');
+            exit;
+        } catch (Exception $e) {
+            $errore          = $e->getMessage();
+            $utente          = $this->userService->findById($idUtente);
+            $filtroAnnunci   = 'attivo';
+            $annunciUtente   = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
+            $titoloAnnunciProfilo = 'Annunci attivi';
+            $cronologiaPagamenti  = $this->paymentService->getCronologiaByUserId($idUtente);
+            require __DIR__ . '/../views/utenti/profilo.php';
+        }
     }
 
     public function salvaIndirizzoSpedizione(array $data, int $idUtente): void
