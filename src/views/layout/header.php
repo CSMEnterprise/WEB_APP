@@ -83,6 +83,14 @@ $isLogged = isset($_SESSION['user_id']);
         .annuncio-card-img { width: 100%; height: 170px; object-fit: cover; border-radius: 10px; margin-bottom: 12px; background: #f3f4f6; }
         .annuncio-gallery { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0 18px; }
         .annuncio-gallery img { width: 160px; height: 160px; object-fit: cover; border-radius: 12px; border: 1px solid #e5e7eb; }
+
+        .cart-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; align-items: start; }
+        .cart-items { display: grid; gap: 16px; }
+        .cart-summary { position: sticky; top: 16px; }
+        .cart-summary-actions { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+        .cart-summary-actions .btn { text-align: center; }
+        .cart-item-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+        @media (max-width: 760px) { .cart-layout { grid-template-columns: 1fr; } .cart-summary { position: static; } }
     </style>
 </head>
 
@@ -113,6 +121,7 @@ $isLogged = isset($_SESSION['user_id']);
             <?php if ($isLogged): ?>
                 <a href="index.php?route=profilo">Profilo</a>
                 <a href="index.php?route=carrello">Carrello</a>
+                <a href="index.php?route=wishlist">Wishlist</a>
                 <a href="index.php?route=business">Business</a>
                 <a href="index.php?route=logout">Logout</a>
             <?php else: ?>

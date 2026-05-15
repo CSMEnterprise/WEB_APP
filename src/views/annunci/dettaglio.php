@@ -22,7 +22,7 @@ require __DIR__ . '/../layout/header.php';
 
         <p class="price">€ <?= number_format((float)($annuncio['prezzo'] ?? 0), 2, ',', '.') ?></p>
         <p><strong>Conservazione:</strong> <?= e($annuncio['stato_conservazione'] ?? '') ?></p>
-        <p><strong>Stato vendita:</strong> <?= e($annuncio['stato'] ?? '') ?></p>
+        <p><strong>Stato vendita:</strong> <?= e(ucfirst((string)($annuncio['stato'] ?? ''))) ?></p>
         <p><strong>Venditore:</strong> <?= e($annuncio['venditore_username'] ?? '') ?></p>
 
         <?php if (!empty($_SESSION['user_id'])): ?>
@@ -31,6 +31,7 @@ require __DIR__ . '/../layout/header.php';
                 <a class="btn btn-danger" href="index.php?route=annuncio-delete&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Elimina</a>
             <?php else: ?>
                 <a class="btn" href="index.php?route=carrello-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Aggiungi al carrello</a>
+                <a class="btn btn-secondary" href="index.php?route=wishlist-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Aggiungi alla wishlist</a>
                 <a class="btn btn-secondary" href="index.php?route=checkout&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Acquista</a>
                 <a class="btn btn-secondary" href="index.php?route=segnalazione-create&id_annuncio=<?= e($annuncio['id_annuncio'] ?? '') ?>">Segnala</a>
             <?php endif; ?>

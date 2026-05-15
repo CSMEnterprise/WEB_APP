@@ -13,6 +13,7 @@ require_once __DIR__ . '/../src/middleware/guest.php';
 require_once __DIR__ . '/../src/controllers/UtenteController.php';
 require_once __DIR__ . '/../src/controllers/AnnuncioController.php';
 require_once __DIR__ . '/../src/controllers/CarrelloController.php';
+require_once __DIR__ . '/../src/controllers/WishlistController.php';
 require_once __DIR__ . '/../src/controllers/PagamentoController.php';
 require_once __DIR__ . '/../src/controllers/BusinessController.php';
 require_once __DIR__ . '/../src/controllers/FeedbackController.php';
@@ -66,6 +67,15 @@ $routeAliases = [
     'miei-annunci-attivi' => 'profilo-annunci-attivi',
     'profilo-venduti' => 'profilo-annunci-venduti',
     'miei-annunci-venduti' => 'profilo-annunci-venduti',
+
+    'preferiti' => 'wishlist',
+    'preferito' => 'wishlist',
+    'wishlist-list' => 'wishlist',
+    'wishlist-add-post' => 'wishlist-add',
+    'preferiti-add' => 'wishlist-add',
+    'preferito-add' => 'wishlist-add',
+    'preferiti-remove' => 'wishlist-remove',
+    'preferito-remove' => 'wishlist-remove',
 
     'business-profilo' => 'business',
     'profilo-business' => 'business',
@@ -210,6 +220,34 @@ try {
         case 'carrello-clear':
             requireAuth();
             (new CarrelloController($pdo))->svuota(currentUserId());
+            break;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Wishlist
+        |--------------------------------------------------------------------------
+        */
+
+        case 'wishlist':
+        case 'preferiti':
+            requireAuth();
+            (new WishlistController($pdo))->lista(currentUserId());
+            break;
+
+        case 'wishlist-add':
+            requireAuth();
+            (new WishlistController($pdo))->aggiungi(currentUserId(), (int) ($_GET['id'] ?? 0));
+            break;
+
+        case 'wishlist-remove':
+            requireAuth();
+            (new WishlistController($pdo))->rimuovi(currentUserId(), (int) ($_GET['id'] ?? 0));
+            break;
+
+        case 'wishlist-clear':
+            requireAuth();
+            (new WishlistController($pdo))->svuota(currentUserId());
             break;
 
 
