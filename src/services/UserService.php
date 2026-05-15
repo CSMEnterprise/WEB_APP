@@ -83,18 +83,16 @@ class UserService extends BaseService
             $stmt->execute([$nome, $idUtente]);
         }
 
-        // Upsert indirizzo: aggiorna se esiste già uno predefinito, altrimenti inserisce
+        $stmt = $this->db->prepare("
+            DELETE FROM indirizzi
+            WHERE id_utente = ? AND predefinito = 1
+        ");
+        $stmt->execute([$idUtente]);
+
         $stmt = $this->db->prepare("
             INSERT INTO indirizzi
-                (id_utente, tipo, via, numero, cap, citta, provincia, paese, predefinito)
-            VALUES (?, 'spedizione', ?, ?, ?, ?, ?, ?, 1)
-            ON DUPLICATE KEY UPDATE
-                via       = VALUES(via),
-                numero    = VALUES(numero),
-                cap       = VALUES(cap),
-                citta     = VALUES(citta),
-                provincia = VALUES(provincia),
-                paese     = VALUES(paese)
+                (id_utente, via, numero, cap, citta, provincia, paese, predefinito)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1)
         ");
         $stmt->execute([
             $idUtente,

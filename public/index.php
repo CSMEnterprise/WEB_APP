@@ -103,7 +103,7 @@ try {
 
         case 'annuncio-store':
             requireAuth();
-            (new AnnuncioController($pdo))->crea($_POST, currentUserId());
+            (new AnnuncioController($pdo))->crea($_POST, currentUserId(), $_FILES);
             break;
 
         case 'annuncio-delete':

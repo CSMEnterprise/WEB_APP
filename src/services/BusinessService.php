@@ -30,7 +30,6 @@ class BusinessService extends BaseService
         $telefono       = $this->clean($data['telefono'] ?? '');
         $descrizione    = $this->clean($data['descrizione'] ?? '');
 
-        // Campi indirizzo separati
         $via        = $this->clean($data['via'] ?? '');
         $numero     = $this->clean($data['numero'] ?? '');
         $cap        = $this->clean($data['cap'] ?? '');
@@ -42,8 +41,11 @@ class BusinessService extends BaseService
             throw new ServiceException('Nome azienda, partita IVA ed email aziendale sono obbligatori.');
         }
 
+        if (!filter_var($emailAziendale, FILTER_VALIDATE_EMAIL)) {
+            throw new ServiceException('Email aziendale non valida.');
+        }
+
         try {
-            // 1. Inserisci il business (senza indirizzo)
             $stmt = $this->db->prepare("
                 INSERT INTO account_business
                     (id_utente, p_iva, nome_azienda, email_aziendale, telefono, descrizione)
@@ -60,18 +62,21 @@ class BusinessService extends BaseService
 
             $idBusiness = $this->lastInsertId();
 
-            // 2. Se è stato fornito almeno via e città, inserisci l'indirizzo
-            if ($via !== '' && $citta !== '') {
+            if ($via !== '' || $citta !== '') {
+                if ($via === '' || $citta === '') {
+                    throw new ServiceException('Per salvare la sede aziendale devi indicare almeno via e città.');
+                }
+
                 $stmtInd = $this->db->prepare("
                     INSERT INTO indirizzi
-                        (id_business, tipo, via, numero, cap, citta, provincia, paese, predefinito)
-                    VALUES (?, 'lavoro', ?, ?, ?, ?, ?, ?, 1)
+                        (id_business, via, numero, cap, citta, provincia, paese, predefinito)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 1)
                 ");
                 $stmtInd->execute([
                     $idBusiness,
                     $via,
-                    $numero   !== '' ? $numero   : null,
-                    $cap      !== '' ? $cap      : null,
+                    $numero    !== '' ? $numero    : null,
+                    $cap       !== '' ? $cap       : null,
                     $citta,
                     $provincia !== '' ? $provincia : null,
                     $paese,
@@ -100,18 +105,16 @@ class BusinessService extends BaseService
             throw new ServiceException('Via e città sono obbligatori.');
         }
 
-        // Upsert: aggiorna se esiste già, inserisce se non c'è
+        $stmt = $this->db->prepare("
+            DELETE FROM indirizzi
+            WHERE id_business = ? AND predefinito = 1
+        ");
+        $stmt->execute([$idBusiness]);
+
         $stmt = $this->db->prepare("
             INSERT INTO indirizzi
-                (id_business, tipo, via, numero, cap, citta, provincia, paese, predefinito)
-            VALUES (?, 'lavoro', ?, ?, ?, ?, ?, ?, 1)
-            ON DUPLICATE KEY UPDATE
-                via       = VALUES(via),
-                numero    = VALUES(numero),
-                cap       = VALUES(cap),
-                citta     = VALUES(citta),
-                provincia = VALUES(provincia),
-                paese     = VALUES(paese)
+                (id_business, via, numero, cap, citta, provincia, paese, predefinito)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1)
         ");
         $stmt->execute([
             $idBusiness,
