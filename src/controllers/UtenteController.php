@@ -46,9 +46,10 @@ class UtenteController
                 $_SESSION['livello_sicurezza'] = (int) ($utente['livello_sicurezza'] ?? 1);
                 header('Location: index.php?route=admin');
             } else {
-                $_SESSION['user_id']  = (int) $utente['id_utente'];
-                $_SESSION['username'] = $utente['username'];
-                $_SESSION['propic']   = $utente['propic'] ?? null;
+                $_SESSION['user_id']     = (int) $utente['id_utente'];
+                $_SESSION['username']    = $utente['username'];
+                $_SESSION['propic']      = $utente['propic'] ?? null;
+                $_SESSION['is_business'] = !empty($utente['_is_business']);
                 header('Location: index.php?route=profilo');
             }
             exit;
@@ -90,6 +91,19 @@ class UtenteController
     {
         try {
             $this->db->beginTransaction();
+
+            // Usa email aziendale come email di accesso
+            $data['email'] = $data['email_aziendale'] ?? '';
+
+            // Genera uno username univoco dal nome azienda
+            $base = preg_replace('/[^A-Za-z0-9]/', '_', $data['nome_azienda'] ?? 'business');
+            $base = strtolower(trim($base, '_'));
+            $base = preg_replace('/_+/', '_', $base);
+            $base = substr($base, 0, 26);
+            if (strlen($base) < 3) {
+                $base = 'biz_' . $base;
+            }
+            $data['username'] = $base . '_' . substr(bin2hex(random_bytes(2)), 0, 4);
 
             $data['_business_registration'] = true;
             $idUtente = $this->authService->register($data);
