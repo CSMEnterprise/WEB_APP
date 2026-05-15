@@ -1,0 +1,131 @@
+-- ============================================================
+-- NerdVault - Categorie e Sottocategorie
+-- Compatibile con: tabella `categoria` (id_categoria, nome, id_padre)
+-- ============================================================
+ 
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE `categoria`;
+SET FOREIGN_KEY_CHECKS = 1;
+ 
+-- ============================================================
+-- CATEGORIE PRINCIPALI (id_padre = NULL)
+-- ============================================================
+ 
+INSERT INTO `categoria` (`id_categoria`, `nome`, `id_padre`) VALUES
+(1,  'Manga',                    NULL),
+(2,  'Action Figure',            NULL),
+(3,  'Fumetti & Graphic Novel',  NULL),
+(4,  'Videogiochi',              NULL),
+(5,  'Carte Collezionabili',     NULL),
+(6,  'Gadget & Merchandise',     NULL),
+(7,  'Modellismo & Statue',      NULL),
+(8,  'Abbigliamento',            NULL),
+(9,  'Libri & Artbook',          NULL);
+ 
+-- ============================================================
+-- SOTTOCATEGORIE: Manga (id_padre = 1)
+-- ============================================================
+ 
+INSERT INTO `categoria` (`id_categoria`, `nome`, `id_padre`) VALUES
+(10, 'Shonen',          1),
+(11, 'Shojo',           1),
+(12, 'Seinen',          1),
+(13, 'Josei',           1),
+(14, 'Mecha',           1),
+(15, 'Isekai',          1),
+(16, 'Horror',          1),
+(17, 'Slice of Life',   1),
+(18, 'Fantascienza',    1);
+ 
+-- ============================================================
+-- SOTTOCATEGORIE: Action Figure (id_padre = 2)
+-- ============================================================
+ 
+INSERT INTO `categoria` (`id_categoria`, `nome`, `id_padre`) VALUES
+(19, 'Anime & Manga Figure',   2),
+(20, 'Supereroi',              2),
+(21, 'Star Wars',              2),
+(22, 'Videogiochi Figure',     2),
+(23, 'Film & Serie TV',        2),
+(24, 'Mecha & Robot',          2),
+(25, 'Funko Pop',              2);
+ 
+-- ============================================================
+-- SOTTOCATEGORIE: Fumetti & Graphic Novel (id_padre = 3)
+-- ============================================================
+ 
+INSERT INTO `categoria` (`id_categoria`, `nome`, `id_padre`) VALUES
+(26, 'Marvel',              3),
+(27, 'DC Comics',           3),
+(28, 'Fumetti Italiani',    3),
+(29, 'Indie & Alternative', 3),
+(30, 'Fumetti Europei',     3);
+ 
+-- ============================================================
+-- SOTTOCATEGORIE: Videogiochi (id_padre = 4)
+-- ============================================================
+ 
+INSERT INTO `categoria` (`id_categoria`, `nome`, `id_padre`) VALUES
+(31, 'PlayStation',     4),
+(32, 'Xbox',            4),
+(33, 'Nintendo',        4),
+(34, 'PC Gaming',       4),
+(35, 'Retrogaming',     4);
+ 
+-- ============================================================
+-- SOTTOCATEGORIE: Carte Collezionabili (id_padre = 5)
+-- ============================================================
+ 
+INSERT INTO `categoria` (`id_categoria`, `nome`, `id_padre`) VALUES
+(36, 'Pokémon TCG',             5),
+(37, 'Yu-Gi-Oh!',               5),
+(38, 'Magic: The Gathering',    5),
+(39, 'Dragon Ball Super Card',  5),
+(40, 'One Piece Card Game',     5);
+ 
+-- ============================================================
+-- SOTTOCATEGORIE: Gadget & Merchandise (id_padre = 6)
+-- ============================================================
+ 
+INSERT INTO `categoria` (`id_categoria`, `nome`, `id_padre`) VALUES
+(41, 'Portachiavi & Spille',    6),
+(42, 'Poster & Stampe',         6),
+(43, 'Tazze & Gadget',          6),
+(44, 'Peluche',                 6),
+(45, 'Borse & Zaini',           6);
+ 
+-- ============================================================
+-- SOTTOCATEGORIE: Modellismo & Statue (id_padre = 7)
+-- ============================================================
+ 
+INSERT INTO `categoria` (`id_categoria`, `nome`, `id_padre`) VALUES
+(46, 'Gunpla & Modellismo',     7),
+(47, 'Figure Premium',          7),
+(48, 'Statue da Collezione',    7),
+(49, 'Diorami',                 7);
+ 
+-- ============================================================
+-- SOTTOCATEGORIE: Abbigliamento (id_padre = 8)
+-- ============================================================
+ 
+INSERT INTO `categoria` (`id_categoria`, `nome`, `id_padre`) VALUES
+(50, 'T-Shirt',             8),
+(51, 'Felpe & Cappellini',  8),
+(52, 'Cosplay',             8),
+(53, 'Accessori Moda',      8);
+ 
+-- ============================================================
+-- SOTTOCATEGORIE: Libri & Artbook (id_padre = 9)
+-- ============================================================
+ 
+INSERT INTO `categoria` (`id_categoria`, `nome`, `id_padre`) VALUES
+(54, 'Artbook',             9),
+(55, 'Light Novel',         9),
+(56, 'Guide & Enciclopedie',9),
+(57, 'Romanzi',             9);
+ 
+-- ============================================================
+-- Reset AUTO_INCREMENT
+-- ============================================================
+ 
+ALTER TABLE `categoria` AUTO_INCREMENT = 58;
