@@ -13,11 +13,6 @@ require_once __DIR__ . '/../src/middleware/guest.php';
 require_once __DIR__ . '/../src/controllers/UtenteController.php';
 require_once __DIR__ . '/../src/controllers/AnnuncioController.php';
 require_once __DIR__ . '/../src/controllers/CarrelloController.php';
-require_once __DIR__ . '/../src/controllers/PagamentoController.php';
-require_once __DIR__ . '/../src/controllers/BusinessController.php';
-require_once __DIR__ . '/../src/controllers/AdminController.php';
-require_once __DIR__ . '/../src/controllers/FeedbackController.php';
-require_once __DIR__ . '/../src/controllers/SegnalazioneController.php';
 
 $route = $_GET['route'] ?? 'home';
 
@@ -37,7 +32,6 @@ try {
         case 'annunci':
             (new AnnuncioController($pdo))->lista();
             break;
-
         case 'annuncio':
             (new AnnuncioController($pdo))->dettaglio((int) ($_GET['id'] ?? 0));
             break;
