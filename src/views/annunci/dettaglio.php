@@ -33,7 +33,7 @@ require __DIR__ . '/../layout/header.php';
         <p><?= nl2br(e($annuncio['descrizione'] ?? '')) ?></p>
 
         <p class="price">€ <?= number_format((float)($annuncio['prezzo'] ?? 0), 2, ',', '.') ?></p>
-        <p><strong>Conservazione:</strong> <?= e($annuncio['stato_conservazione'] ?? '') ?></p>
+        <p><strong>Conservazione:</strong> <?= e($annuncio['stato_conservazione'] ?: 'Non specificato') ?></p>
         <p><strong>Stato vendita:</strong> <?= e(ucfirst((string)($annuncio['stato'] ?? ''))) ?></p>
         <?php $numeroFeedbackVenditore = count($feedbackVenditore ?? []); ?>
         <?php $stelleVenditore = (int) round((float)($mediaVenditore ?? 0)); ?>
