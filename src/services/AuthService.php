@@ -12,6 +12,22 @@ class AuthService extends BaseService
             throw new ServiceException('Email e password sono obbligatorie.');
         }
 
+        // Controlla prima la tabella admin
+        $stmt = $this->db->prepare("
+            SELECT *
+            FROM admin
+            WHERE email = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$email]);
+        $admin = $stmt->fetch();
+
+        if ($admin && password_verify($password, $admin['password_hash'])) {
+            $admin['_is_admin'] = true;
+            return $admin;
+        }
+
+        // Altrimenti cerca tra gli utenti normali
         $stmt = $this->db->prepare("
             SELECT *
             FROM utente_registrato
