@@ -120,6 +120,14 @@ class CartService extends BaseService
             VALUES (?, ?)
         ");
         $stmt->execute([$idCarrello, $idAnnuncio]);
+
+        // Se l'annuncio era nella wishlist, lo rimuoviamo automaticamente:
+        // quando un prodotto passa al carrello non deve restare anche tra i preferiti.
+        $stmt = $this->db->prepare("
+            DELETE FROM preferito
+            WHERE id_utente = ? AND id_annuncio = ?
+        ");
+        $stmt->execute([$idUtente, $idAnnuncio]);
     }
 
     public function rimuoviAnnuncio(int $idUtente, int $idAnnuncio): void

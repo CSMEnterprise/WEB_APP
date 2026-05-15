@@ -90,6 +90,18 @@ $isLogged = isset($_SESSION['user_id']);
         .cart-summary-actions { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
         .cart-summary-actions .btn { text-align: center; }
         .cart-item-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+        .register-choice-page { max-width: 760px; margin-left: auto; margin-right: auto; }
+        .register-choice-list { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 18px; }
+        .register-choice-card { display: flex; flex-direction: column; justify-content: space-between; gap: 16px; padding: 20px; border: 1px solid #e5e7eb; border-radius: 14px; background: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+        .register-choice-card h2 { margin: 0 0 8px; }
+        .register-choice-card p { margin-top: 0; }
+        .register-choice-card-business { background: #f9fafb; }
+        .register-choice-kicker { color: #2563eb; font-weight: bold; text-transform: uppercase; font-size: 13px; letter-spacing: .04em; margin-bottom: 6px; }
+        .register-benefits { margin: 12px 0 0; padding-left: 20px; }
+        .register-benefits li { margin-bottom: 7px; }
+        .register-choice-card .btn { align-self: flex-start; }
+        .register-choice-login { margin-top: 18px; }
         @media (max-width: 760px) { .cart-layout { grid-template-columns: 1fr; } .cart-summary { position: static; } }
     </style>
 </head>
