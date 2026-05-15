@@ -82,9 +82,9 @@
         <div class="container footer-bottom-inner">
             <p class="footer-copy">&copy; <?= date('Y') ?> <strong>NerdVault</strong> — Tutti i diritti riservati.</p>
             <div class="footer-bottom-links">
-                <a href="#">Privacy Policy</a>
-                <a href="#">Termini di servizio</a>
-                <a href="#">Cookie</a>
+                <a href="index.php?route=privacy">Privacy Policy</a>
+                <a href="index.php?route=termini">Termini di servizio</a>
+                <a href="index.php?route=cookie">Cookie</a>
             </div>
         </div>
     </div>

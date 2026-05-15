@@ -90,7 +90,7 @@ class AuthService extends BaseService
             throw new ServiceException('La password deve contenere almeno 10 caratteri, una lettera maiuscola e un carattere speciale.');
         }
 
-        if ($passwordConfirm !== '' && $password !== $passwordConfirm) {
+        if ($password !== $passwordConfirm) {
             throw new ServiceException('Le password non coincidono.');
         }
 
