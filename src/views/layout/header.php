@@ -102,6 +102,16 @@ $isLogged = isset($_SESSION['user_id']);
         .register-benefits li { margin-bottom: 7px; }
         .register-choice-card .btn { align-self: flex-start; }
         .register-choice-login { margin-top: 18px; }
+
+        .paypal-page { display: flex; justify-content: center; padding: 34px 0; }
+        .paypal-card { width: 100%; max-width: 540px; background: #fff; border-radius: 16px; padding: 28px; box-shadow: 0 8px 26px rgba(0,0,0,.12); text-align: center; }
+        .paypal-brand { display: inline-block; margin-bottom: 10px; font-size: 34px; font-weight: 800; color: #003087; letter-spacing: -.04em; }
+        .paypal-summary { text-align: left; margin: 22px 0; padding: 16px; border-radius: 12px; background: #f9fafb; border: 1px solid #e5e7eb; }
+        .paypal-product-img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 12px; margin: 8px 0 14px; background: #f3f4f6; }
+        .paypal-actions { display: flex; flex-direction: column; gap: 10px; align-items: stretch; margin-top: 18px; }
+        .paypal-actions .btn { text-align: center; width: 100%; box-sizing: border-box; }
+        .paypal-confirm-btn { background: #0070ba; }
+        .paypal-confirm-btn:hover { background: #005ea6; }
         @media (max-width: 760px) { .cart-layout { grid-template-columns: 1fr; } .cart-summary { position: static; } }
     </style>
 </head>
@@ -131,16 +141,10 @@ $isLogged = isset($_SESSION['user_id']);
             <a href="index.php?route=annunci">Annunci</a>
 
             <?php if ($isLogged): ?>
-                <?php if (!empty($_SESSION['is_admin'])): ?>
-                    <a href="index.php?route=admin">Dashboard Admin</a>
-                    <a href="index.php?route=admin-utenti">Utenti</a>
-                    <a href="index.php?route=admin-segnalazioni">Segnalazioni</a>
-                <?php else: ?>
-                    <a href="index.php?route=profilo">Profilo</a>
-                    <a href="index.php?route=carrello">Carrello</a>
-                    <a href="index.php?route=wishlist">Wishlist</a>
-                    <a href="index.php?route=business">Business</a>
-                <?php endif; ?>
+                <a href="index.php?route=profilo">Profilo</a>
+                <a href="index.php?route=carrello">Carrello</a>
+                <a href="index.php?route=wishlist">Wishlist</a>
+                <a href="index.php?route=business">Business</a>
                 <a href="index.php?route=logout">Logout</a>
             <?php else: ?>
                 <a href="index.php?route=login">Login</a>

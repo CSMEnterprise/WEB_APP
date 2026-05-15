@@ -80,6 +80,12 @@ class PaymentService extends BaseService
             ");
             $stmt->execute([$idAnnuncio]);
 
+            $stmt = $this->db->prepare("
+                DELETE FROM preferito
+                WHERE id_annuncio = ?
+            ");
+            $stmt->execute([$idAnnuncio]);
+
             $this->db->commit();
 
             return $idPagamento;

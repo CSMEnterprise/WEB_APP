@@ -13,12 +13,18 @@ class PagamentoController
 
     public function checkout(int $idUtente, int $idAnnuncio): void
     {
+        $this->paypalPlaceholder($idUtente, $idAnnuncio);
+    }
+
+    public function paypalPlaceholder(int $idUtente, int $idAnnuncio): void
+    {
         try {
             $pagamento = $this->paymentService->preparaPagamento($idUtente, $idAnnuncio);
             $annuncio = $pagamento['annuncio'];
             $totale = $pagamento['totale'];
+            $paypalTransactionId = 'PAYPAL-SIM-' . date('YmdHis') . '-' . random_int(1000, 9999);
 
-            require __DIR__ . '/../views/pagamenti/checkout.php';
+            require __DIR__ . '/../views/pagamenti/paypal_placeholder.php';
         } catch (Exception $e) {
             $errore = $e->getMessage();
             require __DIR__ . '/../views/errors/400.php';
@@ -35,6 +41,12 @@ class PagamentoController
             header('Location: index.php?route=pagamento-esito&status=errore');
             exit;
         }
+    }
+
+    public function paypalCancel(): void
+    {
+        header('Location: index.php?route=carrello&paypal=cancel');
+        exit;
     }
 
     public function esito(): void
