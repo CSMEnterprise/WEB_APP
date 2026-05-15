@@ -21,7 +21,8 @@ Problemi da risolvere sito web:
 -aggiustare pagina home page tipo subito
 -aggiunta pagina preferiti e logica per aggiungere articoli alla wishlist preferiti
 -menu a tendina su profilo header per visualizzare annunci ✅
-- Footer obbligato a fine pagina
 - Spostare la barra di ricerca sotto i menu per averla più lunga ✅
 - Scrivere finta privacy policy/termini e cookie ✅
 - Scritta nerdvault in bianco sia nella nav bar che nel footer ✅
+
+FATE PDF DI COME FUNZIONA IL SITO
