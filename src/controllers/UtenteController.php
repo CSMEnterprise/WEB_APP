@@ -64,4 +64,19 @@ class UtenteController
         header('Location: index.php?route=home');
         exit;
     }
+
+    public function salvaIndirizzoSpedizione(array $data, int $idUtente): void
+    {
+        try {
+            $this->userService->updateIndirizzoSpedizione($idUtente, $data);
+
+            header('Location: index.php?route=profilo');
+            exit;
+        } catch (Exception $e) {
+            $errore = $e->getMessage();
+            $utente = $this->userService->findById($idUtente);
+
+            require __DIR__ . '/../views/utenti/profilo.php';
+        }
+    }
 }

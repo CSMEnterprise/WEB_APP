@@ -12,7 +12,13 @@ require __DIR__ . '/../partials/flash.php';
         <input type="email" id="email" name="email" required>
 
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" required>
+        <input
+            type="password"
+            id="password"
+            name="password"
+            pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}"
+            title="La password deve contenere almeno 10 caratteri, una lettera maiuscola e un carattere speciale."
+            required>
 
         <button class="btn" type="submit">Accedi</button>
     </form>

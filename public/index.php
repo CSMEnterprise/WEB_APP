@@ -86,7 +86,10 @@ try {
             (new UtenteController($pdo))->profilo(currentUserId());
             break;
 
-
+        case 'profilo-indirizzo-store':
+            requireAuth();
+            (new UtenteController($pdo))->salvaIndirizzoSpedizione($_POST, currentUserId());
+            break;
         /*
         |--------------------------------------------------------------------------
         | Annunci
@@ -273,7 +276,6 @@ try {
             require __DIR__ . '/../src/views/errors/404.php';
             break;
     }
-
 } catch (Throwable $e) {
     http_response_code(500);
 
