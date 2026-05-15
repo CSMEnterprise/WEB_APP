@@ -11,16 +11,22 @@ require __DIR__ . '/../layout/header.php';
         <p><strong>Email:</strong> <?= e($utente['email'] ?? '') ?></p>
         <p><strong>Telefono:</strong> <?= e($utente['telefono'] ?? '') ?></p>
 
-        <?php if (!empty($utente['nome']) || !empty($utente['indirizzo'])): ?>
+        <?php if (!empty($utente['via']) || !empty($utente['citta'])): ?>
             <hr>
-            <p><strong>Nome e cognome spedizione:</strong> <?= e($utente['nome'] ?? '') ?></p>
-            <p><strong>Indirizzo di spedizione:</strong> <?= e($utente['indirizzo'] ?? '') ?></p>
+            <p><strong>Nome spedizione:</strong> <?= e($utente['nome'] ?? '') ?></p>
+            <p><strong>Indirizzo di spedizione:</strong>
+                <?= e(trim(
+                    ($utente['via'] ?? '') . ' ' . ($utente['numero'] ?? '') . ', ' .
+                    ($utente['cap']  ?? '') . ' ' . ($utente['citta']  ?? '') .
+                    (!empty($utente['provincia']) ? ' (' . $utente['provincia'] . ')' : '')
+                )) ?>
+            </p>
         <?php endif; ?>
     </div>
 
     <p>
         <button type="button" class="btn" onclick="toggleIndirizzoForm()">
-            Aggiungi indirizzo di spedizione
+            <?= (!empty($utente['via'])) ? 'Modifica indirizzo di spedizione' : 'Aggiungi indirizzo di spedizione' ?>
         </button>
 
         <a class="btn" href="index.php?route=annuncio-create">Crea annuncio</a>
@@ -30,7 +36,8 @@ require __DIR__ . '/../layout/header.php';
     <div id="indirizzoForm" class="card" style="display: none;">
         <h2>Indirizzo di spedizione</h2>
 
-        <form method="post" action="index.php?route=profilo-indirizzo-store">
+        <form method="post" action="index.php">
+            <input type="hidden" name="route" value="profilo-indirizzo-store">
             <label for="nome">Nome e cognome</label>
             <input
                 type="text"
@@ -39,17 +46,162 @@ require __DIR__ . '/../layout/header.php';
                 value="<?= e($utente['nome'] ?? '') ?>"
                 required>
 
-            <label for="indirizzo">Indirizzo di spedizione</label>
+            <label for="via">Via / Corso / Piazza</label>
             <input
                 type="text"
-                id="indirizzo"
-                name="indirizzo"
-                value="<?= e($utente['indirizzo'] ?? '') ?>"
+                id="via"
+                name="via"
+                value="<?= e($utente['via'] ?? '') ?>"
                 required>
+
+            <label for="numero">Numero civico</label>
+            <input
+                type="text"
+                id="numero"
+                name="numero"
+                value="<?= e($utente['numero'] ?? '') ?>">
+
+            <label for="cap">CAP</label>
+            <input
+                type="text"
+                id="cap"
+                name="cap"
+                maxlength="5"
+                value="<?= e($utente['cap'] ?? '') ?>">
+
+            <label for="citta">Città</label>
+            <input
+                type="text"
+                id="citta"
+                name="citta"
+                value="<?= e($utente['citta'] ?? '') ?>"
+                required>
+
+            <label for="provincia">Provincia</label>
+            <input
+                type="text"
+                id="provincia"
+                name="provincia"
+                maxlength="2"
+                value="<?= e($utente['provincia'] ?? '') ?>">
 
             <button type="submit" class="btn">Salva indirizzo</button>
         </form>
     </div>
+
+    <section class="profile-annunci">
+        <?php
+            $filtroAnnunci = $filtroAnnunci ?? 'attivo';
+            $titoloAnnunciProfilo = $titoloAnnunciProfilo ?? 'Annunci attivi';
+            $isAttivi = $filtroAnnunci === 'attivo';
+            $isVenduti = $filtroAnnunci === 'venduto';
+        ?>
+
+        <div class="nav" style="align-items:flex-start; gap: 12px; flex-wrap: wrap;">
+            <h2><?= e($titoloAnnunciProfilo) ?></h2>
+            <a class="btn" href="index.php?route=annuncio-create">Nuovo annuncio</a>
+        </div>
+
+        <div class="card" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <strong>Mostra:</strong>
+            <a
+                class="btn <?= $isAttivi ? '' : 'btn-secondary' ?>"
+                href="index.php?route=profilo-annunci-attivi">
+                Annunci attivi
+            </a>
+            <a
+                class="btn <?= $isVenduti ? '' : 'btn-secondary' ?>"
+                href="index.php?route=profilo-annunci-venduti">
+                Annunci venduti
+            </a>
+        </div>
+
+        <?php if (!empty($annunciUtente)): ?>
+            <div class="grid">
+                <?php foreach ($annunciUtente as $annuncio): ?>
+                    <article class="card">
+                        <?php if (!empty($annuncio['immagine_principale'])): ?>
+                            <img class="annuncio-card-img" src="<?= e($annuncio['immagine_principale']) ?>" alt="Foto annuncio">
+                        <?php endif; ?>
+
+                        <h3><?= e($annuncio['titolo'] ?? 'Annuncio') ?></h3>
+                        <p class="muted"><?= e($annuncio['categoria_nome'] ?? 'Senza categoria') ?></p>
+                        <p class="price">€ <?= number_format((float)($annuncio['prezzo'] ?? 0), 2, ',', '.') ?></p>
+                        <p><strong>Conservazione:</strong> <?= e($annuncio['stato_conservazione'] ?? '') ?></p>
+                        <p><strong>Stato vendita:</strong> <?= e($annuncio['stato'] ?? '') ?></p>
+
+                        <a class="btn" href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Dettagli</a>
+
+                        <?php if ($isAttivi): ?>
+                            <a class="btn btn-danger" href="index.php?route=annuncio-delete&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Elimina</a>
+                        <?php endif; ?>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <div class="card">
+                <?php if ($isVenduti): ?>
+                    <p>Non hai ancora annunci venduti.</p>
+                <?php else: ?>
+                    <p>Non hai annunci attivi.</p>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
+    </section>
+
+    <section style="margin-top: 32px;">
+        <h2>Cronologia pagamenti</h2>
+
+        <?php if (!empty($cronologiaPagamenti)): ?>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Annuncio</th>
+                        <th>Venditore</th>
+                        <th>Importo</th>
+                        <th>Stato</th>
+                        <th>Data</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($cronologiaPagamenti as $p): ?>
+                        <tr>
+                            <td><?= e($p['id_pagamento']) ?></td>
+                            <td><?= e($p['annuncio_titolo'] ?? '—') ?></td>
+                            <td><?= e($p['venditore_username'] ?? '—') ?></td>
+                            <td>€ <?= number_format((float)($p['importo_totale'] ?? 0), 2, ',', '.') ?></td>
+                            <td><?= e($p['stato'] ?? '') ?></td>
+                            <td><?= e($p['data'] ?? '') ?></td>
+                            <td style="display:flex; gap:6px; flex-wrap:wrap;">
+                                <a class="btn btn-secondary"
+                                   style="font-size:12px;padding:5px 10px;"
+                                   href="index.php?route=annuncio&id=<?= e($p['annuncio_id']) ?>">
+                                    Vedi annuncio
+                                </a>
+                                <?php if (($p['stato'] ?? '') === 'Completato'): ?>
+                                    <?php if (!empty($p['feedback_id'])): ?>
+                                        <span class="muted" style="font-size:12px;padding:5px 0;">✅ Feedback inviato</span>
+                                    <?php else: ?>
+                                        <a class="btn"
+                                           style="font-size:12px;padding:5px 10px;"
+                                           href="index.php?route=feedback-create&id_pagamento=<?= e($p['id_pagamento']) ?>">
+                                            Lascia feedback
+                                        </a>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <div class="card">
+                <p>Nessun acquisto effettuato.</p>
+            </div>
+        <?php endif; ?>
+    </section>
 
     <script>
         function toggleIndirizzoForm() {
@@ -60,3 +212,5 @@ require __DIR__ . '/../layout/header.php';
 <?php else: ?>
     <div class="alert alert-error">Utente non trovato.</div>
 <?php endif; ?>
+
+<?php require __DIR__ . '/../layout/footer.php'; ?>

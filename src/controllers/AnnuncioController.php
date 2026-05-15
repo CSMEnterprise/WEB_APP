@@ -2,22 +2,36 @@
 
 require_once __DIR__ . '/../services/AnnuncioService.php';
 require_once __DIR__ . '/../services/CategoryService.php';
+require_once __DIR__ . '/../services/FeedbackService.php';
+require_once __DIR__ . '/../services/UserService.php';
 
 class AnnuncioController
 {
-    
-    private AnnuncioService $annuncioService;
-    private CategoryService $categoryService;
+    private AnnuncioService  $annuncioService;
+    private CategoryService  $categoryService;
+    private FeedbackService  $feedbackService;
+    private UserService      $userService;
 
     public function __construct(PDO $db)
     {
         $this->annuncioService = new AnnuncioService($db);
         $this->categoryService = new CategoryService($db);
+        $this->feedbackService = new FeedbackService($db);
+        $this->userService     = new UserService($db);
     }
 
     public function lista(): void
     {
-        $annunci = $this->annuncioService->getAnnunciAttivi();
+        $q = trim($_GET['q'] ?? '');
+
+        if ($q !== '') {
+            $annunci = $this->annuncioService->searchAnnunci($q);
+            $utenti  = $this->userService->search($q);
+        } else {
+            $annunci = $this->annuncioService->getAnnunciAttivi();
+            $utenti  = [];
+        }
+
         require __DIR__ . '/../views/annunci/lista.php';
     }
 
@@ -31,6 +45,10 @@ class AnnuncioController
             return;
         }
 
+        $idVenditore        = (int) ($annuncio['id_utente'] ?? 0);
+        $feedbackVenditore  = $idVenditore > 0 ? $this->feedbackService->getByVenditoreId($idVenditore) : [];
+        $mediaVenditore     = $idVenditore > 0 ? $this->feedbackService->getMediaVoto($idVenditore) : 0.0;
+
         require __DIR__ . '/../views/annunci/dettaglio.php';
     }
 
@@ -40,10 +58,10 @@ class AnnuncioController
         require __DIR__ . '/../views/annunci/form.php';
     }
 
-    public function crea(array $data, int $idUtente): void
+    public function crea(array $data, int $idUtente, array $files = []): void
     {
         try {
-            $idAnnuncio = $this->annuncioService->crea($data, $idUtente);
+            $idAnnuncio = $this->annuncioService->crea($data, $idUtente, $files);
             header('Location: index.php?route=annuncio&id=' . $idAnnuncio);
             exit;
         } catch (Exception $e) {

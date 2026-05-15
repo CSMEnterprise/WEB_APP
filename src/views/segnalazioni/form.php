@@ -7,7 +7,8 @@ require __DIR__ . '/../partials/flash.php';
 <div class="card">
     <h1>Invia segnalazione</h1>
 
-    <form method="post" action="index.php?route=segnalazione-store">
+    <form method="post" action="index.php">
+        <input type="hidden" name="route" value="segnalazione-store">
         <input type="hidden" name="id_annuncio" value="<?= e($_GET['id_annuncio'] ?? '') ?>">
         <input type="hidden" name="id_utente_segnalato" value="<?= e($_GET['id_utente_segnalato'] ?? '') ?>">
         <input type="hidden" name="id_business" value="<?= e($_GET['id_business'] ?? '') ?>">

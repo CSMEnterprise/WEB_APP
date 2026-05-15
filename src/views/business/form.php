@@ -7,7 +7,8 @@ require __DIR__ . '/../partials/flash.php';
 <div class="card">
     <h1>Crea account business</h1>
 
-    <form method="post" action="index.php?route=business-store">
+    <form method="post" action="index.php">
+        <input type="hidden" name="route" value="business-store">
         <label for="nome_azienda">Nome azienda</label>
         <input type="text" id="nome_azienda" name="nome_azienda" required>
 
@@ -20,8 +21,24 @@ require __DIR__ . '/../partials/flash.php';
         <label for="telefono">Telefono</label>
         <input type="text" id="telefono" name="telefono">
 
-        <label for="indirizzo">Indirizzo</label>
-        <textarea id="indirizzo" name="indirizzo"></textarea>
+        <fieldset>
+            <legend>Indirizzo sede</legend>
+
+            <label for="via">Via / Corso / Piazza</label>
+            <input type="text" id="via" name="via">
+
+            <label for="numero">Numero civico</label>
+            <input type="text" id="numero" name="numero">
+
+            <label for="cap">CAP</label>
+            <input type="text" id="cap" name="cap" maxlength="5">
+
+            <label for="citta">Città</label>
+            <input type="text" id="citta" name="citta">
+
+            <label for="provincia">Provincia</label>
+            <input type="text" id="provincia" name="provincia" maxlength="2">
+        </fieldset>
 
         <label for="descrizione">Descrizione</label>
         <textarea id="descrizione" name="descrizione"></textarea>

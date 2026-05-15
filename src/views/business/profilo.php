@@ -13,7 +13,72 @@ require __DIR__ . '/../layout/header.php';
         <p><strong>Telefono:</strong> <?= e($business['telefono'] ?? '') ?></p>
         <p><strong>Verificato:</strong> <?= !empty($business['verificato']) ? 'Sì' : 'No' ?></p>
         <p><?= e($business['descrizione'] ?? '') ?></p>
+
+        <?php if (!empty($business['via']) || !empty($business['citta'])): ?>
+            <hr>
+            <p><strong>Sede:</strong>
+                <?= e(trim(
+                    ($business['via']    ?? '') . ' ' . ($business['numero'] ?? '') . ', ' .
+                    ($business['cap']    ?? '') . ' ' . ($business['citta']  ?? '') .
+                    (!empty($business['provincia']) ? ' (' . $business['provincia'] . ')' : '')
+                )) ?>
+            </p>
+        <?php endif; ?>
     </section>
+
+    <p>
+        <button type="button" class="btn btn-secondary" onclick="toggleIndirizzoForm()">
+            <?= !empty($business['via']) ? 'Modifica indirizzo sede' : 'Aggiungi indirizzo sede' ?>
+        </button>
+    </p>
+
+    <div id="indirizzoForm" class="card" style="display: none;">
+        <h2>Indirizzo sede</h2>
+
+        <form method="post" action="index.php">
+            <input type="hidden" name="route" value="business-indirizzo-store">
+            <label for="via">Via / Corso / Piazza</label>
+            <input
+                type="text"
+                id="via"
+                name="via"
+                value="<?= e($business['via'] ?? '') ?>"
+                required>
+
+            <label for="numero">Numero civico</label>
+            <input
+                type="text"
+                id="numero"
+                name="numero"
+                value="<?= e($business['numero'] ?? '') ?>">
+
+            <label for="cap">CAP</label>
+            <input
+                type="text"
+                id="cap"
+                name="cap"
+                maxlength="5"
+                value="<?= e($business['cap'] ?? '') ?>">
+
+            <label for="citta">Città</label>
+            <input
+                type="text"
+                id="citta"
+                name="citta"
+                value="<?= e($business['citta'] ?? '') ?>"
+                required>
+
+            <label for="provincia">Provincia</label>
+            <input
+                type="text"
+                id="provincia"
+                name="provincia"
+                maxlength="2"
+                value="<?= e($business['provincia'] ?? '') ?>">
+
+            <button type="submit" class="btn">Salva indirizzo</button>
+        </form>
+    </div>
 
     <h2>I miei annunci</h2>
 
@@ -43,6 +108,13 @@ require __DIR__ . '/../layout/header.php';
     <p>
         <a class="btn" href="index.php?route=business-ordini">Ordini ricevuti</a>
     </p>
+
+    <script>
+        function toggleIndirizzoForm() {
+            const form = document.getElementById('indirizzoForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
 <?php else: ?>
     <div class="card">
         <p>Non hai ancora un account business.</p>

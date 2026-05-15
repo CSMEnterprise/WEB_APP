@@ -48,9 +48,19 @@ class SegnalazioneService extends BaseService
     public function getAll(): array
     {
         $stmt = $this->db->query("
-            SELECT s.*, u.username AS segnalante_username
+            SELECT
+                s.*,
+                u.username                     AS segnalante_username,
+                a.titolo                       AS annuncio_titolo,
+                us.username                    AS utente_segnalato_username,
+                ab.nome_azienda                AS business_nome,
+                f.id_feedback                  AS feedback_id
             FROM segnalazione s
-            JOIN utente_registrato u ON u.id_utente = s.id_segnalante
+            JOIN utente_registrato u       ON u.id_utente            = s.id_segnalante
+            LEFT JOIN annuncio a           ON a.id_annuncio           = s.id_annuncio
+            LEFT JOIN utente_registrato us ON us.id_utente            = s.id_utente_segnalato
+            LEFT JOIN account_business ab  ON ab.id_acc_business      = s.id_business
+            LEFT JOIN feedback f           ON f.id_feedback            = s.id_feedback
             ORDER BY s.data_segnalazione DESC
         ");
 

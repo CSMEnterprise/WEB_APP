@@ -12,6 +12,22 @@ class AuthService extends BaseService
             throw new ServiceException('Email e password sono obbligatorie.');
         }
 
+        // Controlla prima la tabella admin
+        $stmt = $this->db->prepare("
+            SELECT *
+            FROM admin
+            WHERE email = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$email]);
+        $admin = $stmt->fetch();
+
+        if ($admin && password_verify($password, $admin['password_hash'])) {
+            $admin['_is_admin'] = true;
+            return $admin;
+        }
+
+        // Altrimenti cerca tra gli utenti normali
         $stmt = $this->db->prepare("
             SELECT *
             FROM utente_registrato
@@ -35,15 +51,26 @@ class AuthService extends BaseService
 
     public function register(array $data): int
     {
+        $isBusinessRegistration = !empty($data['_business_registration']);
+
         $username = $this->clean($data['username'] ?? '');
         $email = $this->clean($data['email'] ?? '');
         $password = (string) ($data['password'] ?? '');
         $nome = $this->clean($data['nome'] ?? '');
         $telefono = $this->clean($data['telefono'] ?? '');
-        $indirizzo = $this->clean($data['indirizzo'] ?? '');
 
-        if ($username === '' || $email === '' || $password === '') {
-            throw new ServiceException('Username, email e password sono obbligatori.');
+        if ($isBusinessRegistration) {
+            if ($username === '') {
+                throw new ServiceException('Il nome azienda è obbligatorio.');
+            }
+
+            if ($email === '' || $password === '' || $telefono === '' || $nome === '') {
+                throw new ServiceException('Nome referente, email aziendale, password e telefono sono obbligatori.');
+            }
+        } else {
+            if ($username === '' || $email === '' || $password === '' || $telefono === '') {
+                throw new ServiceException('Username, email, password e telefono sono obbligatori.');
+            }
         }
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -56,8 +83,8 @@ class AuthService extends BaseService
 
         $stmt = $this->db->prepare("
             INSERT INTO utente_registrato
-            (email, username, password_hash, nome, telefono, indirizzo)
-            VALUES (?, ?, ?, ?, ?, ?)
+            (email, username, password_hash, nome, telefono)
+            VALUES (?, ?, ?, ?, ?)
         ");
 
         try {
@@ -67,7 +94,6 @@ class AuthService extends BaseService
                 password_hash($password, PASSWORD_DEFAULT),
                 $nome !== '' ? $nome : null,
                 $telefono !== '' ? $telefono : null,
-                $indirizzo !== '' ? $indirizzo : null
             ]);
         } catch (PDOException $e) {
             throw new ServiceException('Email o username già utilizzati.');

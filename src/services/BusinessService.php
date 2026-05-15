@@ -9,9 +9,10 @@ class BusinessService extends BaseService
         $this->requirePositiveId($idUtente, 'Utente');
 
         $stmt = $this->db->prepare("
-            SELECT *
-            FROM account_business
-            WHERE id_utente = ?
+            SELECT ab.*, i.via, i.numero, i.cap, i.citta, i.provincia, i.paese
+            FROM account_business ab
+            LEFT JOIN indirizzi i ON i.id_business = ab.id_acc_business AND i.predefinito = 1
+            WHERE ab.id_utente = ?
             LIMIT 1
         ");
         $stmt->execute([$idUtente]);
@@ -23,38 +24,107 @@ class BusinessService extends BaseService
     {
         $this->requirePositiveId($idUtente, 'Utente');
 
-        $nomeAzienda = $this->clean($data['nome_azienda'] ?? '');
-        $pIva = $this->clean($data['p_iva'] ?? $data['partita_iva'] ?? '');
+        $nomeAzienda    = $this->clean($data['nome_azienda'] ?? '');
+        $pIva           = $this->clean($data['p_iva'] ?? $data['partita_iva'] ?? '');
         $emailAziendale = $this->clean($data['email_aziendale'] ?? '');
-        $telefono = $this->clean($data['telefono'] ?? '');
-        $indirizzo = $this->clean($data['indirizzo'] ?? '');
-        $descrizione = $this->clean($data['descrizione'] ?? '');
+        $telefono       = $this->clean($data['telefono'] ?? '');
+        $descrizione    = $this->clean($data['descrizione'] ?? '');
+
+        $via        = $this->clean($data['via'] ?? '');
+        $numero     = $this->clean($data['numero'] ?? '');
+        $cap        = $this->clean($data['cap'] ?? '');
+        $citta      = $this->clean($data['citta'] ?? '');
+        $provincia  = $this->clean($data['provincia'] ?? '');
+        $paese      = $this->clean($data['paese'] ?? 'Italia');
 
         if ($nomeAzienda === '' || $pIva === '' || $emailAziendale === '') {
             throw new ServiceException('Nome azienda, partita IVA ed email aziendale sono obbligatori.');
         }
 
-        $stmt = $this->db->prepare("
-            INSERT INTO account_business
-            (id_utente, p_iva, nome_azienda, email_aziendale, telefono, indirizzo, descrizione)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ");
+        if (!filter_var($emailAziendale, FILTER_VALIDATE_EMAIL)) {
+            throw new ServiceException('Email aziendale non valida.');
+        }
 
         try {
+            $stmt = $this->db->prepare("
+                INSERT INTO account_business
+                    (id_utente, p_iva, nome_azienda, email_aziendale, telefono, descrizione)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ");
             $stmt->execute([
                 $idUtente,
                 $pIva,
                 $nomeAzienda,
                 $emailAziendale,
-                $telefono !== '' ? $telefono : null,
-                $indirizzo !== '' ? $indirizzo : null,
-                $descrizione !== '' ? $descrizione : null
+                $telefono    !== '' ? $telefono    : null,
+                $descrizione !== '' ? $descrizione : null,
             ]);
+
+            $idBusiness = $this->lastInsertId();
+
+            if ($via !== '' || $citta !== '') {
+                if ($via === '' || $citta === '') {
+                    throw new ServiceException('Per salvare la sede aziendale devi indicare almeno via e città.');
+                }
+
+                $stmtInd = $this->db->prepare("
+                    INSERT INTO indirizzi
+                        (id_business, via, numero, cap, citta, provincia, paese, predefinito)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+                ");
+                $stmtInd->execute([
+                    $idBusiness,
+                    $via,
+                    $numero    !== '' ? $numero    : null,
+                    $cap       !== '' ? $cap       : null,
+                    $citta,
+                    $provincia !== '' ? $provincia : null,
+                    $paese,
+                ]);
+            }
+
         } catch (PDOException $e) {
             throw new ServiceException('Account business già esistente o dati già utilizzati.');
         }
 
-        return $this->lastInsertId();
+        return $idBusiness;
+    }
+
+    public function aggiornaIndirizzo(int $idBusiness, array $data): void
+    {
+        $this->requirePositiveId($idBusiness, 'Business');
+
+        $via       = $this->clean($data['via'] ?? '');
+        $numero    = $this->clean($data['numero'] ?? '');
+        $cap       = $this->clean($data['cap'] ?? '');
+        $citta     = $this->clean($data['citta'] ?? '');
+        $provincia = $this->clean($data['provincia'] ?? '');
+        $paese     = $this->clean($data['paese'] ?? 'Italia');
+
+        if ($via === '' || $citta === '') {
+            throw new ServiceException('Via e città sono obbligatori.');
+        }
+
+        $stmt = $this->db->prepare("
+            DELETE FROM indirizzi
+            WHERE id_business = ? AND predefinito = 1
+        ");
+        $stmt->execute([$idBusiness]);
+
+        $stmt = $this->db->prepare("
+            INSERT INTO indirizzi
+                (id_business, via, numero, cap, citta, provincia, paese, predefinito)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+        ");
+        $stmt->execute([
+            $idBusiness,
+            $via,
+            $numero    !== '' ? $numero    : null,
+            $cap       !== '' ? $cap       : null,
+            $citta,
+            $provincia !== '' ? $provincia : null,
+            $paese,
+        ]);
     }
 
     public function getOrdiniRicevuti(int $idUtente): array
