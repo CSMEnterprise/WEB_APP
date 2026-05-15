@@ -35,14 +35,26 @@ class AuthService extends BaseService
 
     public function register(array $data): int
     {
+        $isBusinessRegistration = !empty($data['_business_registration']);
+
         $username = $this->clean($data['username'] ?? '');
         $email = $this->clean($data['email'] ?? '');
         $password = (string) ($data['password'] ?? '');
         $nome = $this->clean($data['nome'] ?? '');
         $telefono = $this->clean($data['telefono'] ?? '');
 
-        if ($username === '' || $email === '' || $password === '') {
-            throw new ServiceException('Username, email e password sono obbligatori.');
+        if ($isBusinessRegistration) {
+            if ($username === '') {
+                throw new ServiceException('Il nome azienda è obbligatorio.');
+            }
+
+            if ($email === '' || $password === '' || $telefono === '' || $nome === '') {
+                throw new ServiceException('Nome referente, email aziendale, password e telefono sono obbligatori.');
+            }
+        } else {
+            if ($username === '' || $email === '' || $password === '' || $telefono === '') {
+                throw new ServiceException('Username, email, password e telefono sono obbligatori.');
+            }
         }
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {

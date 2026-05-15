@@ -4,32 +4,51 @@ require __DIR__ . '/../layout/header.php';
 require __DIR__ . '/../partials/flash.php';
 ?>
 
-<div class="card">
-    <h1>Registrazione</h1>
+<h1>Scegli il tipo di account</h1>
 
-    <form method="post" action="index.php?route=register-post">
-        <label for="username">Username</label>
-        <input type="text" id="username" name="username" required>
+<div class="grid-2">
+    <section class="card">
+        <h2>Utente normale</h2>
+        <p>
+            Account personale per acquistare prodotti, usare il carrello,
+            salvare annunci e pubblicare annunci da privato.
+        </p>
 
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required>
+        <ul>
+            <li>Username personale</li>
+            <li>Email di accesso</li>
+            <li>Telefono associato al profilo</li>
+            <li>Possibilità di aggiungere un indirizzo di spedizione dal profilo</li>
+        </ul>
 
-        <label for="telefono">Telefono</label>
-        <input type="text" id="telefono" name="telefono">
+        <a class="btn" href="index.php?route=register-user">
+            Registrati come utente
+        </a>
+    </section>
 
-        <label for="password">Password</label>
-        <input
-            type="password"
-            id="password"
-            name="password"
-            pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}"
-            title="La password deve contenere almeno 10 caratteri, una lettera maiuscola e un carattere speciale."
-            required>
+    <section class="card">
+        <h2>Utente business</h2>
+        <p>
+            Account dedicato ad aziende, negozi e venditori professionali,
+            con dati aziendali e referente.
+        </p>
 
-        <button class="btn" type="submit">Crea account</button>
-    </form>
+        <ul>
+            <li>Nome azienda e Partita IVA</li>
+            <li>Email aziendale usata anche per il login</li>
+            <li>Telefono e referente aziendale</li>
+            <li>Sede aziendale salvata nella tabella indirizzi</li>
+        </ul>
 
-    <p>Hai già un account? <a href="index.php?route=login">Accedi</a></p>
+        <a class="btn" href="index.php?route=register-business">
+            Registrati come business
+        </a>
+    </section>
 </div>
+
+<p>
+    Hai già un account?
+    <a href="index.php?route=login">Accedi</a>
+</p>
 
 <?php require __DIR__ . '/../layout/footer.php'; ?>
