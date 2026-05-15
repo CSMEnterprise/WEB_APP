@@ -23,6 +23,10 @@ class AuthService extends BaseService
         $admin = $stmt->fetch();
 
         if ($admin && password_verify($password, $admin['password_hash'])) {
+            if (!empty($admin['stato_ban'])) {
+                throw new ServiceException('Account admin bloccato.');
+            }
+
             $admin['_is_admin'] = true;
             return $admin;
         }

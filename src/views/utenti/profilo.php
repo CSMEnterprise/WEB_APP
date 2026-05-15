@@ -127,7 +127,6 @@ require __DIR__ . '/../layout/header.php';
 
         <div class="nav" style="align-items:flex-start; gap: 12px; flex-wrap: wrap;">
             <h2><?= e($titoloAnnunciProfilo) ?></h2>
-            <a class="btn" href="index.php?route=annuncio-create">Nuovo annuncio</a>
         </div>
 
         <div class="card" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">

@@ -39,7 +39,9 @@ require __DIR__ . '/../layout/header.php';
         </p>
 
         <?php if (!empty($_SESSION['user_id'])): ?>
-            <?php if ($isOwner): ?>
+            <?php if (!empty($_SESSION['is_admin'])): ?>
+                <div class="alert alert-success">Accesso admin: carrello, wishlist e acquisto sono disattivati.</div>
+            <?php elseif ($isOwner): ?>
                 <div class="alert alert-success">Questo è un tuo annuncio: carrello e acquisto sono disattivati.</div>
                 <a class="btn btn-danger" href="index.php?route=annuncio-delete&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Elimina</a>
             <?php else: ?>

@@ -13,6 +13,17 @@ function requireAdmin(): void
     }
 }
 
+function requireAdminLivello2(): void
+{
+    requireAdmin();
+
+    if ((int) ($_SESSION['livello_sicurezza'] ?? 1) !== 2) {
+        http_response_code(403);
+        echo 'Accesso negato: area riservata agli amministratori di livello 2.';
+        exit;
+    }
+}
+
 function denyAdmin(): void
 {
     if (!empty($_SESSION['is_admin'])) {

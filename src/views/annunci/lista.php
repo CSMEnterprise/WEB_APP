@@ -3,15 +3,36 @@ $pageTitle = 'Annunci';
 require __DIR__ . '/../layout/header.php';
 
 $q = trim($_GET['q'] ?? '');
+$idCategoria = (int)($_GET['id_categoria'] ?? 0);
 ?>
 
 <div class="nav" style="align-items:flex-start;">
-    <h1><?= $q !== '' ? 'Risultati per: "' . e($q) . '"' : 'Annunci disponibili' ?></h1>
+    <h1><?= ($q !== '' || $idCategoria > 0) ? 'Risultati ricerca' : 'Annunci disponibili' ?></h1>
 
     <?php if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin'])): ?>
         <a class="btn" href="index.php?route=annuncio-create">Crea annuncio</a>
     <?php endif; ?>
 </div>
+
+<?php if ($q !== '' || $idCategoria > 0): ?>
+    <p class="muted">
+        <?php if ($q !== ''): ?>
+            Testo: "<?= e($q) ?>"
+        <?php endif; ?>
+        <?php if ($idCategoria > 0): ?>
+            <?php
+            $categoriaSelezionata = '';
+            foreach (($categorie ?? []) as $categoria) {
+                if ((int)($categoria['id_categoria'] ?? 0) === $idCategoria) {
+                    $categoriaSelezionata = (string)($categoria['nome'] ?? '');
+                    break;
+                }
+            }
+            ?>
+            <?= $q !== '' ? ' - ' : '' ?>Categoria: <?= e($categoriaSelezionata) ?>
+        <?php endif; ?>
+    </p>
+<?php endif; ?>
 
 <?php if ($q !== '' && !empty($utenti)): ?>
     <section style="margin-bottom: 32px;">

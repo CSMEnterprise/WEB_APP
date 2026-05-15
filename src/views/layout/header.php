@@ -12,6 +12,12 @@ if (!function_exists('e')) {
 
 $pageTitle = $pageTitle ?? 'NerdVault';
 $isLogged = isset($_SESSION['user_id']);
+$categorieHeader = [];
+
+if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
+    require_once __DIR__ . '/../../services/CategoryService.php';
+    $categorieHeader = (new CategoryService($GLOBALS['pdo']))->getAll();
+}
 ?>
 <!doctype html>
 <html lang="it">
@@ -86,20 +92,26 @@ $isLogged = isset($_SESSION['user_id']);
         /* ── SEARCH ────────────────────────────────────────── */
         .search-form {
             display: flex; align-items: center;
-            flex: 1; max-width: 440px;
+            flex: 1; max-width: 620px;
             background: var(--bg-input);
             border: 1px solid var(--border);
             border-radius: 10px; overflow: hidden;
             transition: border-color .2s;
         }
         .search-form:focus-within { border-color: var(--accent); }
-        .search-form input {
+        .search-form input,
+        .search-form select {
             width: 100%; margin: 0; padding: 10px 14px;
             background: transparent; border: 0;
             color: var(--text); font-family: inherit; font-size: 14px;
             outline: none;
         }
         .search-form input::placeholder { color: var(--muted); }
+        .search-form select {
+            border-left: 1px solid var(--border);
+            max-width: 180px;
+        }
+
         .search-form button {
             margin: 0; padding: 10px 16px; border: 0;
             background: var(--accent); color: #fff;
@@ -266,6 +278,17 @@ $isLogged = isset($_SESSION['user_id']);
                 value="<?= e($_GET['q'] ?? '') ?>"
             >
 
+            <select name="id_categoria" aria-label="Categoria">
+                <option value="">Tutte le categorie</option>
+                <?php foreach ($categorieHeader as $categoria): ?>
+                    <option
+                        value="<?= e($categoria['id_categoria'] ?? '') ?>"
+                        <?= (int)($_GET['id_categoria'] ?? 0) === (int)($categoria['id_categoria'] ?? 0) ? 'selected' : '' ?>>
+                        <?= e($categoria['nome'] ?? '') ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+
             <button type="submit">Cerca</button>
         </form>
 
@@ -275,10 +298,14 @@ $isLogged = isset($_SESSION['user_id']);
 
             <?php if ($isLogged): ?>
                 <?php if (!empty($_SESSION['is_admin'])): ?>
-                    <a href="index.php?route=admin">Dashboard Admin</a>
+                    <a href="index.php?route=profilo">Profilo</a>
+                    <?php if ((int)($_SESSION['livello_sicurezza'] ?? 1) === 2): ?>
+                        <a href="index.php?route=admin-dashboard">Dashboard</a>
+                    <?php endif; ?>
                     <a href="index.php?route=admin-utenti">Utenti</a>
                     <a href="index.php?route=admin-segnalazioni">Segnalazioni</a>
                 <?php else: ?>
+                    <a href="index.php?route=profilo">Profilo</a>
                     <a href="index.php?route=carrello">Carrello</a>
                     <a href="index.php?route=wishlist">Wishlist</a>
                     <a href="index.php?route=business">Business</a>

@@ -1,9 +1,41 @@
 <?php
 $pageTitle = 'Gestione segnalazioni';
 require __DIR__ . '/../layout/header.php';
+
+$oggettoFilter = $filters['oggetto'] ?? '';
+$tipologiaFilter = $filters['tipologia'] ?? '';
 ?>
 
 <h1>Gestione segnalazioni</h1>
+
+<section class="card">
+    <h2>Filtri</h2>
+
+    <form method="get" action="index.php">
+        <input type="hidden" name="route" value="admin-segnalazioni">
+
+        <label for="oggetto">Oggetto segnalato</label>
+        <select id="oggetto" name="oggetto">
+            <option value="">Tutti</option>
+            <option value="annuncio" <?= $oggettoFilter === 'annuncio' ? 'selected' : '' ?>>Annuncio</option>
+            <option value="utente" <?= $oggettoFilter === 'utente' ? 'selected' : '' ?>>Utente</option>
+            <option value="business" <?= $oggettoFilter === 'business' ? 'selected' : '' ?>>Business</option>
+            <option value="feedback" <?= $oggettoFilter === 'feedback' ? 'selected' : '' ?>>Feedback</option>
+        </select>
+
+        <label for="tipologia">Tipologia</label>
+        <select id="tipologia" name="tipologia">
+            <option value="">Tutte</option>
+            <option value="Spam" <?= $tipologiaFilter === 'Spam' ? 'selected' : '' ?>>Spam</option>
+            <option value="Truffa" <?= $tipologiaFilter === 'Truffa' ? 'selected' : '' ?>>Truffa</option>
+            <option value="Contenuto_inappropriato" <?= $tipologiaFilter === 'Contenuto_inappropriato' ? 'selected' : '' ?>>Contenuto inappropriato</option>
+            <option value="Altro" <?= $tipologiaFilter === 'Altro' ? 'selected' : '' ?>>Altro</option>
+        </select>
+
+        <button class="btn" type="submit">Filtra</button>
+        <a class="btn btn-secondary" href="index.php?route=admin-segnalazioni">Reset</a>
+    </form>
+</section>
 
 <?php if (!empty($segnalazioni)): ?>
     <table>

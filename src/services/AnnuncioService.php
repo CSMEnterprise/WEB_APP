@@ -4,9 +4,17 @@ require_once __DIR__ . '/BaseService.php';
 
 class AnnuncioService extends BaseService
 {
-    public function getAnnunciAttivi(): array
+    public function getAnnunciAttivi(int $idCategoria = 0): array
     {
-        $stmt = $this->db->query("
+        $whereCategoria = '';
+        $params = [];
+
+        if ($idCategoria > 0) {
+            $whereCategoria = ' AND a.id_categoria = ?';
+            $params[] = $idCategoria;
+        }
+
+        $stmt = $this->db->prepare("
             SELECT
                 a.*,
                 c.nome AS categoria_nome,
@@ -22,10 +30,82 @@ class AnnuncioService extends BaseService
             LEFT JOIN categoria c ON c.id_categoria = a.id_categoria
             LEFT JOIN utente_registrato u ON u.id_utente = a.id_utente
             WHERE a.stato = 'attivo'
+            {$whereCategoria}
             ORDER BY a.data_creazione DESC
         ");
+        $stmt->execute($params);
 
         return $stmt->fetchAll();
+    }
+
+    public function getAnnunciCasuali(int $limit = 8): array
+    {
+        $limit = max(1, min($limit, 24));
+
+        $stmt = $this->db->prepare("
+            SELECT
+                a.*,
+                c.nome AS categoria_nome,
+                u.username AS venditore_username,
+                (
+                    SELECT i.url
+                    FROM immagine i
+                    WHERE i.id_annuncio = a.id_annuncio
+                    ORDER BY i.ordine ASC, i.id_immagine ASC
+                    LIMIT 1
+                ) AS immagine_principale
+            FROM annuncio a
+            LEFT JOIN categoria c ON c.id_categoria = a.id_categoria
+            LEFT JOIN utente_registrato u ON u.id_utente = a.id_utente
+            WHERE a.stato = 'attivo'
+            ORDER BY RAND()
+            LIMIT {$limit}
+        ");
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    public function getAnnunciPerInteressiUtente(int $idUtente, int $limit = 8): array
+    {
+        $this->requirePositiveId($idUtente, 'Utente');
+        $limit = max(1, min($limit, 24));
+
+        $categorie = $this->getCategorieInteresseUtente($idUtente);
+
+        if (empty($categorie)) {
+            return $this->getAnnunciCasuali($limit);
+        }
+
+        $placeholders = implode(',', array_fill(0, count($categorie), '?'));
+        $params = array_merge($categorie, [$idUtente]);
+
+        $stmt = $this->db->prepare("
+            SELECT
+                a.*,
+                c.nome AS categoria_nome,
+                u.username AS venditore_username,
+                (
+                    SELECT i.url
+                    FROM immagine i
+                    WHERE i.id_annuncio = a.id_annuncio
+                    ORDER BY i.ordine ASC, i.id_immagine ASC
+                    LIMIT 1
+                ) AS immagine_principale
+            FROM annuncio a
+            LEFT JOIN categoria c ON c.id_categoria = a.id_categoria
+            LEFT JOIN utente_registrato u ON u.id_utente = a.id_utente
+            WHERE a.stato = 'attivo'
+              AND a.id_categoria IN ({$placeholders})
+              AND (a.id_utente IS NULL OR a.id_utente <> ?)
+            ORDER BY RAND()
+            LIMIT {$limit}
+        ");
+        $stmt->execute($params);
+
+        $annunci = $stmt->fetchAll();
+
+        return !empty($annunci) ? $annunci : $this->getAnnunciCasuali($limit);
     }
 
     public function findById(int $idAnnuncio): ?array
@@ -184,13 +264,28 @@ class AnnuncioService extends BaseService
         $stmt->execute([$idAnnuncio]);
     }
 
-    public function searchAnnunci(string $keywords): array
+    public function searchAnnunci(string $keywords, int $idCategoria = 0): array
     {
         $keywords = $this->clean($keywords);
 
-        if ($keywords === '') {
-            return $this->getAnnunciAttivi();
+        $where = ["a.stato = 'attivo'"];
+        $params = [];
+
+        if ($keywords !== '') {
+            $where[] = "(
+                a.titolo LIKE CONCAT('%', ?, '%')
+                OR a.descrizione LIKE CONCAT('%', ?, '%')
+            )";
+            $params[] = $keywords;
+            $params[] = $keywords;
         }
+
+        if ($idCategoria > 0) {
+            $where[] = 'a.id_categoria = ?';
+            $params[] = $idCategoria;
+        }
+
+        $whereSql = implode(' AND ', $where);
 
         $stmt = $this->db->prepare("
             SELECT
@@ -207,17 +302,51 @@ class AnnuncioService extends BaseService
             FROM annuncio a
             LEFT JOIN categoria c ON c.id_categoria = a.id_categoria
             LEFT JOIN utente_registrato u ON u.id_utente = a.id_utente
-            WHERE a.stato = 'attivo'
-            AND (
-                a.titolo LIKE CONCAT('%', ?, '%')
-                OR a.descrizione LIKE CONCAT('%', ?, '%')
-            )
+            WHERE {$whereSql}
             ORDER BY a.data_creazione DESC
         ");
 
-        $stmt->execute([$keywords, $keywords]);
+        $stmt->execute($params);
 
         return $stmt->fetchAll();
+    }
+
+    private function getCategorieInteresseUtente(int $idUtente): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT id_categoria
+            FROM (
+                SELECT a.id_categoria, COUNT(*) AS peso
+                FROM preferito p
+                JOIN annuncio a ON a.id_annuncio = p.id_annuncio
+                WHERE p.id_utente = ?
+                GROUP BY a.id_categoria
+
+                UNION ALL
+
+                SELECT a.id_categoria, COUNT(*) AS peso
+                FROM carrello c
+                JOIN elemento_carrello e ON e.id_carrello = c.id_carrello
+                JOIN annuncio a ON a.id_annuncio = e.id_annuncio
+                WHERE c.id_utente = ?
+                GROUP BY a.id_categoria
+
+                UNION ALL
+
+                SELECT a.id_categoria, COUNT(*) AS peso
+                FROM pagamento p
+                JOIN annuncio a ON a.id_annuncio = p.id_annuncio
+                WHERE p.id_acquirente = ?
+                GROUP BY a.id_categoria
+            ) interessi
+            WHERE id_categoria IS NOT NULL
+            GROUP BY id_categoria
+            ORDER BY SUM(peso) DESC
+            LIMIT 5
+        ");
+        $stmt->execute([$idUtente, $idUtente, $idUtente]);
+
+        return array_map('intval', array_column($stmt->fetchAll(), 'id_categoria'));
     }
 
     private function getImmaginiByAnnuncio(int $idAnnuncio): array
