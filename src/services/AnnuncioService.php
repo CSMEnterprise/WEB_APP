@@ -55,7 +55,21 @@ class AnnuncioService extends BaseService
 
     public function getByUserId(int $idUtente): array
     {
+        return $this->getByUserIdAndStato($idUtente, null);
+    }
+
+    public function getByUserIdAndStato(int $idUtente, ?string $stato = 'attivo'): array
+    {
         $this->requirePositiveId($idUtente, 'Utente');
+
+        $whereStato = '';
+        $params = [$idUtente];
+
+        if ($stato !== null) {
+            $stato = $this->clean($stato);
+            $whereStato = ' AND a.stato = ?';
+            $params[] = $stato;
+        }
 
         $stmt = $this->db->prepare("
             SELECT
@@ -72,10 +86,10 @@ class AnnuncioService extends BaseService
             FROM annuncio a
             LEFT JOIN categoria c ON c.id_categoria = a.id_categoria
             LEFT JOIN utente_registrato u ON u.id_utente = a.id_utente
-            WHERE a.id_utente = ?
+            WHERE a.id_utente = ? {$whereStato}
             ORDER BY a.data_creazione DESC
         ");
-        $stmt->execute([$idUtente]);
+        $stmt->execute($params);
 
         return $stmt->fetchAll();
     }
