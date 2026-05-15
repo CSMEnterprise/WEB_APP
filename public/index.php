@@ -49,17 +49,23 @@ $routeAliases = [
     'registrazione' => 'register',
     'registrati' => 'register',
     'signup' => 'register',
-    'utente-create' => 'register',
-    'crea-utente' => 'register',
+    'scegli-registrazione' => 'register',
 
-    'registrazione-post' => 'register-post',
-    'registrazione-store' => 'register-post',
-    'registrati-post' => 'register-post',
-    'signup-post' => 'register-post',
-    'utente-store' => 'register-post',
-    'utente-register' => 'register-post',
-    'register-store' => 'register-post',
-    'crea-utente-post' => 'register-post',
+    'register-normal' => 'register-user',
+    'register-utente' => 'register-user',
+    'registrazione-utente' => 'register-user',
+    'utente-create' => 'register-user',
+    'crea-utente' => 'register-user',
+
+    'registrazione-post' => 'register-user-post',
+    'registrazione-store' => 'register-user-post',
+    'registrati-post' => 'register-user-post',
+    'signup-post' => 'register-user-post',
+    'utente-store' => 'register-user-post',
+    'utente-register' => 'register-user-post',
+    'register-store' => 'register-user-post',
+    'register-post' => 'register-user-post',
+    'crea-utente-post' => 'register-user-post',
 
     'utente-profilo' => 'profilo',
     'profile' => 'profilo',
@@ -83,8 +89,14 @@ $routeAliases = [
 
     'business-new' => 'business-create',
     'business-form' => 'business-create',
-    'business-register' => 'business-create',
+    'business-register' => 'register-business',
     'business-crea' => 'business-create',
+    'registrazione-business' => 'register-business',
+    'registrati-business' => 'register-business',
+    'signup-business' => 'register-business',
+    'register-business-store' => 'register-business-post',
+    'business-signup-post' => 'register-business-post',
+    'registrazione-business-post' => 'register-business-post',
     'crea-business' => 'business-create',
 
     'business-save' => 'business-store',
@@ -140,10 +152,29 @@ try {
             (new UtenteController($pdo))->showRegister();
             break;
 
+        case 'register-user':
+        case 'registrazione-utente':
+            requireGuest();
+            (new UtenteController($pdo))->showRegisterUser();
+            break;
+
+        case 'register-user-post':
         case 'register-post':
         case 'registrazione-post':
             requireGuest();
             (new UtenteController($pdo))->register($_POST);
+            break;
+
+        case 'register-business':
+        case 'registrazione-business':
+            requireGuest();
+            (new UtenteController($pdo))->showRegisterBusiness();
+            break;
+
+        case 'register-business-post':
+        case 'registrazione-business-post':
+            requireGuest();
+            (new UtenteController($pdo))->registerBusiness($_POST);
             break;
 
         case 'logout':

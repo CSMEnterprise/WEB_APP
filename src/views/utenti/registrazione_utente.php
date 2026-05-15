@@ -6,12 +6,15 @@ require __DIR__ . '/../partials/flash.php';
 
 <div class="card">
     <h1>Registrazione utente</h1>
+    <p class="muted">Crea un account personale per acquistare, vendere e salvare annunci.</p>
 
     <?php if (!empty($errore)): ?>
         <div class="alert alert-error"><?= e($errore) ?></div>
     <?php endif; ?>
 
-    <form method="post" action="index.php?route=register-user-post">
+    <form method="post" action="index.php">
+        <input type="hidden" name="route" value="register-user-post">
+
         <label for="username">Username</label>
         <input
             type="text"
@@ -33,26 +36,35 @@ require __DIR__ . '/../partials/flash.php';
             type="text"
             id="telefono"
             name="telefono"
-            value="<?= e($_POST['telefono'] ?? '') ?>"
-            required>
+            value="<?= e($_POST['telefono'] ?? '') ?>">
 
-        <label for="password">Password</label>
-        <input
-            type="password"
-            id="password"
-            name="password"
-            pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}"
-            title="La password deve contenere almeno 10 caratteri, una lettera maiuscola e un carattere speciale."
-            required
-            autocomplete="new-password">
+        <label for="userRegisterPassword">Password</label>
+        <div class="password-wrapper">
+            <input
+                type="password"
+                id="userRegisterPassword"
+                name="password"
+                pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}"
+                title="La password deve contenere almeno 10 caratteri, una lettera maiuscola e un carattere speciale."
+                required
+                autocomplete="new-password">
+
+            <button
+                class="btn btn-secondary btn-password-toggle"
+                type="button"
+                onclick="togglePasswordVisibility('userRegisterPassword', this)">
+                Mostra
+            </button>
+        </div>
 
         <button class="btn" type="submit">Crea account utente</button>
     </form>
 
     <p>
-        Vuoi registrare un'azienda?
-        <a href="index.php?route=register-business">Registrati come business</a>
+        Vuoi scegliere un altro tipo di account?
+        <a href="index.php?route=register">Torna alla scelta registrazione</a>
     </p>
+    <p>Hai già un account? <a href="index.php?route=login">Accedi</a></p>
 </div>
 
 <?php require __DIR__ . '/../layout/footer.php'; ?>

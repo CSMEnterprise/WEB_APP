@@ -33,7 +33,7 @@ require __DIR__ . '/../partials/flash.php';
         <button class="btn" type="submit">Accedi</button>
     </form>
 
-    <p>Non hai un account? <a href="index.php?route=register">Registrati</a></p>
+    <p>Non hai un account? <a href="index.php?route=register">Registrati</a> oppure <a href="index.php?route=register-business">Registrati Business</a></p>
 </div>
 
 <?php require __DIR__ . '/../layout/footer.php'; ?>
