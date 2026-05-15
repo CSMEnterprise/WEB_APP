@@ -70,7 +70,7 @@ CREATE TABLE `annuncio` (
   `id_categoria` int(11) NOT NULL,
   `titolo` varchar(255) NOT NULL,
   `descrizione` text DEFAULT NULL,
-  `stato_conservazione` enum('Nuovo','Usato') NOT NULL,
+  `stato_conservazione` enum('Nuovo','Usato come nuovo', 'Ottimo', 'Buono', 'Discreto', 'Scarso') NOT NULL,
   `prezzo` decimal(10,2) NOT NULL,
   `modalita_consegna` enum('Consegna') NOT NULL,
   `stato` enum('attivo','venduto') NOT NULL DEFAULT 'attivo',

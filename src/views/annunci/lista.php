@@ -15,6 +15,10 @@ require __DIR__ . '/../layout/header.php';
     <section class="grid">
         <?php foreach ($annunci as $annuncio): ?>
             <article class="card">
+                <?php if (!empty($annuncio['immagine_principale'])): ?>
+                    <img class="annuncio-card-img" src="<?= e($annuncio['immagine_principale']) ?>" alt="Foto annuncio">
+                <?php endif; ?>
+
                 <h2><?= e($annuncio['titolo'] ?? 'Annuncio') ?></h2>
                 <p class="muted"><?= e($annuncio['categoria_nome'] ?? 'Senza categoria') ?></p>
                 <p><?= e($annuncio['descrizione'] ?? '') ?></p>
