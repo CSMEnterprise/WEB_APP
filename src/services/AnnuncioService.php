@@ -122,4 +122,29 @@ class AnnuncioService extends BaseService
         ");
         $stmt->execute([$idAnnuncio]);
     }
+    public function searchAnnunci(string $keywords): array 
+    {
+    $keywords = $this->clean($keywords);
+
+    if ($keywords === '') {
+        return $this->getAnnunciAttivi();
+    }
+
+    $stmt = $this->db->prepare("
+        SELECT a.*, c.nome AS categoria_nome, u.username AS venditore_username
+        FROM annuncio a
+        LEFT JOIN categoria c ON c.id_categoria = a.id_categoria
+        LEFT JOIN utente_registrato u ON u.id_utente = a.id_utente
+        WHERE a.stato = 'attivo'
+        AND (
+            a.titolo LIKE CONCAT('%', ?, '%')
+            OR a.descrizione LIKE CONCAT('%', ?, '%')
+        )
+        ORDER BY a.data_creazione DESC
+    ");
+
+    $stmt->execute([$keywords, $keywords]);
+
+    return $stmt->fetchAll();
+   }
 }
