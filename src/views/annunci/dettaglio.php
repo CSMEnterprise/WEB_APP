@@ -4,7 +4,7 @@ require __DIR__ . '/../layout/header.php';
 ?>
 
 <?php if (!empty($annuncio)): ?>
-    <?php $isOwner = !empty($_SESSION['user_id']) && (int)($annuncio['id_utente'] ?? 0) === (int)($_SESSION['user_id'] ?? 0); ?>
+    <?php $isOwner = !empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && (int)($annuncio['id_utente'] ?? 0) === (int)($_SESSION['user_id'] ?? 0); ?>
 
     <article class="card">
         <h1><?= e($annuncio['titolo'] ?? '') ?></h1>

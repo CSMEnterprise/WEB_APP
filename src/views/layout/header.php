@@ -131,10 +131,16 @@ $isLogged = isset($_SESSION['user_id']);
             <a href="index.php?route=annunci">Annunci</a>
 
             <?php if ($isLogged): ?>
-                <a href="index.php?route=profilo">Profilo</a>
-                <a href="index.php?route=carrello">Carrello</a>
-                <a href="index.php?route=wishlist">Wishlist</a>
-                <a href="index.php?route=business">Business</a>
+                <?php if (!empty($_SESSION['is_admin'])): ?>
+                    <a href="index.php?route=admin">Dashboard Admin</a>
+                    <a href="index.php?route=admin-utenti">Utenti</a>
+                    <a href="index.php?route=admin-segnalazioni">Segnalazioni</a>
+                <?php else: ?>
+                    <a href="index.php?route=profilo">Profilo</a>
+                    <a href="index.php?route=carrello">Carrello</a>
+                    <a href="index.php?route=wishlist">Wishlist</a>
+                    <a href="index.php?route=business">Business</a>
+                <?php endif; ?>
                 <a href="index.php?route=logout">Logout</a>
             <?php else: ?>
                 <a href="index.php?route=login">Login</a>

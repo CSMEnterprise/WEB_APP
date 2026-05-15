@@ -13,23 +13,54 @@ require __DIR__ . '/../layout/header.php';
                 <th>Segnalante</th>
                 <th>Tipologia</th>
                 <th>Descrizione</th>
+                <th>Oggetto segnalato</th>
                 <th>Stato</th>
                 <th>Data</th>
-                <th>Azione</th>
+                <th>Azioni</th>
             </tr>
         </thead>
         <tbody>
-            <?php foreach ($segnalazioni as $segnalazione): ?>
+            <?php foreach ($segnalazioni as $s): ?>
+                <?php
+                if (!empty($s['id_annuncio'])) {
+                    $oggettoLabel = '📦 Annuncio: ' . ($s['annuncio_titolo'] ?? '#' . $s['id_annuncio']);
+                    $oggettoLink  = 'index.php?route=annuncio&id=' . (int) $s['id_annuncio'];
+                } elseif (!empty($s['id_utente_segnalato'])) {
+                    $oggettoLabel = '👤 Utente: ' . ($s['utente_segnalato_username'] ?? '#' . $s['id_utente_segnalato']);
+                    $oggettoLink  = 'index.php?route=admin-utenti';
+                } elseif (!empty($s['id_business'])) {
+                    $oggettoLabel = '🏢 Business: ' . ($s['business_nome'] ?? '#' . $s['id_business']);
+                    $oggettoLink  = null;
+                } elseif (!empty($s['id_feedback'])) {
+                    $oggettoLabel = '💬 Feedback #' . $s['feedback_id'];
+                    $oggettoLink  = null;
+                } else {
+                    $oggettoLabel = '—';
+                    $oggettoLink  = null;
+                }
+                ?>
                 <tr>
-                    <td><?= e($segnalazione['id_segnalazione'] ?? '') ?></td>
-                    <td><?= e($segnalazione['segnalante_username'] ?? '') ?></td>
-                    <td><?= e($segnalazione['tipologia'] ?? '') ?></td>
-                    <td><?= e($segnalazione['descrizione'] ?? '') ?></td>
-                    <td><?= e($segnalazione['stato'] ?? '') ?></td>
-                    <td><?= e($segnalazione['data_segnalazione'] ?? '') ?></td>
+                    <td><?= e($s['id_segnalazione'] ?? '') ?></td>
+                    <td><?= e($s['segnalante_username'] ?? '') ?></td>
+                    <td><?= e($s['tipologia'] ?? '') ?></td>
+                    <td><?= e($s['descrizione'] ?? '—') ?></td>
                     <td>
-                        <a class="btn" href="index.php?route=segnalazione-close&id=<?= e($segnalazione['id_segnalazione'] ?? '') ?>">Chiudi</a>
-                        <a class="btn btn-danger" href="index.php?route=segnalazione-delete&id=<?= e($segnalazione['id_segnalazione'] ?? '') ?>">Elimina</a>
+                        <?= e($oggettoLabel) ?>
+                        <?php if ($oggettoLink): ?>
+                            <br>
+                            <a class="btn btn-secondary" style="margin-top:6px;font-size:12px;padding:5px 10px;"
+                               href="<?= e($oggettoLink) ?>" target="_blank">
+                                Vai all'oggetto →
+                            </a>
+                        <?php endif; ?>
+                    </td>
+                    <td><?= e($s['stato'] ?? '') ?></td>
+                    <td><?= e($s['data_segnalazione'] ?? '') ?></td>
+                    <td>
+                        <?php if (($s['stato'] ?? '') !== 'Risolta'): ?>
+                            <a class="btn" href="index.php?route=segnalazione-close&id=<?= e($s['id_segnalazione']) ?>">Chiudi</a>
+                        <?php endif; ?>
+                        <a class="btn btn-danger" href="index.php?route=segnalazione-delete&id=<?= e($s['id_segnalazione']) ?>">Elimina</a>
                     </td>
                 </tr>
             <?php endforeach; ?>

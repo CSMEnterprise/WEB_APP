@@ -28,7 +28,7 @@ require __DIR__ . '/../layout/header.php';
 
                 <a class="btn" href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Dettagli</a>
 
-                <?php if (!empty($_SESSION['user_id'])): ?>
+                <?php if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin'])): ?>
                     <?php if ((int)($annuncio['id_utente'] ?? 0) === (int)($_SESSION['user_id'] ?? 0)): ?>
                         <p class="muted">È un tuo annuncio.</p>
                     <?php else: ?>

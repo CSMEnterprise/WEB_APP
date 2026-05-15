@@ -32,10 +32,16 @@ class UtenteController
         try {
             $utente = $this->authService->login($data['email'] ?? '', $data['password'] ?? '');
 
-            $_SESSION['user_id'] = (int) $utente['id_utente'];
-            $_SESSION['username'] = $utente['username'];
-
-            header('Location: index.php?route=profilo');
+            if (!empty($utente['_is_admin'])) {
+                $_SESSION['user_id']  = (int) $utente['id_admin'];
+                $_SESSION['username'] = 'Admin';
+                $_SESSION['is_admin'] = true;
+                header('Location: index.php?route=admin');
+            } else {
+                $_SESSION['user_id']  = (int) $utente['id_utente'];
+                $_SESSION['username'] = $utente['username'];
+                header('Location: index.php?route=profilo');
+            }
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
