@@ -27,10 +27,7 @@ require __DIR__ . '/../partials/flash.php';
         <label for="stato_conservazione">Stato conservazione</label>
         <select id="stato_conservazione" name="stato_conservazione" required>
             <option value="Nuovo">Nuovo</option>
-            <option value="Ottimo">Ottimo</option>
-            <option value="Buono">Buono</option>
-            <option value="Discreto">Discreto</option>
-            <option value="Da restaurare">Da restaurare</option>
+            <option value="Usato">Usato</option>
         </select>
 
         <label for="prezzo">Prezzo</label>
@@ -38,9 +35,7 @@ require __DIR__ . '/../partials/flash.php';
 
         <label for="modalita_consegna">Modalità consegna</label>
         <select id="modalita_consegna" name="modalita_consegna" required>
-            <option value="Spedizione">Spedizione</option>
-            <option value="Ritiro_a_mano">Ritiro a mano</option>
-            <option value="Entrambi">Entrambi</option>
+            <option value="Consegna">Consegna</option>
         </select>
 
         <button class="btn" type="submit">Pubblica</button>
