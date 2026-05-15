@@ -6,5 +6,23 @@
     </div>
 </footer>
 
+<script>
+function togglePasswordVisibility(inputId, button) {
+    const input = document.getElementById(inputId);
+
+    if (!input) {
+        return;
+    }
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        button.textContent = 'Nascondi';
+    } else {
+        input.type = 'password';
+        button.textContent = 'Mostra';
+    }
+}
+</script>
+
 </body>
 </html>
