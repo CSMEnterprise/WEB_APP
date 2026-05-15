@@ -7,11 +7,8 @@ require __DIR__ . '/../partials/flash.php';
 <div class="card">
     <h1>Login</h1>
 
-    <?php if (!empty($errore)): ?>
-        <div class="alert alert-error"><?= e($errore) ?></div>
-    <?php endif; ?>
-
-    <form method="post" action="index.php?route=login-post">
+    <form method="post" action="index.php">
+        <input type="hidden" name="route" value="login-post">
         <label for="email">Email</label>
         <input type="email" id="email" name="email" required>
 

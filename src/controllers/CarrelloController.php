@@ -21,10 +21,16 @@ class CarrelloController
 
     public function aggiungi(int $idUtente, int $idAnnuncio): void
     {
-        $this->cartService->aggiungiAnnuncio($idUtente, $idAnnuncio);
+        try {
+            $this->cartService->aggiungiAnnuncio($idUtente, $idAnnuncio);
 
-        header('Location: index.php?route=carrello');
-        exit;
+            header('Location: index.php?route=carrello');
+            exit;
+        } catch (Exception $e) {
+            http_response_code(400);
+            $errore = $e->getMessage();
+            require __DIR__ . '/../views/errors/400.php';
+        }
     }
 
     public function rimuovi(int $idUtente, int $idAnnuncio): void

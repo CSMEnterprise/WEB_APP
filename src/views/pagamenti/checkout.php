@@ -12,7 +12,8 @@ require __DIR__ . '/../partials/flash.php';
         <p><?= e($annuncio['descrizione'] ?? '') ?></p>
         <p class="price">Totale: € <?= number_format((float)($totale ?? 0), 2, ',', '.') ?></p>
 
-        <form method="post" action="index.php?route=pagamento-conferma">
+        <form method="post" action="index.php">
+            <input type="hidden" name="route" value="pagamento-conferma">
             <input type="hidden" name="id_annuncio" value="<?= e($annuncio['id_annuncio'] ?? '') ?>">
 
             <label for="paypal_transaction_id">ID transazione PayPal</label>

@@ -29,7 +29,11 @@ require __DIR__ . '/../layout/header.php';
                 <a class="btn" href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Dettagli</a>
 
                 <?php if (!empty($_SESSION['user_id'])): ?>
-                    <a class="btn btn-secondary" href="index.php?route=carrello-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Carrello</a>
+                    <?php if ((int)($annuncio['id_utente'] ?? 0) === (int)($_SESSION['user_id'] ?? 0)): ?>
+                        <p class="muted">È un tuo annuncio.</p>
+                    <?php else: ?>
+                        <a class="btn btn-secondary" href="index.php?route=carrello-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Carrello</a>
+                    <?php endif; ?>
                 <?php endif; ?>
             </article>
         <?php endforeach; ?>

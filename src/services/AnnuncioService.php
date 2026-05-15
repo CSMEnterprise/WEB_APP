@@ -58,10 +58,22 @@ class AnnuncioService extends BaseService
         $this->requirePositiveId($idUtente, 'Utente');
 
         $stmt = $this->db->prepare("
-            SELECT *
-            FROM annuncio
-            WHERE id_utente = ?
-            ORDER BY data_creazione DESC
+            SELECT
+                a.*,
+                c.nome AS categoria_nome,
+                u.username AS venditore_username,
+                (
+                    SELECT i.url
+                    FROM immagine i
+                    WHERE i.id_annuncio = a.id_annuncio
+                    ORDER BY i.ordine ASC, i.id_immagine ASC
+                    LIMIT 1
+                ) AS immagine_principale
+            FROM annuncio a
+            LEFT JOIN categoria c ON c.id_categoria = a.id_categoria
+            LEFT JOIN utente_registrato u ON u.id_utente = a.id_utente
+            WHERE a.id_utente = ?
+            ORDER BY a.data_creazione DESC
         ");
         $stmt->execute([$idUtente]);
 
