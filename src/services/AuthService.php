@@ -50,8 +50,8 @@ class AuthService extends BaseService
             throw new ServiceException('Email non valida.');
         }
 
-        if (strlen($password) < 6) {
-            throw new ServiceException('La password deve contenere almeno 6 caratteri.');
+        if (!preg_match('/^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}$/', $password)) {
+            throw new ServiceException('La password deve contenere almeno 10 caratteri, una lettera maiuscola e un carattere speciale.');
         }
 
         $stmt = $this->db->prepare("
