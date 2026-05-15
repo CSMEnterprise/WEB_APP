@@ -30,20 +30,20 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* ── VARIABILI ─────────────────────────────────────── */
+        /* ── VARIABILI (Modern Minimal Pop) ────────────────── */
         :root {
-            --bg:        #0b0b14;
-            --bg-card:   #12121f;
-            --bg-input:  #1a1a2e;
-            --border:    #2a2a45;
-            --accent:    #7c3aed;
-            --accent-h:  #9d5cf6;
-            --gold:      #f59e0b;
-            --gold-h:    #fbbf24;
-            --danger:    #ef4444;
-            --text:      #f0f0ff;
-            --muted:     #8b8bac;
-            --radius:    12px;
+            --bg:        #09090b;
+            --bg-card:   rgba(24, 24, 27, 0.4);
+            --bg-input:  rgba(255, 255, 255, 0.03);
+            --border:    rgba(255, 255, 255, 0.08);
+            --accent:    #8b5cf6;
+            --accent-h:  #a78bfa;
+            --gold:      #facc15;
+            --gold-h:    #fde047;
+            --danger:    #fb7185;
+            --text:      #f8fafc;
+            --muted:     #94a3b8;
+            --radius:    24px;
         }
 
         /* ── RESET & BASE ──────────────────────────────────── */
@@ -56,9 +56,21 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
-        a { color: var(--text); text-decoration: none; }
-        h1, h2, h3 { margin-top: 0; font-weight: 700; }
+        /* Global Glow Sfondo Pop */
+        body::before {
+            content: ''; position: fixed; top: -10vw; left: -10vw; width: 40vw; height: 40vw;
+            background: radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 60%);
+            pointer-events: none; z-index: -1;
+        }
+        body::after {
+            content: ''; position: fixed; bottom: -10vw; right: -10vw; width: 40vw; height: 40vw;
+            background: radial-gradient(circle, rgba(236,72,153,0.08) 0%, transparent 60%);
+            pointer-events: none; z-index: -1;
+        }
+        a { color: var(--text); text-decoration: none; transition: color 0.2s; }
+        h1, h2, h3, h4 { margin-top: 0; font-weight: 800; letter-spacing: -0.03em; }
 
         /* ── LAYOUT ────────────────────────────────────────── */
         .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; width: 100%; }
@@ -67,9 +79,9 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
         /* ── HEADER ────────────────────────────────────────── */
         .site-header {
             position: sticky; top: 0; z-index: 100;
-            background: rgba(11,11,20,.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: rgba(9, 9, 11, 0.7);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border-bottom: 1px solid var(--border);
         }
         .header-inner {
@@ -105,54 +117,63 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
         /* ── SEARCH ────────────────────────────────────────── */
         .search-form {
             display: flex; align-items: stretch;
-            flex: 1; max-width: none; gap: 8px;
+            flex: 1; max-width: none; gap: 12px;
         }
         .search-input-group {
             display: flex; align-items: center;
             flex: 1;
             background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: 8px;
+            border: 2px solid transparent;
+            border-radius: 16px;
             overflow: hidden;
-            transition: border-color .2s;
+            transition: all .3s;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
         }
-        .search-input-group:focus-within { border-color: var(--accent); }
+        .search-input-group:focus-within { border-color: var(--accent); background: rgba(0,0,0,0.2); }
         .search-input-group input {
             flex: 1;
-            width: 100%; max-width: none; margin: 0; padding: 10px 14px;
+            width: 100%; max-width: none; margin: 0; padding: 14px 16px;
             background: transparent; border: 0;
-            color: var(--text); font-family: inherit; font-size: 14px;
-            outline: none;
+            color: var(--text); font-family: inherit; font-size: 15px;
+            outline: none; box-shadow: none;
         }
+        .search-input-group input:focus { border-color: transparent; background: transparent; }
         .search-input-group input::placeholder { color: var(--muted); }
         .search-input-group select {
-            width: auto; margin: 0; padding: 10px 14px;
+            width: auto; margin: 0; padding: 14px 16px;
             background: transparent; border: 0;
             border-left: 1px solid var(--border);
-            color: var(--text); font-family: inherit; font-size: 14px;
-            outline: none; cursor: pointer;
+            color: var(--text); font-family: inherit; font-size: 14px; font-weight: 600;
+            outline: none; cursor: pointer; box-shadow: none;
             max-width: 180px;
         }
+        .search-input-group select:focus { border-color: transparent; background: transparent; }
 
         .search-form button {
-            margin: 0; padding: 10px 20px; border: 0;
+            margin: 0; padding: 14px 24px; border: 0;
             background: var(--accent); color: #fff;
-            font-size: 14px; font-weight: 600; cursor: pointer;
-            border-radius: 8px;
-            transition: background .2s; white-space: nowrap;
+            font-size: 15px; font-weight: 700; cursor: pointer;
+            border-radius: 16px;
+            transition: all .2s; white-space: nowrap;
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.25);
         }
-        .search-form button:hover { background: var(--accent-h); }
+        .search-form button:hover { background: var(--accent-h); transform: translateY(-2px); box-shadow: 0 12px 32px rgba(139, 92, 246, 0.4); }
 
         /* ── CARD ──────────────────────────────────────────── */
         .card {
             background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 20px; margin-bottom: 16px;
-            transition: border-color .25s, box-shadow .25s;
+            padding: 28px; margin-bottom: 24px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+            transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
         }
-        .card:hover { border-color: rgba(124,58,237,.5); box-shadow: 0 0 24px rgba(124,58,237,.12); }
+        .card:hover { border-color: rgba(139,92,246,0.3); box-shadow: 0 20px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(139,92,246,0.2); }
         .clickable-card { cursor: pointer; }
+        .clickable-card:hover { transform: translateY(-4px); }
         .clickable-card:focus {
             outline: 2px solid var(--accent);
             outline-offset: 3px;
@@ -194,46 +215,48 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
 
         /* ── BUTTONS ───────────────────────────────────────── */
         .btn {
-            display: inline-flex; align-items: center; justify-content: center; padding: 10px 18px;
-            border-radius: 8px; font-weight: 600; font-size: 14px; font-family: inherit;
-            background: linear-gradient(135deg, var(--accent), var(--accent-h));
-            color: #fff; text-decoration: none; border: 1px solid transparent; cursor: pointer;
-            transition: opacity .2s, transform .15s;
+            display: inline-flex; align-items: center; justify-content: center; padding: 14px 24px;
+            border-radius: 16px; font-weight: 700; font-size: 15px; font-family: inherit; letter-spacing: 0.02em;
+            background: var(--accent);
+            color: #fff; text-decoration: none; border: none; cursor: pointer;
+            transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.15);
         }
-        .btn:hover { opacity: .88; transform: translateY(-1px); }
-        .btn:active { transform: translateY(0); }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(139, 92, 246, 0.25); background: var(--accent-h); }
+        .btn:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(139, 92, 246, 0.15); }
         .btn-secondary {
             background: transparent;
-            border: 1px solid var(--border);
-            color: var(--muted);
+            border: 2px solid var(--border);
+            color: var(--text);
+            box-shadow: none;
         }
-        .btn-secondary:hover { border-color: var(--accent); color: var(--text); background: rgba(124,58,237,.1); }
-        .btn-danger { background: var(--danger); }
-        .btn-gold {
-            background: linear-gradient(135deg, var(--gold), var(--gold-h));
-            color: #000;
-        }
+        .btn-secondary:hover { border-color: var(--accent); color: #fff; background: rgba(139, 92, 246, 0.1); box-shadow: none; }
+        .btn-danger { background: var(--danger); box-shadow: 0 4px 14px rgba(251, 113, 133, 0.15); border: none; }
+        .btn-danger:hover { background: #fda4af; box-shadow: 0 6px 20px rgba(251, 113, 133, 0.25); }
+        .btn-gold { background: var(--gold); color: #000; box-shadow: 0 4px 14px rgba(250, 204, 21, 0.15); border: none; }
+        .btn-gold:hover { background: var(--gold-h); box-shadow: 0 6px 20px rgba(250, 204, 21, 0.25); }
 
         /* ── ALERTS ────────────────────────────────────────── */
-        .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
-        .alert-error   { background: rgba(239,68,68,.12);  color: #fca5a5; border: 1px solid rgba(239,68,68,.3); }
-        .alert-success { background: rgba(34,197,94,.1);   color: #86efac; border: 1px solid rgba(34,197,94,.3); }
+        .alert { padding: 16px 20px; border-radius: 16px; margin-bottom: 20px; font-size: 15px; font-weight: 600; }
+        .alert-error   { background: rgba(251,113,133,.15);  color: #fda4af; border: none; }
+        .alert-success { background: rgba(74,222,128,.15);   color: #86efac; border: none; }
 
         /* ── FORMS ─────────────────────────────────────────── */
-        label { display: block; font-weight: 600; font-size: 13px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
+        label { display: block; font-weight: 700; font-size: 12px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .05em; }
         input, select, textarea {
             width: 100%; max-width: 520px;
-            padding: 11px 14px; margin: 0 0 16px;
+            padding: 16px 20px; margin: 0 0 20px;
             background: var(--bg-input); color: var(--text);
-            border: 1px solid var(--border); border-radius: 8px;
-            font-family: inherit; font-size: 14px; outline: none;
-            transition: border-color .2s;
+            border: 2px solid transparent; border-radius: 16px;
+            font-family: inherit; font-size: 15px; outline: none;
+            transition: all .3s;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
         }
-        input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+        input:focus, select:focus, textarea:focus { border-color: var(--accent); background: rgba(0,0,0,0.2); }
         select option { background: var(--bg-card); }
-        .password-wrapper { display: flex; align-items: flex-start; gap: 8px; max-width: 542px; margin: 0 0 16px; }
+        .password-wrapper { display: flex; align-items: flex-start; gap: 8px; max-width: 542px; margin: 0 0 20px; position: relative; }
         .password-wrapper input { flex: 1; max-width: none; margin: 0; }
-        .btn-password-toggle { white-space: nowrap; padding: 11px 14px; margin: 0; }
+        .btn-password-toggle { white-space: nowrap; padding: 12px 16px; margin: 0; box-shadow: none !important; }
 
         /* ── TABLES ────────────────────────────────────────── */
         table { width: 100%; border-collapse: collapse; }
