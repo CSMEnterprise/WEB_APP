@@ -83,6 +83,14 @@ $routeAliases = [
     'preferiti-remove' => 'wishlist-remove',
     'preferito-remove' => 'wishlist-remove',
 
+    'paypal' => 'paypal-placeholder',
+    'paypal-checkout' => 'paypal-placeholder',
+    'paypal-sandbox' => 'paypal-placeholder',
+    'paypal-sim' => 'paypal-placeholder',
+    'pagamento-paypal' => 'paypal-placeholder',
+    'paypal-annulla' => 'paypal-cancel',
+    'pagamento-annulla' => 'paypal-cancel',
+
     'business-profilo' => 'business',
     'profilo-business' => 'business',
     'account-business' => 'business',
@@ -213,19 +221,16 @@ try {
 
         case 'annuncio-create':
             requireAuth();
-            denyAdmin();
             (new AnnuncioController($pdo))->formCreazione();
             break;
 
         case 'annuncio-store':
             requireAuth();
-            denyAdmin();
             (new AnnuncioController($pdo))->crea($_POST, currentUserId(), $_FILES);
             break;
 
         case 'annuncio-delete':
             requireAuth();
-            denyAdmin();
             (new AnnuncioController($pdo))->elimina((int) ($_GET['id'] ?? 0), currentUserId());
             break;
 
@@ -238,25 +243,21 @@ try {
 
         case 'carrello':
             requireAuth();
-            denyAdmin();
             (new CarrelloController($pdo))->lista(currentUserId());
             break;
 
         case 'carrello-add':
             requireAuth();
-            denyAdmin();
             (new CarrelloController($pdo))->aggiungi(currentUserId(), (int) ($_GET['id'] ?? 0));
             break;
 
         case 'carrello-remove':
             requireAuth();
-            denyAdmin();
             (new CarrelloController($pdo))->rimuovi(currentUserId(), (int) ($_GET['id'] ?? 0));
             break;
 
         case 'carrello-clear':
             requireAuth();
-            denyAdmin();
             (new CarrelloController($pdo))->svuota(currentUserId());
             break;
 
@@ -297,13 +298,21 @@ try {
 
         case 'checkout':
             requireAuth();
-            denyAdmin();
             (new PagamentoController($pdo))->checkout(currentUserId(), (int) ($_GET['id'] ?? 0));
+            break;
+
+        case 'paypal-placeholder':
+            requireAuth();
+            (new PagamentoController($pdo))->paypalPlaceholder(currentUserId(), (int) ($_GET['id'] ?? 0));
+            break;
+
+        case 'paypal-cancel':
+            requireAuth();
+            (new PagamentoController($pdo))->paypalCancel();
             break;
 
         case 'pagamento-conferma':
             requireAuth();
-            denyAdmin();
             (new PagamentoController($pdo))->conferma($_POST, currentUserId());
             break;
 

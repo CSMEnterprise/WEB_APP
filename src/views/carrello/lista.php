@@ -46,8 +46,8 @@ require __DIR__ . '/../layout/header.php';
 
             <div class="cart-summary-actions">
                 <?php foreach ($purchasableItems as $item): ?>
-                    <a class="btn" href="index.php?route=checkout&id=<?= e($item['id_annuncio'] ?? '') ?>">
-                        <?= count($purchasableItems) === 1 ? 'Acquista' : 'Acquista: ' . e($item['titolo'] ?? 'Annuncio') ?>
+                    <a class="btn" href="index.php?route=paypal-placeholder&id=<?= e($item['id_annuncio'] ?? '') ?>">
+                        <?= count($purchasableItems) === 1 ? 'Acquista con PayPal' : 'PayPal: ' . e($item['titolo'] ?? 'Annuncio') ?>
                     </a>
                 <?php endforeach; ?>
 
