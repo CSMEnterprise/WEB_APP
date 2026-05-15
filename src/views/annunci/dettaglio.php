@@ -7,12 +7,19 @@ require __DIR__ . '/../layout/header.php';
     <article class="card">
         <h1><?= e($annuncio['titolo'] ?? '') ?></h1>
 
+        <?php if (!empty($annuncio['immagini'])): ?>
+            <div class="annuncio-gallery">
+                <?php foreach ($annuncio['immagini'] as $immagine): ?>
+                    <img src="<?= e($immagine['url'] ?? '') ?>" alt="Foto annuncio">
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+
         <p class="muted"><?= e($annuncio['categoria_nome'] ?? '') ?></p>
         <p><?= nl2br(e($annuncio['descrizione'] ?? '')) ?></p>
 
         <p class="price">€ <?= number_format((float)($annuncio['prezzo'] ?? 0), 2, ',', '.') ?></p>
         <p><strong>Conservazione:</strong> <?= e($annuncio['stato_conservazione'] ?? '') ?></p>
-        <p><strong>Consegna:</strong> <?= e($annuncio['modalita_consegna'] ?? '') ?></p>
         <p><strong>Stato vendita:</strong> <?= e($annuncio['stato'] ?? '') ?></p>
         <p><strong>Venditore:</strong> <?= e($annuncio['venditore_username'] ?? '') ?></p>
 

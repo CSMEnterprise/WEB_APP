@@ -70,6 +70,15 @@ $isLogged = isset($_SESSION['user_id']);
         th, td { padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: left; }
         .muted { color: #6b7280; }
         .price { font-size: 20px; font-weight: bold; }
+
+        .photo-upload-box { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 6px 0 14px; }
+        .photo-upload-btn { margin: 0; }
+        .photo-preview { display: flex; flex-wrap: wrap; gap: 10px; margin: 4px 0 16px; }
+        .photo-preview-item { width: 82px; height: 82px; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; background: #f9fafb; }
+        .photo-preview-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .annuncio-card-img { width: 100%; height: 170px; object-fit: cover; border-radius: 10px; margin-bottom: 12px; background: #f3f4f6; }
+        .annuncio-gallery { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0 18px; }
+        .annuncio-gallery img { width: 160px; height: 160px; object-fit: cover; border-radius: 12px; border: 1px solid #e5e7eb; }
     </style>
 </head>
 
