@@ -5,7 +5,6 @@ require_once __DIR__ . '/../services/CategoryService.php';
 
 class AnnuncioController
 {
-    
     private AnnuncioService $annuncioService;
     private CategoryService $categoryService;
 
@@ -17,15 +16,15 @@ class AnnuncioController
 
     public function lista(): void
     {
-    $q = $_GET['q'] ?? '';
+        $q = $_GET['q'] ?? '';
 
-    if (trim($q) !== '') {
-        $annunci = $this->annuncioService->searchAnnunci($q);
-    } else {
-        $annunci = $this->annuncioService->getAnnunciAttivi();
-    }
+        if (trim($q) !== '') {
+            $annunci = $this->annuncioService->searchAnnunci($q);
+        } else {
+            $annunci = $this->annuncioService->getAnnunciAttivi();
+        }
 
-    require __DIR__ . '/../views/annunci/lista.php';
+        require __DIR__ . '/../views/annunci/lista.php';
     }
 
     public function dettaglio(int $idAnnuncio): void
@@ -47,10 +46,10 @@ class AnnuncioController
         require __DIR__ . '/../views/annunci/form.php';
     }
 
-    public function crea(array $data, int $idUtente): void
+    public function crea(array $data, int $idUtente, array $files = []): void
     {
         try {
-            $idAnnuncio = $this->annuncioService->crea($data, $idUtente);
+            $idAnnuncio = $this->annuncioService->crea($data, $idUtente, $files);
             header('Location: index.php?route=annuncio&id=' . $idAnnuncio);
             exit;
         } catch (Exception $e) {

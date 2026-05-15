@@ -13,11 +13,6 @@ require_once __DIR__ . '/../src/middleware/guest.php';
 require_once __DIR__ . '/../src/controllers/UtenteController.php';
 require_once __DIR__ . '/../src/controllers/AnnuncioController.php';
 require_once __DIR__ . '/../src/controllers/CarrelloController.php';
-require_once __DIR__ . '/../src/controllers/PagamentoController.php';
-require_once __DIR__ . '/../src/controllers/BusinessController.php';
-require_once __DIR__ . '/../src/controllers/AdminController.php';
-require_once __DIR__ . '/../src/controllers/FeedbackController.php';
-require_once __DIR__ . '/../src/controllers/SegnalazioneController.php';
 
 $route = $_GET['route'] ?? 'home';
 
@@ -37,7 +32,6 @@ try {
         case 'annunci':
             (new AnnuncioController($pdo))->lista();
             break;
-
         case 'annuncio':
             (new AnnuncioController($pdo))->dettaglio((int) ($_GET['id'] ?? 0));
             break;
@@ -64,29 +58,9 @@ try {
             (new UtenteController($pdo))->showRegister();
             break;
 
-        case 'register-user':
-            requireGuest();
-            (new UtenteController($pdo))->showRegisterUser();
-            break;
-
-        case 'register-user-post':
-            requireGuest();
-            (new UtenteController($pdo))->registerUser($_POST);
-            break;
-
-        case 'register-business':
-            requireGuest();
-            (new UtenteController($pdo))->showRegisterBusiness();
-            break;
-
-        case 'register-business-post':
-            requireGuest();
-            (new UtenteController($pdo))->registerBusiness($_POST);
-            break;
-
         case 'register-post':
             requireGuest();
-            (new UtenteController($pdo))->registerUser($_POST);
+            (new UtenteController($pdo))->register($_POST);
             break;
 
         case 'logout':
@@ -123,7 +97,7 @@ try {
 
         case 'annuncio-store':
             requireAuth();
-            (new AnnuncioController($pdo))->crea($_POST, currentUserId());
+            (new AnnuncioController($pdo))->crea($_POST, currentUserId(), $_FILES);
             break;
 
         case 'annuncio-delete':
