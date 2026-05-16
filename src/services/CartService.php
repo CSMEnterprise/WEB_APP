@@ -98,6 +98,23 @@ class CartService extends BaseService
         return $totale;
     }
 
+    public function getCarrelloIds(int $idUtente): array
+    {
+        $this->requirePositiveId($idUtente, 'Utente');
+
+        $stmt = $this->db->prepare("
+            SELECT e.id_annuncio
+            FROM elemento_carrello e
+            JOIN carrello c ON c.id_carrello = e.id_carrello
+            JOIN annuncio a ON a.id_annuncio = e.id_annuncio
+            WHERE c.id_utente = ?
+              AND a.stato = 'attivo'
+        ");
+        $stmt->execute([$idUtente]);
+
+        return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+    }
+
     public function aggiungiAnnuncio(int $idUtente, int $idAnnuncio): void
     {
         $this->requirePositiveId($idUtente, 'Utente');

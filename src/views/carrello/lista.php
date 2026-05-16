@@ -59,11 +59,11 @@ require __DIR__ . '/../layout/header.php';
             <p class="price">€ <?= number_format((float)($totale ?? 0), 2, ',', '.') ?></p>
 
             <div class="cart-summary-actions">
-                <?php foreach ($purchasableItems as $item): ?>
-                    <a class="btn" href="index.php?route=checkout&id=<?= e($item['id_annuncio'] ?? '') ?>">
-                        <?= count($purchasableItems) === 1 ? 'Vai al checkout' : 'Checkout: ' . e($item['titolo'] ?? 'Annuncio') ?>
+                <?php if (!empty($purchasableItems)): ?>
+                    <a class="btn" href="index.php?route=checkout-carrello">
+                        Procedi all'acquisto (<?= count($purchasableItems) ?> <?= count($purchasableItems) === 1 ? 'articolo' : 'articoli' ?>)
                     </a>
-                <?php endforeach; ?>
+                <?php endif; ?>
 
                 <a class="btn btn-danger" href="index.php?route=carrello-clear">Svuota carrello</a>
             </div>

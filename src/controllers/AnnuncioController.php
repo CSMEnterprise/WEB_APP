@@ -5,6 +5,7 @@ require_once __DIR__ . '/../services/CategoryService.php';
 require_once __DIR__ . '/../services/FeedbackService.php';
 require_once __DIR__ . '/../services/UserService.php';
 require_once __DIR__ . '/../services/WishlistService.php';
+require_once __DIR__ . '/../services/CartService.php';
 
 class AnnuncioController
 {
@@ -13,6 +14,7 @@ class AnnuncioController
     private FeedbackService  $feedbackService;
     private UserService      $userService;
     private WishlistService  $wishlistService;
+    private CartService      $cartService;
 
     public function __construct(PDO $db)
     {
@@ -21,6 +23,7 @@ class AnnuncioController
         $this->feedbackService = new FeedbackService($db);
         $this->userService     = new UserService($db);
         $this->wishlistService = new WishlistService($db);
+        $this->cartService     = new CartService($db);
     }
 
     public function lista(): void
@@ -37,7 +40,9 @@ class AnnuncioController
             $utenti  = [];
         }
 
-        $wishlistIds = (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business']))
+        $isRegularUser = !empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business']);
+
+        $wishlistIds = $isRegularUser
             ? $this->wishlistService->getWishlistIds((int) $_SESSION['user_id'])
             : [];
 
@@ -57,9 +62,10 @@ class AnnuncioController
         $idVenditore        = (int) ($annuncio['id_utente'] ?? 0);
         $feedbackVenditore  = $idVenditore > 0 ? $this->feedbackService->getByVenditoreId($idVenditore) : [];
         $mediaVenditore     = $idVenditore > 0 ? $this->feedbackService->getMediaVoto($idVenditore) : 0.0;
-        $wishlistIds = (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business']))
-            ? $this->wishlistService->getWishlistIds((int) $_SESSION['user_id'])
-            : [];
+
+        $isRegularUser = !empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business']);
+        $wishlistIds = $isRegularUser ? $this->wishlistService->getWishlistIds((int) $_SESSION['user_id']) : [];
+        $carrelloIds = $isRegularUser ? $this->cartService->getCarrelloIds((int) $_SESSION['user_id']) : [];
 
         require __DIR__ . '/../views/annunci/dettaglio.php';
     }

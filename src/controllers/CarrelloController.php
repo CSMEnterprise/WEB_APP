@@ -24,7 +24,8 @@ class CarrelloController
         try {
             $this->cartService->aggiungiAnnuncio($idUtente, $idAnnuncio);
 
-            header('Location: index.php?route=carrello');
+            $back = $_SERVER['HTTP_REFERER'] ?? 'index.php?route=annunci';
+            header('Location: ' . $back);
             exit;
         } catch (Exception $e) {
             http_response_code(400);

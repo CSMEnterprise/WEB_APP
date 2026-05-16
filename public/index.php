@@ -129,24 +129,45 @@ try {
         case 'home':
             require_once __DIR__ . '/../src/services/AnnuncioService.php';
             require_once __DIR__ . '/../src/services/WishlistService.php';
-            $homeAnnuncioService = new AnnuncioService($pdo);
-            $homeTitoloAnnunci = 'Annunci scelti per te';
-            $wishlistIds = [];
+            require_once __DIR__ . '/../src/services/CartService.php';
+            require_once __DIR__ . '/../src/services/UserService.php';
+            require_once __DIR__ . '/../src/services/CategoryService.php';
 
-            if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business'])) {
-                $homeAnnunci = $homeAnnuncioService->getAnnunciPerInteressiUtente(currentUserId());
-                $wishlistIds = (new WishlistService($pdo))->getWishlistIds(currentUserId());
+            $homeAnnuncioService = new AnnuncioService($pdo);
+            $q          = trim($_GET['q'] ?? '');
+            $idCategoria = (int) ($_GET['id_categoria'] ?? 0);
+            $isRegularUser = !empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business']);
+            $wishlistIds = [];
+            $carrelloIds = [];
+            $utenti      = [];
+            $categorie   = (new CategoryService($pdo))->getAll();
+
+            if ($q !== '' || $idCategoria > 0) {
+                // modalità ricerca
+                $homeAnnunci       = $homeAnnuncioService->searchAnnunci($q, $idCategoria);
+                $utenti            = $q !== '' ? (new UserService($pdo))->search($q) : [];
+                $homeTitoloAnnunci = $q !== '' ? 'Risultati per "' . htmlspecialchars($q, ENT_QUOTES, 'UTF-8') . '"' : 'Risultati ricerca';
+            } elseif ($isRegularUser) {
+                $homeAnnunci       = $homeAnnuncioService->getAnnunciPerInteressiUtente(currentUserId());
+                $homeTitoloAnnunci = 'Annunci scelti per te';
             } else {
+                $homeAnnunci       = $homeAnnuncioService->getAnnunciCasuali();
                 $homeTitoloAnnunci = 'Annunci in evidenza';
-                $homeAnnunci = $homeAnnuncioService->getAnnunciCasuali();
+            }
+
+            if ($isRegularUser) {
+                $wishlistIds = (new WishlistService($pdo))->getWishlistIds(currentUserId());
+                $carrelloIds = (new CartService($pdo))->getCarrelloIds(currentUserId());
             }
 
             require __DIR__ . '/../src/views/home.php';
             break;
 
         case 'annunci':
-            (new AnnuncioController($pdo))->lista();
-            break;
+            // Pagina rimossa: reindirizza alla home preservando eventuali parametri di ricerca
+            $qs = http_build_query(array_merge($_GET, ['route' => 'home']));
+            header('Location: index.php?' . $qs);
+            exit;
         case 'annuncio':
             (new AnnuncioController($pdo))->dettaglio((int) ($_GET['id'] ?? 0));
             break;
@@ -365,6 +386,27 @@ try {
             denyAdmin();
             denyBusiness();
             (new PagamentoController($pdo))->checkout(currentUserId(), (int) ($_GET['id'] ?? 0));
+            break;
+
+        case 'checkout-carrello':
+            requireAuth();
+            denyAdmin();
+            denyBusiness();
+            (new PagamentoController($pdo))->checkoutCarrello(currentUserId());
+            break;
+
+        case 'paypal-placeholder-carrello':
+            requireAuth();
+            denyAdmin();
+            denyBusiness();
+            (new PagamentoController($pdo))->paypalPlaceholderCarrello(currentUserId(), (int) ($_GET['id_indirizzo'] ?? 0));
+            break;
+
+        case 'pagamento-conferma-carrello':
+            requireAuth();
+            denyAdmin();
+            denyBusiness();
+            (new PagamentoController($pdo))->confermaCarrello($_POST, currentUserId());
             break;
 
         case 'paypal-placeholder':

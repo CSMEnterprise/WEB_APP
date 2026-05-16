@@ -116,13 +116,6 @@ $idCategoria = (int)($_GET['id_categoria'] ?? 0);
 
                     <a class="btn" href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Dettagli</a>
 
-                    <?php if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business'])): ?>
-                        <?php if ((int)($annuncio['id_utente'] ?? 0) === (int)($_SESSION['user_id'] ?? 0)): ?>
-                            <p class="muted">È un tuo annuncio.</p>
-                        <?php else: ?>
-                            <a class="btn btn-secondary" href="index.php?route=carrello-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Aggiungi al carrello</a>
-                        <?php endif; ?>
-                    <?php endif; ?>
                 </article>
             <?php endforeach; ?>
         </div>

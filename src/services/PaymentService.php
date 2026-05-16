@@ -167,6 +167,83 @@ class PaymentService extends BaseService
         return (bool) $stmt->fetchColumn();
     }
 
+    public function confermaPagamentoCarrello(array $data, int $idUtente): array
+    {
+        $this->requirePositiveId($idUtente, 'Utente');
+        $this->denyBusinessBuyer($idUtente);
+
+        $idIndirizzo = (int) ($data['id_indirizzo'] ?? 0);
+        $this->requirePositiveId($idIndirizzo, 'Indirizzo di spedizione');
+
+        $idAnnunci = array_map('intval', (array) ($data['id_annunci'] ?? []));
+        $idAnnunci = array_filter($idAnnunci, fn($id) => $id > 0);
+
+        if (empty($idAnnunci)) {
+            throw new ServiceException('Nessun articolo da acquistare.');
+        }
+
+        if (!$this->indirizzoBelongsToUser($idIndirizzo, $idUtente)) {
+            throw new ServiceException('Indirizzo di spedizione non valido.');
+        }
+
+        $this->db->beginTransaction();
+
+        try {
+            $idPagamenti = [];
+
+            foreach ($idAnnunci as $idAnnuncio) {
+                $annuncio = $this->getAnnuncioForPaymentUpdate($idAnnuncio);
+
+                if (!$annuncio || ($annuncio['stato'] ?? '') !== 'attivo') {
+                    continue; // salta articoli non più disponibili
+                }
+
+                if ((int)($annuncio['id_utente'] ?? 0) === $idUtente) {
+                    continue; // salta articoli propri
+                }
+
+                $stmt = $this->db->prepare("
+                    INSERT INTO pagamento
+                    (id_annuncio, id_acquirente, id_indirizzo_spedizione, importo_totale, stato)
+                    VALUES (?, ?, ?, ?, 'Completato')
+                ");
+                $stmt->execute([$idAnnuncio, $idUtente, $idIndirizzo, (float) $annuncio['prezzo']]);
+                $idPagamenti[] = $this->lastInsertId();
+
+                $stmt = $this->db->prepare("
+                    UPDATE annuncio SET stato = 'venduto'
+                    WHERE id_annuncio = ? AND stato = 'attivo'
+                ");
+                $stmt->execute([$idAnnuncio]);
+
+                if ($stmt->rowCount() !== 1) {
+                    throw new ServiceException('Uno o più articoli non sono più acquistabili.');
+                }
+
+                $stmt = $this->db->prepare("DELETE FROM elemento_carrello WHERE id_annuncio = ?");
+                $stmt->execute([$idAnnuncio]);
+
+                $stmt = $this->db->prepare("DELETE FROM preferito WHERE id_annuncio = ?");
+                $stmt->execute([$idAnnuncio]);
+            }
+
+            if (empty($idPagamenti)) {
+                throw new ServiceException('Nessun articolo acquistabile nel carrello.');
+            }
+
+            $this->db->commit();
+
+            return $idPagamenti;
+
+        } catch (Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            if ($e instanceof ServiceException) throw $e;
+            throw new ServiceException('Errore durante la conferma del pagamento.');
+        }
+    }
+
     public function getCronologiaByUserId(int $idUtente): array
     {
         $this->requirePositiveId($idUtente, 'Utente');

@@ -110,7 +110,12 @@ require __DIR__ . '/../layout/header.php';
                 <div class="alert alert-success">Questo è un tuo annuncio: carrello e acquisto sono disattivati.</div>
                 <a class="btn btn-danger" href="index.php?route=annuncio-delete&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Elimina</a>
             <?php else: ?>
-                <a class="btn" href="index.php?route=carrello-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Aggiungi al carrello</a>
+                <?php $isInCart = in_array((int)($annuncio['id_annuncio'] ?? 0), $carrelloIds ?? [], true); ?>
+                <?php if ($isInCart): ?>
+                    <span class="btn btn-secondary" style="opacity:.55;cursor:default;pointer-events:none;">✓ Nel carrello</span>
+                <?php else: ?>
+                    <a class="btn" href="index.php?route=carrello-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Aggiungi al carrello</a>
+                <?php endif; ?>
                 <a class="btn btn-secondary" href="index.php?route=checkout&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Acquista</a>
                 <a class="btn btn-secondary" href="index.php?route=segnalazione-create&id_annuncio=<?= e($annuncio['id_annuncio'] ?? '') ?>">Segnala</a>
             <?php endif; ?>

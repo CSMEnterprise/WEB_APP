@@ -640,8 +640,9 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
     <div class="container header-inner">
         <div class="header-top">
             <nav class="menu">
-                <a href="index.php?route=home">Home</a>
-                <a href="index.php?route=annunci">Annunci</a>
+                <a href="index.php?route=home" title="Home" aria-label="Home" style="display:flex;align-items:center;padding:6px 10px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
+                </a>
 
                 <?php if ($isLogged): ?>
                     <?php if (!empty($_SESSION['is_admin'])): ?>
@@ -710,7 +711,7 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
             </a>
 
             <form class="search-form" method="GET" action="index.php">
-                <input type="hidden" name="route" value="annunci">
+                <input type="hidden" name="route" value="home">
 
                 <div class="search-input-group">
                     <input 
