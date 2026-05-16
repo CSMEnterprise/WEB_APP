@@ -19,8 +19,25 @@ require __DIR__ . '/../partials/flash.php';
             <p style="color: var(--muted); font-size: 15px; font-weight: 500;">Accedi per continuare in NerdVault</p>
         </div>
 
+        <?php if (!empty($_GET['reset']) && $_GET['reset'] === 'ok'): ?>
+            <div class="alert alert-success" style="border-radius:12px;text-align:center;position:relative;z-index:1;margin-bottom:24px;">
+                Password aggiornata! Ora puoi accedere.
+            </div>
+        <?php endif; ?>
+
         <?php if (!empty($errore)): ?>
-            <div class="alert alert-error" style="border-radius: 12px; font-weight: 600; text-align: center; position: relative; z-index: 1; border: none; background: rgba(239,68,68,0.15); color: #fca5a5; padding: 14px; margin-bottom: 24px;"><?= e($errore) ?></div>
+            <?php $isNotVerified = str_starts_with($errore, 'EMAIL_NON_VERIFICATA:'); ?>
+            <?php $emailNV = $isNotVerified ? substr($errore, strlen('EMAIL_NON_VERIFICATA:')) : ''; ?>
+            <?php if ($isNotVerified): ?>
+                <div class="alert alert-error" style="border-radius:12px;position:relative;z-index:1;margin-bottom:16px;">
+                    <strong>Email non verificata.</strong><br>
+                    Controlla la tua casella oppure
+                    <a href="index.php?route=verifica-email-attesa&email=<?= urlencode($emailNV) ?>"
+                       style="color:#fca5a5;font-weight:700;">richiedi un nuovo link</a>.
+                </div>
+            <?php else: ?>
+                <div class="alert alert-error" style="border-radius: 12px; font-weight: 600; text-align: center; position: relative; z-index: 1; border: none; background: rgba(239,68,68,0.15); color: #fca5a5; padding: 14px; margin-bottom: 24px;"><?= e($errore) ?></div>
+            <?php endif; ?>
         <?php endif; ?>
 
         <form method="post" action="index.php" style="position: relative; z-index: 1;">
@@ -34,7 +51,7 @@ require __DIR__ . '/../partials/flash.php';
             <div style="margin-bottom: 32px;">
                 <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px;">
                     <label for="loginPassword" style="font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; margin: 0;">Password</label>
-                    <a href="#" style="font-size: 13px; color: var(--accent); text-decoration: none; font-weight: 600; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Dimenticata?</a>
+                    <a href="index.php?route=recupero-password" style="font-size: 13px; color: var(--accent); text-decoration: none; font-weight: 600; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Dimenticata?</a>
                 </div>
                 <div style="position: relative;">
                     <input type="password" id="loginPassword" name="password" required style="width: 100%; max-width: none; background: rgba(0,0,0,0.25); border: 2px solid transparent; border-radius: 16px; padding: 16px 80px 16px 20px; font-size: 15px; color: #fff; transition: all 0.3s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); margin: 0;" onfocus="this.style.borderColor='var(--accent)'; this.style.background='rgba(0,0,0,0.4)';" onblur="this.style.borderColor='transparent'; this.style.background='rgba(0,0,0,0.25)';">

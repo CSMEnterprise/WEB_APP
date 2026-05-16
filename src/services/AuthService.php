@@ -14,10 +14,7 @@ class AuthService extends BaseService
 
         // Controlla prima la tabella admin
         $stmt = $this->db->prepare("
-            SELECT *
-            FROM admin
-            WHERE email = ?
-            LIMIT 1
+            SELECT * FROM admin WHERE email = ? LIMIT 1
         ");
         $stmt->execute([$email]);
         $admin = $stmt->fetch();
@@ -26,12 +23,11 @@ class AuthService extends BaseService
             if (!empty($admin['stato_ban'])) {
                 throw new ServiceException('Account admin bloccato.');
             }
-
             $admin['_is_admin'] = true;
             return $admin;
         }
 
-        // Altrimenti cerca tra gli utenti normali
+        // Cerca tra gli utenti normali
         $stmt = $this->db->prepare("
             SELECT u.*,
                    ab.id_acc_business,
@@ -42,7 +38,6 @@ class AuthService extends BaseService
             LIMIT 1
         ");
         $stmt->execute([$email]);
-
         $utente = $stmt->fetch();
 
         if (!$utente || !password_verify($password, $utente['password_hash'])) {
@@ -53,7 +48,11 @@ class AuthService extends BaseService
             throw new ServiceException('Account bloccato.');
         }
 
-        // Segna se l'utente ha un account business associato
+        // Blocca login se email non verificata
+        if (isset($utente['email_verificata']) && !(bool)$utente['email_verificata']) {
+            throw new ServiceException('EMAIL_NON_VERIFICATA:' . $utente['email']);
+        }
+
         $utente['_is_business'] = !empty($utente['id_acc_business']);
 
         return $utente;
@@ -63,15 +62,14 @@ class AuthService extends BaseService
     {
         $isBusinessRegistration = !empty($data['_business_registration']);
 
-        $username = $this->clean($data['username'] ?? '');
-        $email = $this->clean($data['email'] ?? '');
-        $password = (string) ($data['password'] ?? '');
+        $username        = $this->clean($data['username'] ?? '');
+        $email           = $this->clean($data['email'] ?? '');
+        $password        = (string) ($data['password'] ?? '');
         $passwordConfirm = (string) ($data['password_confirm'] ?? '');
-        $nome = $this->clean($data['nome'] ?? '');
-        $telefono = $this->clean($data['telefono'] ?? '');
+        $nome            = $this->clean($data['nome'] ?? '');
+        $telefono        = $this->clean($data['telefono'] ?? '');
 
         if ($isBusinessRegistration) {
-            // Per il business username e email vengono generati/copiati dal controller
             if ($username === '' || $email === '' || $password === '') {
                 throw new ServiceException('Dati di accesso mancanti. Riprova.');
             }
@@ -89,7 +87,7 @@ class AuthService extends BaseService
             throw new ServiceException('Email non valida.');
         }
 
-        if (!preg_match('/^\+?[0-9 ]{8,15}$/', $telefono)) {
+        if (!$isBusinessRegistration && !preg_match('/^\+?[0-9 ]{8,15}$/', $telefono)) {
             throw new ServiceException('Il telefono deve contenere 8-15 cifre e può iniziare con +.');
         }
 
@@ -101,10 +99,14 @@ class AuthService extends BaseService
             throw new ServiceException('Le password non coincidono.');
         }
 
+        // Genera token di verifica email (valido 48h)
+        $token    = bin2hex(random_bytes(32));
+        $scadenza = date('Y-m-d H:i:s', strtotime('+48 hours'));
+
         $stmt = $this->db->prepare("
             INSERT INTO utente_registrato
-            (email, username, password_hash, nome, telefono)
-            VALUES (?, ?, ?, ?, ?)
+            (email, username, password_hash, nome, telefono, email_verificata, token_verifica, token_scadenza)
+            VALUES (?, ?, ?, ?, ?, 0, ?, ?)
         ");
 
         try {
@@ -112,13 +114,181 @@ class AuthService extends BaseService
                 $email,
                 $username,
                 password_hash($password, PASSWORD_DEFAULT),
-                $nome !== '' ? $nome : null,
+                $nome     !== '' ? $nome     : null,
                 $telefono !== '' ? $telefono : null,
+                $token,
+                $scadenza,
             ]);
         } catch (PDOException $e) {
             throw new ServiceException('Email o username già utilizzati.');
         }
 
-        return $this->lastInsertId();
+        $idUtente = $this->lastInsertId();
+
+        // Restituisce anche il token e i dati per inviare la mail
+        $this->lastRegistrationToken  = $token;
+        $this->lastRegistrationEmail  = $email;
+        $this->lastRegistrationNome   = $nome;
+
+        return $idUtente;
+    }
+
+    /** Dati dell'ultima registrazione, usati dal controller per inviare la mail */
+    public string $lastRegistrationToken = '';
+    public string $lastRegistrationEmail = '';
+    public string $lastRegistrationNome  = '';
+
+    public function verificaEmail(string $token): void
+    {
+        if ($token === '') {
+            throw new ServiceException('Token non valido.');
+        }
+
+        $stmt = $this->db->prepare("
+            SELECT id_utente, token_scadenza
+            FROM utente_registrato
+            WHERE token_verifica = ? AND email_verificata = 0
+            LIMIT 1
+        ");
+        $stmt->execute([$token]);
+        $utente = $stmt->fetch();
+
+        if (!$utente) {
+            throw new ServiceException('Token non valido o account già verificato.');
+        }
+
+        if (strtotime($utente['token_scadenza']) < time()) {
+            throw new ServiceException('Il link di verifica è scaduto. Richiedi un nuovo invio.');
+        }
+
+        $stmt = $this->db->prepare("
+            UPDATE utente_registrato
+            SET email_verificata = 1, token_verifica = NULL, token_scadenza = NULL
+            WHERE id_utente = ?
+        ");
+        $stmt->execute([$utente['id_utente']]);
+    }
+
+    public function reinviaVerifica(string $email, MailService $mail): void
+    {
+        $email = $this->clean($email);
+
+        $stmt = $this->db->prepare("
+            SELECT id_utente, username, nome
+            FROM utente_registrato
+            WHERE email = ? AND email_verificata = 0
+            LIMIT 1
+        ");
+        $stmt->execute([$email]);
+        $utente = $stmt->fetch();
+
+        if (!$utente) {
+            // Non riveliamo se l'email esiste o meno
+            return;
+        }
+
+        $token    = bin2hex(random_bytes(32));
+        $scadenza = date('Y-m-d H:i:s', strtotime('+48 hours'));
+
+        $stmt = $this->db->prepare("
+            UPDATE utente_registrato
+            SET token_verifica = ?, token_scadenza = ?
+            WHERE id_utente = ?
+        ");
+        $stmt->execute([$token, $scadenza, $utente['id_utente']]);
+
+        $mail->inviaVerificaEmail($email, $utente['nome'] ?? $utente['username'], $token);
+    }
+
+    public function richiestaResetPassword(string $email, MailService $mail): void
+    {
+        $email = $this->clean($email);
+
+        if ($email === '') {
+            throw new ServiceException('Inserisci la tua email.');
+        }
+
+        $stmt = $this->db->prepare("
+            SELECT id_utente, username, nome
+            FROM utente_registrato
+            WHERE email = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$email]);
+        $utente = $stmt->fetch();
+
+        // Non riveliamo se l'email esiste o meno (sicurezza)
+        if (!$utente) {
+            return;
+        }
+
+        // Invalida eventuali token precedenti
+        $this->db->prepare("
+            UPDATE password_reset SET usato = 1 WHERE id_utente = ?
+        ")->execute([$utente['id_utente']]);
+
+        $token    = bin2hex(random_bytes(32));
+        $scadenza = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+        $this->db->prepare("
+            INSERT INTO password_reset (id_utente, token, scadenza)
+            VALUES (?, ?, ?)
+        ")->execute([$utente['id_utente'], $token, $scadenza]);
+
+        $mail->inviaResetPassword($email, $utente['nome'] ?? $utente['username'], $token);
+    }
+
+    public function resetPassword(string $token, string $password, string $confirm): void
+    {
+        if ($token === '') {
+            throw new ServiceException('Token non valido.');
+        }
+
+        $stmt = $this->db->prepare("
+            SELECT id_utente, scadenza
+            FROM password_reset
+            WHERE token = ? AND usato = 0
+            LIMIT 1
+        ");
+        $stmt->execute([$token]);
+        $reset = $stmt->fetch();
+
+        if (!$reset) {
+            throw new ServiceException('Il link non è valido o è già stato utilizzato.');
+        }
+
+        if (strtotime($reset['scadenza']) < time()) {
+            throw new ServiceException('Il link è scaduto. Richiedi un nuovo reset.');
+        }
+
+        if (!preg_match('/^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}$/', $password)) {
+            throw new ServiceException('La password deve contenere almeno 10 caratteri, una lettera maiuscola e un carattere speciale.');
+        }
+
+        if ($password !== $confirm) {
+            throw new ServiceException('Le password non coincidono.');
+        }
+
+        $this->db->prepare("
+            UPDATE utente_registrato
+            SET password_hash = ?
+            WHERE id_utente = ?
+        ")->execute([password_hash($password, PASSWORD_DEFAULT), $reset['id_utente']]);
+
+        $this->db->prepare("
+            UPDATE password_reset SET usato = 1 WHERE token = ?
+        ")->execute([$token]);
+    }
+
+    public function getResetTokenUserId(string $token): int
+    {
+        $stmt = $this->db->prepare("
+            SELECT id_utente FROM password_reset
+            WHERE token = ? AND usato = 0 AND scadenza > NOW()
+            LIMIT 1
+        ");
+        $stmt->execute([$token]);
+        $row = $stmt->fetch();
+        return $row ? (int)$row['id_utente'] : 0;
     }
 }

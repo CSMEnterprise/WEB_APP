@@ -193,6 +193,38 @@ try {
             (new UtenteController($pdo))->login($_POST);
             break;
 
+        case 'verifica-email-attesa':
+            (new UtenteController($pdo))->verificaEmailAttesa();
+            break;
+
+        case 'verifica-email':
+            (new UtenteController($pdo))->verificaEmail($_GET['token'] ?? '');
+            break;
+
+        case 'reinvia-verifica':
+            (new UtenteController($pdo))->reinviaVerifica($_POST);
+            break;
+
+        case 'recupero-password':
+            requireGuest();
+            (new UtenteController($pdo))->showRecuperoPassword();
+            break;
+
+        case 'recupero-password-post':
+            requireGuest();
+            (new UtenteController($pdo))->inviaResetPassword($_POST);
+            break;
+
+        case 'reset-password':
+            requireGuest();
+            (new UtenteController($pdo))->showResetPassword($_GET['token'] ?? '');
+            break;
+
+        case 'reset-password-post':
+            requireGuest();
+            (new UtenteController($pdo))->resetPassword($_POST);
+            break;
+
         case 'register':
         case 'registrazione':
             requireGuest();

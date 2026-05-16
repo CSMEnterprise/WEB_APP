@@ -6,6 +6,7 @@ require_once __DIR__ . '/../services/AnnuncioService.php';
 require_once __DIR__ . '/../services/BusinessService.php';
 require_once __DIR__ . '/../services/PaymentService.php';
 require_once __DIR__ . '/../services/FeedbackService.php';
+require_once __DIR__ . '/../services/MailService.php';
 
 class UtenteController
 {
@@ -73,7 +74,20 @@ class UtenteController
     {
         try {
             $this->authService->register($data);
-            header('Location: index.php?route=login');
+
+            // Invia email di verifica
+            try {
+                $mail = new MailService();
+                $mail->inviaVerificaEmail(
+                    $this->authService->lastRegistrationEmail,
+                    $this->authService->lastRegistrationNome,
+                    $this->authService->lastRegistrationToken
+                );
+            } catch (Exception $mailEx) {
+                // Ignora errori mail: l'utente potrà richiedere il reinvio
+            }
+
+            header('Location: index.php?route=verifica-email-attesa&email=' . urlencode($this->authService->lastRegistrationEmail));
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
@@ -111,7 +125,19 @@ class UtenteController
 
             $this->db->commit();
 
-            header('Location: index.php?route=login');
+            // Invia email di verifica
+            try {
+                $mail = new MailService();
+                $mail->inviaVerificaEmail(
+                    $this->authService->lastRegistrationEmail,
+                    $this->authService->lastRegistrationNome,
+                    $this->authService->lastRegistrationToken
+                );
+            } catch (Exception $mailEx) {
+                // Ignora errori mail
+            }
+
+            header('Location: index.php?route=verifica-email-attesa&email=' . urlencode($this->authService->lastRegistrationEmail));
             exit;
         } catch (Exception $e) {
             if ($this->db->inTransaction()) {
@@ -226,6 +252,88 @@ class UtenteController
             $titoloAnnunciProfilo = 'Annunci attivi';
             $cronologiaPagamenti = $this->paymentService->getCronologiaByUserId($idUtente);
             require __DIR__ . '/../views/utenti/profilo.php';
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // Verifica email
+    // ----------------------------------------------------------------
+
+    public function verificaEmailAttesa(): void
+    {
+        $email = $_GET['email'] ?? '';
+        require __DIR__ . '/../views/utenti/verifica_email_attesa.php';
+    }
+
+    public function verificaEmail(string $token): void
+    {
+        try {
+            $this->authService->verificaEmail($token);
+            $successo = 'Email verificata con successo! Ora puoi accedere.';
+        } catch (Exception $e) {
+            $errore = $e->getMessage();
+        }
+        require __DIR__ . '/../views/utenti/verifica_email.php';
+    }
+
+    public function reinviaVerifica(array $data): void
+    {
+        try {
+            $mail = new MailService();
+            $this->authService->reinviaVerifica($data['email'] ?? '', $mail);
+            $successo = 'Se l\'email è registrata e non ancora verificata, riceverai un nuovo link.';
+        } catch (Exception $e) {
+            $errore = $e->getMessage();
+        }
+        require __DIR__ . '/../views/utenti/verifica_email_attesa.php';
+    }
+
+    // ----------------------------------------------------------------
+    // Recupero password
+    // ----------------------------------------------------------------
+
+    public function showRecuperoPassword(): void
+    {
+        require __DIR__ . '/../views/utenti/recupero_password.php';
+    }
+
+    public function inviaResetPassword(array $data): void
+    {
+        try {
+            $mail = new MailService();
+            $this->authService->richiestaResetPassword($data['email'] ?? '', $mail);
+        } catch (Exception $e) {
+            // DEBUG TEMPORANEO — rimuovere prima della produzione
+            error_log('[NerdVault] Reset password error: ' . $e->getMessage() . ' | ' . $e->getFile() . ':' . $e->getLine());
+            $errore = '[DEBUG] ' . $e->getMessage();
+            require __DIR__ . '/../views/utenti/recupero_password.php';
+            return;
+        }
+        // Mostriamo sempre lo stesso messaggio di conferma
+        $successo = 'Se l\'indirizzo è associato a un account, riceverai un\'email con le istruzioni.';
+        require __DIR__ . '/../views/utenti/recupero_password.php';
+    }
+
+    public function showResetPassword(string $token): void
+    {
+        $idUtente = $this->authService->getResetTokenUserId($token);
+        if ($idUtente === 0) {
+            $errore = 'Il link non è valido o è scaduto.';
+        }
+        require __DIR__ . '/../views/utenti/reset_password.php';
+    }
+
+    public function resetPassword(array $data): void
+    {
+        $token = $data['token'] ?? '';
+        try {
+            $this->authService->resetPassword($token, $data['password'] ?? '', $data['password_confirm'] ?? '');
+            header('Location: index.php?route=login&reset=ok');
+            exit;
+        } catch (Exception $e) {
+            $errore = $e->getMessage();
+            $idUtente = $this->authService->getResetTokenUserId($token);
+            require __DIR__ . '/../views/utenti/reset_password.php';
         }
     }
 }
