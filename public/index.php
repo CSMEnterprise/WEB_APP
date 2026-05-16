@@ -133,7 +133,7 @@ try {
             $homeTitoloAnnunci = 'Annunci scelti per te';
             $wishlistIds = [];
 
-            if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin'])) {
+            if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business'])) {
                 $homeAnnunci = $homeAnnuncioService->getAnnunciPerInteressiUtente(currentUserId());
                 $wishlistIds = (new WishlistService($pdo))->getWishlistIds(currentUserId());
             } else {
@@ -241,6 +241,7 @@ try {
         case 'profilo-indirizzo-store':
             requireAuth();
             denyAdmin();
+            denyBusiness();
             (new UtenteController($pdo))->salvaIndirizzoSpedizione($_POST, currentUserId());
             break;
         /*
@@ -277,24 +278,28 @@ try {
         case 'carrello':
             requireAuth();
             denyAdmin();
+            denyBusiness();
             (new CarrelloController($pdo))->lista(currentUserId());
             break;
 
         case 'carrello-add':
             requireAuth();
             denyAdmin();
+            denyBusiness();
             (new CarrelloController($pdo))->aggiungi(currentUserId(), (int) ($_GET['id'] ?? 0));
             break;
 
         case 'carrello-remove':
             requireAuth();
             denyAdmin();
+            denyBusiness();
             (new CarrelloController($pdo))->rimuovi(currentUserId(), (int) ($_GET['id'] ?? 0));
             break;
 
         case 'carrello-clear':
             requireAuth();
             denyAdmin();
+            denyBusiness();
             (new CarrelloController($pdo))->svuota(currentUserId());
             break;
 
@@ -309,30 +314,35 @@ try {
         case 'preferiti':
             requireAuth();
             denyAdmin();
+            denyBusiness();
             (new WishlistController($pdo))->lista(currentUserId());
             break;
 
         case 'wishlist-add':
             requireAuth();
             denyAdmin();
+            denyBusiness();
             (new WishlistController($pdo))->aggiungi(currentUserId(), (int) ($_GET['id'] ?? 0));
             break;
 
         case 'wishlist-remove':
             requireAuth();
             denyAdmin();
+            denyBusiness();
             (new WishlistController($pdo))->rimuovi(currentUserId(), (int) ($_GET['id'] ?? 0));
             break;
 
         case 'wishlist-toggle':
             requireAuth();
             denyAdmin();
+            denyBusiness();
             (new WishlistController($pdo))->toggle(currentUserId(), (int) ($_GET['id'] ?? 0));
             break;
 
         case 'wishlist-clear':
             requireAuth();
             denyAdmin();
+            denyBusiness();
             (new WishlistController($pdo))->svuota(currentUserId());
             break;
 
@@ -346,24 +356,28 @@ try {
         case 'checkout':
             requireAuth();
             denyAdmin();
+            denyBusiness();
             (new PagamentoController($pdo))->checkout(currentUserId(), (int) ($_GET['id'] ?? 0));
             break;
 
         case 'paypal-placeholder':
             requireAuth();
             denyAdmin();
+            denyBusiness();
             (new PagamentoController($pdo))->paypalPlaceholder(currentUserId(), (int) ($_GET['id'] ?? 0));
             break;
 
         case 'paypal-cancel':
             requireAuth();
             denyAdmin();
+            denyBusiness();
             (new PagamentoController($pdo))->paypalCancel();
             break;
 
         case 'pagamento-conferma':
             requireAuth();
             denyAdmin();
+            denyBusiness();
             (new PagamentoController($pdo))->conferma($_POST, currentUserId());
             break;
 

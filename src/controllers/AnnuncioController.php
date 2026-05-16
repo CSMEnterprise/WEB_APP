@@ -37,7 +37,7 @@ class AnnuncioController
             $utenti  = [];
         }
 
-        $wishlistIds = (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin']))
+        $wishlistIds = (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business']))
             ? $this->wishlistService->getWishlistIds((int) $_SESSION['user_id'])
             : [];
 
@@ -57,7 +57,7 @@ class AnnuncioController
         $idVenditore        = (int) ($annuncio['id_utente'] ?? 0);
         $feedbackVenditore  = $idVenditore > 0 ? $this->feedbackService->getByVenditoreId($idVenditore) : [];
         $mediaVenditore     = $idVenditore > 0 ? $this->feedbackService->getMediaVoto($idVenditore) : 0.0;
-        $wishlistIds = (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin']))
+        $wishlistIds = (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business']))
             ? $this->wishlistService->getWishlistIds((int) $_SESSION['user_id'])
             : [];
 

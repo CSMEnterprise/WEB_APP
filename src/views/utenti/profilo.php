@@ -429,6 +429,7 @@ require __DIR__ . '/../layout/header.php';
         $titoloAnnunciProfilo = $titoloAnnunciProfilo ?? 'Annunci attivi';
         $isAttivi = $filtroAnnunci === 'attivo';
         $isVenduti = $filtroAnnunci === 'venduto';
+        $isBusiness = !empty($_SESSION['is_business']);
         $displayName = trim((string)($utente['username'] ?? 'Utente'));
         $avatarInitial = strtoupper(substr($displayName !== '' ? $displayName : 'U', 0, 1));
         $hasSpedizione = !empty($utente['via']) || !empty($utente['citta']);
@@ -441,7 +442,7 @@ require __DIR__ . '/../layout/header.php';
 
         $indirizzoSpedizione = implode(', ', array_filter([$viaCompleta, $localitaSpedizione]));
         $annunciCount = is_countable($annunciUtente ?? null) ? count($annunciUtente) : 0;
-        $pagamentiCount = is_countable($cronologiaPagamenti ?? null) ? count($cronologiaPagamenti) : 0;
+        $pagamentiCount = !$isBusiness && is_countable($cronologiaPagamenti ?? null) ? count($cronologiaPagamenti) : 0;
     ?>
 
     <div class="profile-page">
@@ -463,10 +464,10 @@ require __DIR__ . '/../layout/header.php';
             </form>
 
             <div class="profile-summary">
-                <span class="profile-kicker">Account personale</span>
+                <span class="profile-kicker"><?= $isBusiness ? 'Account business' : 'Account personale' ?></span>
                 <h1><?= e($displayName) ?></h1>
                 <p class="profile-summary-copy">
-                    Gestisci profilo, spedizioni, annunci e acquisti da un unico pannello.
+                    <?= $isBusiness ? 'Gestisci profilo, annunci e vendite da un unico pannello.' : 'Gestisci profilo, spedizioni, annunci e acquisti da un unico pannello.' ?>
                 </p>
 
                 <div class="profile-info-grid">
@@ -478,14 +479,16 @@ require __DIR__ . '/../layout/header.php';
                         <span>Telefono</span>
                         <strong><?= e($utente['telefono'] ?? 'Non indicato') ?></strong>
                     </div>
-                    <div class="profile-info-item">
-                        <span>Nome spedizione</span>
-                        <strong><?= e($utente['nome'] ?? 'Da completare') ?></strong>
-                    </div>
-                    <div class="profile-info-item">
-                        <span>Indirizzo</span>
-                        <strong><?= $hasSpedizione ? e($indirizzoSpedizione) : 'Da completare' ?></strong>
-                    </div>
+                    <?php if (!$isBusiness): ?>
+                        <div class="profile-info-item">
+                            <span>Nome spedizione</span>
+                            <strong><?= e($utente['nome'] ?? 'Da completare') ?></strong>
+                        </div>
+                        <div class="profile-info-item">
+                            <span>Indirizzo</span>
+                            <strong><?= $hasSpedizione ? e($indirizzoSpedizione) : 'Da completare' ?></strong>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -494,22 +497,27 @@ require __DIR__ . '/../layout/header.php';
                     <span class="profile-stat-value"><?= e($annunciCount) ?></span>
                     <span class="profile-stat-label"><?= $isVenduti ? 'Annunci venduti' : 'Annunci attivi' ?></span>
                 </div>
-                <div class="profile-stat">
-                    <span class="profile-stat-value"><?= e($pagamentiCount) ?></span>
-                    <span class="profile-stat-label">Acquisti tracciati</span>
-                </div>
+                <?php if (!$isBusiness): ?>
+                    <div class="profile-stat">
+                        <span class="profile-stat-value"><?= e($pagamentiCount) ?></span>
+                        <span class="profile-stat-label">Acquisti tracciati</span>
+                    </div>
+                <?php endif; ?>
             </div>
         </section>
 
         <div class="profile-actions">
-            <button type="button" class="btn" id="toggle-indirizzo-btn" onclick="toggleIndirizzoForm()">
-                <?= $hasSpedizione ? 'Modifica indirizzo di spedizione' : 'Aggiungi indirizzo di spedizione' ?>
-            </button>
+            <?php if (!$isBusiness): ?>
+                <button type="button" class="btn" id="toggle-indirizzo-btn" onclick="toggleIndirizzoForm()">
+                    <?= $hasSpedizione ? 'Modifica indirizzo di spedizione' : 'Aggiungi indirizzo di spedizione' ?>
+                </button>
+            <?php endif; ?>
 
             <a class="btn btn-gold" href="index.php?route=annuncio-create">Crea annuncio</a>
             <a class="btn btn-secondary" href="index.php?route=feedback">I miei feedback</a>
         </div>
 
+        <?php if (!$isBusiness): ?>
         <div id="indirizzoForm" class="card profile-address-form is-hidden">
             <h2>Indirizzo di spedizione</h2>
 
@@ -580,6 +588,7 @@ require __DIR__ . '/../layout/header.php';
                 <button type="submit" class="btn">Salva indirizzo</button>
             </form>
         </div>
+        <?php endif; ?>
 
         <section class="profile-annunci">
             <div class="profile-section-header">
@@ -644,6 +653,7 @@ require __DIR__ . '/../layout/header.php';
             <?php endif; ?>
         </section>
 
+        <?php if (!$isBusiness): ?>
         <section>
             <div class="profile-section-header">
                 <div>
@@ -712,6 +722,7 @@ require __DIR__ . '/../layout/header.php';
                 </div>
             <?php endif; ?>
         </section>
+        <?php endif; ?>
     </div>
 
     <script>

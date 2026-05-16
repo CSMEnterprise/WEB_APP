@@ -16,6 +16,7 @@ class CartService extends BaseService
     public function getOrCreateCartId(int $idUtente): int
     {
         $this->requirePositiveId($idUtente, 'Utente');
+        $this->denyBusinessBuyer($idUtente);
 
         $stmt = $this->db->prepare("
             SELECT id_carrello
@@ -43,6 +44,7 @@ class CartService extends BaseService
     public function getCarrelloUtente(int $idUtente): array
     {
         $this->requirePositiveId($idUtente, 'Utente');
+        $this->denyBusinessBuyer($idUtente);
 
         $idCarrello = $this->getOrCreateCartId($idUtente);
         $this->rimuoviAnnunciNonAcquistabili($idCarrello);
@@ -97,6 +99,7 @@ class CartService extends BaseService
     {
         $this->requirePositiveId($idUtente, 'Utente');
         $this->requirePositiveId($idAnnuncio, 'Annuncio');
+        $this->denyBusinessBuyer($idUtente);
 
         $annuncio = $this->annuncioService->findById($idAnnuncio);
 

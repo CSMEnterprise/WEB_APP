@@ -47,8 +47,13 @@
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <li><a href="index.php?route=profilo">Il mio profilo</a></li>
                     <li><a href="index.php?route=annuncio-create">Vendi un oggetto</a></li>
-                    <li><a href="index.php?route=wishlist">Wishlist</a></li>
-                    <li><a href="index.php?route=carrello">Carrello</a></li>
+                    <?php if (empty($_SESSION['is_business'])): ?>
+                        <li><a href="index.php?route=wishlist">Wishlist</a></li>
+                        <li><a href="index.php?route=carrello">Carrello</a></li>
+                    <?php else: ?>
+                        <li><a href="index.php?route=business">Area business</a></li>
+                        <li><a href="index.php?route=business-ordini">Ordini ricevuti</a></li>
+                    <?php endif; ?>
                     <li><a href="index.php?route=feedback">I miei feedback</a></li>
                     <li><a href="index.php?route=logout">Logout</a></li>
                 <?php else: ?>

@@ -5,7 +5,8 @@ require __DIR__ . '/../layout/header.php';
 
 <?php if (!empty($annuncio)): ?>
     <?php $isOwner = !empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && (int)($annuncio['id_utente'] ?? 0) === (int)($_SESSION['user_id'] ?? 0); ?>
-    <?php $canUseWishlist = !empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && !$isOwner; ?>
+    <?php $isBusiness = !empty($_SESSION['is_business']); ?>
+    <?php $canUseWishlist = !empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && !$isBusiness && !$isOwner; ?>
     <?php $isInWishlist = $canUseWishlist && in_array((int)($annuncio['id_annuncio'] ?? 0), $wishlistIds ?? [], true); ?>
 
     <article class="card annuncio-card">
@@ -63,6 +64,9 @@ require __DIR__ . '/../layout/header.php';
         <?php if (!empty($_SESSION['user_id'])): ?>
             <?php if (!empty($_SESSION['is_admin'])): ?>
                 <div class="alert alert-success">Accesso admin: carrello, wishlist e acquisto sono disattivati.</div>
+            <?php elseif ($isBusiness && !$isOwner): ?>
+                <div class="alert alert-success">Account business: puoi vendere prodotti, ma carrello, wishlist e acquisto sono disattivati.</div>
+                <a class="btn btn-secondary" href="index.php?route=segnalazione-create&id_annuncio=<?= e($annuncio['id_annuncio'] ?? '') ?>">Segnala</a>
             <?php elseif ($isOwner): ?>
                 <div class="alert alert-success">Questo è un tuo annuncio: carrello e acquisto sono disattivati.</div>
                 <a class="btn btn-danger" href="index.php?route=annuncio-delete&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Elimina</a>

@@ -16,6 +16,7 @@ class WishlistService extends BaseService
     public function getWishlistUtente(int $idUtente): array
     {
         $this->requirePositiveId($idUtente, 'Utente');
+        $this->denyBusinessBuyer($idUtente);
         $this->rimuoviAnnunciNonVisibili($idUtente);
 
         $stmt = $this->db->prepare("
@@ -47,6 +48,7 @@ class WishlistService extends BaseService
     public function getWishlistIds(int $idUtente): array
     {
         $this->requirePositiveId($idUtente, 'Utente');
+        $this->denyBusinessBuyer($idUtente);
 
         $stmt = $this->db->prepare("
             SELECT id_annuncio
@@ -62,6 +64,7 @@ class WishlistService extends BaseService
     {
         $this->requirePositiveId($idUtente, 'Utente');
         $this->requirePositiveId($idAnnuncio, 'Annuncio');
+        $this->denyBusinessBuyer($idUtente);
 
         $annuncio = $this->annuncioService->findById($idAnnuncio);
 
@@ -88,6 +91,7 @@ class WishlistService extends BaseService
     {
         $this->requirePositiveId($idUtente, 'Utente');
         $this->requirePositiveId($idAnnuncio, 'Annuncio');
+        $this->denyBusinessBuyer($idUtente);
 
         $stmt = $this->db->prepare("
             DELETE FROM preferito
@@ -100,6 +104,7 @@ class WishlistService extends BaseService
     {
         $this->requirePositiveId($idUtente, 'Utente');
         $this->requirePositiveId($idAnnuncio, 'Annuncio');
+        $this->denyBusinessBuyer($idUtente);
 
         if ($this->isInWishlist($idUtente, $idAnnuncio)) {
             $this->rimuoviAnnuncio($idUtente, $idAnnuncio);
@@ -126,6 +131,7 @@ class WishlistService extends BaseService
     public function svuota(int $idUtente): void
     {
         $this->requirePositiveId($idUtente, 'Utente');
+        $this->denyBusinessBuyer($idUtente);
 
         $stmt = $this->db->prepare("
             DELETE FROM preferito

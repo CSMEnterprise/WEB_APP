@@ -365,6 +365,8 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
                         <?php endif; ?>
                         <a href="index.php?route=admin-utenti">Utenti</a>
                         <a href="index.php?route=admin-segnalazioni">Segnalazioni</a>
+                    <?php elseif (!empty($_SESSION['is_business'])): ?>
+                        <a href="index.php?route=business">Business</a>
                     <?php else: ?>
                         <a href="index.php?route=carrello">Carrello</a>
                         <a href="index.php?route=wishlist">Wishlist</a>

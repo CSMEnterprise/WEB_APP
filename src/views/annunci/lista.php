@@ -82,7 +82,7 @@ $idCategoria = (int)($_GET['id_categoria'] ?? 0);
                     data-href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>"
                     role="link"
                     tabindex="0">
-                    <?php if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && (int)($annuncio['id_utente'] ?? 0) !== (int)($_SESSION['user_id'] ?? 0)): ?>
+                    <?php if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business']) && (int)($annuncio['id_utente'] ?? 0) !== (int)($_SESSION['user_id'] ?? 0)): ?>
                         <?php $isInWishlist = in_array((int)($annuncio['id_annuncio'] ?? 0), $wishlistIds ?? [], true); ?>
                         <a
                             class="wishlist-heart <?= $isInWishlist ? 'wishlist-heart-active' : '' ?>"
@@ -111,7 +111,7 @@ $idCategoria = (int)($_GET['id_categoria'] ?? 0);
 
                     <a class="btn" href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Dettagli</a>
 
-                    <?php if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin'])): ?>
+                    <?php if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business'])): ?>
                         <?php if ((int)($annuncio['id_utente'] ?? 0) === (int)($_SESSION['user_id'] ?? 0)): ?>
                             <p class="muted">È un tuo annuncio.</p>
                         <?php else: ?>

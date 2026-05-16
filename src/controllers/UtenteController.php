@@ -129,7 +129,9 @@ class UtenteController
         $filtroAnnunci = $filtroAnnunci === 'venduto' ? 'venduto' : 'attivo';
         $annunciUtente = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
         $titoloAnnunciProfilo = $filtroAnnunci === 'venduto' ? 'Annunci venduti' : 'Annunci attivi';
-        $cronologiaPagamenti = $this->paymentService->getCronologiaByUserId($idUtente);
+        $cronologiaPagamenti = !empty($_SESSION['is_business'])
+            ? []
+            : $this->paymentService->getCronologiaByUserId($idUtente);
 
         require __DIR__ . '/../views/utenti/profilo.php';
     }
@@ -177,7 +179,9 @@ class UtenteController
             $filtroAnnunci   = 'attivo';
             $annunciUtente   = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
             $titoloAnnunciProfilo = 'Annunci attivi';
-            $cronologiaPagamenti  = $this->paymentService->getCronologiaByUserId($idUtente);
+            $cronologiaPagamenti  = !empty($_SESSION['is_business'])
+                ? []
+                : $this->paymentService->getCronologiaByUserId($idUtente);
             require __DIR__ . '/../views/utenti/profilo.php';
         }
     }

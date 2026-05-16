@@ -17,6 +17,7 @@ class PaymentService extends BaseService
     {
         $this->requirePositiveId($idUtente, 'Utente');
         $this->requirePositiveId($idAnnuncio, 'Annuncio');
+        $this->denyBusinessBuyer($idUtente);
 
         $annuncio = $this->annuncioService->findById($idAnnuncio);
 
@@ -41,6 +42,7 @@ class PaymentService extends BaseService
     public function confermaPagamento(array $data, int $idUtente): int
     {
         $this->requirePositiveId($idUtente, 'Utente');
+        $this->denyBusinessBuyer($idUtente);
 
         $idAnnuncio = (int) ($data['id_annuncio'] ?? 0);
         $paypalTransactionId = $this->clean($data['paypal_transaction_id'] ?? '');
