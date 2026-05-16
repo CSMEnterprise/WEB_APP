@@ -6,8 +6,8 @@ $q = trim($_GET['q'] ?? '');
 $idCategoria = (int)($_GET['id_categoria'] ?? 0);
 ?>
 
-<div class="nav" style="align-items:flex-start;">
-    <h1><?= ($q !== '' || $idCategoria > 0) ? 'Risultati ricerca' : 'Annunci disponibili' ?></h1>
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
+    <h1 style="margin: 0;"><?= ($q !== '' || $idCategoria > 0) ? 'Risultati ricerca' : 'Annunci disponibili' ?></h1>
 
     <?php if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin'])): ?>
         <a class="btn" href="index.php?route=annuncio-create">Crea annuncio</a>
@@ -101,7 +101,7 @@ $idCategoria = (int)($_GET['id_categoria'] ?? 0);
                     <p class="muted"><?= e($annuncio['categoria_nome'] ?? 'Senza categoria') ?></p>
                     <p><?= e($annuncio['descrizione'] ?? '') ?></p>
                     <p class="price">€ <?= number_format((float)($annuncio['prezzo'] ?? 0), 2, ',', '.') ?></p>
-                    <p><strong>Stato:</strong> <?= e($annuncio['stato_conservazione'] ?? '') ?></p>
+                    <p><strong>Conservazione:</strong> <?= e($annuncio['stato_conservazione'] ?: 'Non specificato') ?></p>
                     <p>
                         <strong>Venditore:</strong>
                         <a href="index.php?route=venditore&id=<?= e($annuncio['id_utente'] ?? '') ?>">

@@ -4,8 +4,12 @@ require __DIR__ . '/../layout/header.php';
 require __DIR__ . '/../partials/flash.php';
 ?>
 
-<div class="card">
-    <h1>Registrazione business</h1>
+<div class="card" style="max-width: 960px; margin: 0 auto; border-top: 4px solid var(--gold); padding: 40px;">
+    <div style="text-align: center; margin-bottom: 36px;">
+        <div style="display: inline-block; padding: 6px 16px; background: rgba(250,204,21,.1); color: var(--gold); border-radius: 20px; font-weight: 800; font-size: 12px; letter-spacing: 0.05em; margin-bottom: 16px;">ACCOUNT PROFESSIONALE</div>
+        <h1 style="margin-bottom: 12px; font-size: 32px;">Registrazione Business</h1>
+        <p class="muted" style="font-size: 16px;">Apri il tuo negozio su NerdVault e raggiungi migliaia di appassionati.</p>
+    </div>
 
     <?php if (!empty($errore)): ?>
         <div class="alert alert-error"><?= e($errore) ?></div>
@@ -111,9 +115,6 @@ require __DIR__ . '/../partials/flash.php';
 
         <button class="btn" type="submit">Crea account business</button>
     </form>
-
-    <p>Vuoi creare un account normale? <a href="index.php?route=register">Registrati come utente</a></p>
-    <p>Hai già un account? <a href="index.php?route=login">Accedi</a></p>
 </div>
 
 <?php require __DIR__ . '/../layout/footer.php'; ?>

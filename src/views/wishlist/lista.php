@@ -27,7 +27,7 @@ require __DIR__ . '/../layout/header.php';
                 <p class="muted"><?= e($annuncio['categoria_nome'] ?? 'Senza categoria') ?></p>
                 <p><?= e($annuncio['descrizione'] ?? '') ?></p>
                 <p class="price">€ <?= number_format((float)($annuncio['prezzo'] ?? 0), 2, ',', '.') ?></p>
-                <p><strong>Stato:</strong> <?= e($annuncio['stato_conservazione'] ?? '') ?></p>
+                <p><strong>Conservazione:</strong> <?= e($annuncio['stato_conservazione'] ?: 'Non specificato') ?></p>
                 <p>
                     <strong>Venditore:</strong>
                     <a href="index.php?route=venditore&id=<?= e($annuncio['id_utente'] ?? '') ?>">

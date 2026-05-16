@@ -283,13 +283,17 @@ require __DIR__ . '/../layout/header.php';
 
     .profile-card-actions {
         display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
         margin-top: auto;
+        padding-top: 16px;
     }
 
     .profile-card-actions .btn {
-        border-radius: 10px;
+        width: 100%;
+        max-width: 200px;
+        border-radius: 14px;
     }
 
     .profile-empty {
@@ -616,8 +620,8 @@ require __DIR__ . '/../layout/header.php';
                             <h3><?= e($annuncio['titolo'] ?? 'Annuncio') ?></h3>
                             <p class="muted"><?= e($annuncio['categoria_nome'] ?? 'Senza categoria') ?></p>
                             <p class="price">&euro; <?= number_format((float)($annuncio['prezzo'] ?? 0), 2, ',', '.') ?></p>
-                            <p><strong>Conservazione:</strong> <?= e($annuncio['stato_conservazione'] ?? '') ?></p>
-                            <p><strong>Stato vendita:</strong> <?= e($annuncio['stato'] ?? '') ?></p>
+                            <p><strong>Conservazione:</strong> <?= e($annuncio['stato_conservazione'] ?: 'Non specificato') ?></p>
+                            <p><strong>Stato vendita:</strong> <?= e(ucfirst($annuncio['stato'] ?? '')) ?></p>
 
                             <div class="profile-card-actions">
                                 <a class="btn" href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Dettagli</a>
