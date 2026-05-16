@@ -3,6 +3,7 @@ $pageTitle = 'Home';
 require __DIR__ . '/layout/header.php';
 ?>
 
+<?php if (!isset($_SESSION['user_id'])): ?>
 <section class="card">
     <h1>Compra e vendi articoli nerd in modo semplice.</h1>
     <p>
@@ -11,11 +12,10 @@ require __DIR__ . '/layout/header.php';
     </p>
 
     <p>
-        <?php if (!isset($_SESSION['user_id'])): ?>
-            <a class="btn btn-secondary" href="index.php?route=register">Crea account</a>
-        <?php endif; ?>
+        <a class="btn btn-secondary" href="index.php?route=register">Crea account</a>
     </p>
 </section>
+<?php endif; ?>
 
 <section style="margin-top: 28px;">
     <div class="nav" style="align-items:flex-start;">
@@ -53,7 +53,12 @@ require __DIR__ . '/layout/header.php';
                     <p>
                         <strong>Venditore:</strong>
                         <a href="index.php?route=venditore&id=<?= e($annuncio['id_utente'] ?? '') ?>">
-                            <?= e($annuncio['venditore_username'] ?? '') ?>
+                            <span class="seller-name-line">
+                                <?= e(!empty($annuncio['venditore_business_id']) ? ($annuncio['venditore_nome_azienda'] ?? '') : ($annuncio['venditore_username'] ?? '')) ?>
+                                <?php if (!empty($annuncio['venditore_business_id'])): ?>
+                                    <span class="seller-pro-badge">PRO</span>
+                                <?php endif; ?>
+                            </span>
                         </a>
                     </p>
 

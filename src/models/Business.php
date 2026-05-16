@@ -18,6 +18,5 @@ class Business {
     public $link_social;
     public $verificato;
     public $data_registrazione;
-    public $id_admin_verifica;
     public $data_verifica;
 }

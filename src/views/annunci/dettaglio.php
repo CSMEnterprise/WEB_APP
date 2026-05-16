@@ -41,7 +41,12 @@ require __DIR__ . '/../layout/header.php';
         <p>
             <strong>Venditore:</strong>
             <a href="index.php?route=venditore&id=<?= e($annuncio['id_utente'] ?? '') ?>">
-                <?= e($annuncio['venditore_username'] ?? '') ?>
+                <span class="seller-name-line">
+                    <?= e(!empty($annuncio['venditore_business_id']) ? ($annuncio['venditore_nome_azienda'] ?? '') : ($annuncio['venditore_username'] ?? '')) ?>
+                    <?php if (!empty($annuncio['venditore_business_id'])): ?>
+                        <span class="seller-pro-badge">PRO</span>
+                    <?php endif; ?>
+                </span>
             </a>
             <?php if ($numeroFeedbackVenditore > 0): ?>
                 <span style="display:inline-flex;align-items:center;gap:4px;margin-left:8px;color:#f59e0b;" title="<?= e(number_format((float)$mediaVenditore, 1)) ?> su 5">

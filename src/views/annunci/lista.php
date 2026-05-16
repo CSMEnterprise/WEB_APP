@@ -105,7 +105,12 @@ $idCategoria = (int)($_GET['id_categoria'] ?? 0);
                     <p>
                         <strong>Venditore:</strong>
                         <a href="index.php?route=venditore&id=<?= e($annuncio['id_utente'] ?? '') ?>">
-                            <?= e($annuncio['venditore_username'] ?? '') ?>
+                            <span class="seller-name-line">
+                                <?= e(!empty($annuncio['venditore_business_id']) ? ($annuncio['venditore_nome_azienda'] ?? '') : ($annuncio['venditore_username'] ?? '')) ?>
+                                <?php if (!empty($annuncio['venditore_business_id'])): ?>
+                                    <span class="seller-pro-badge">PRO</span>
+                                <?php endif; ?>
+                            </span>
                         </a>
                     </p>
 

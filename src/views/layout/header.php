@@ -13,10 +13,24 @@ if (!function_exists('e')) {
 $pageTitle = $pageTitle ?? 'NerdVault';
 $isLogged = isset($_SESSION['user_id']);
 $categorieHeader = [];
+$cartItemCount = 0;
 
 if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
     require_once __DIR__ . '/../../services/CategoryService.php';
     $categorieHeader = (new CategoryService($GLOBALS['pdo']))->getAll();
+
+    if ($isLogged && empty($_SESSION['is_admin']) && empty($_SESSION['is_business'])) {
+        $stmtCartCount = $GLOBALS['pdo']->prepare("
+            SELECT COUNT(*)
+            FROM carrello c
+            JOIN elemento_carrello e ON e.id_carrello = c.id_carrello
+            JOIN annuncio a ON a.id_annuncio = e.id_annuncio
+            WHERE c.id_utente = ?
+              AND a.stato = 'attivo'
+        ");
+        $stmtCartCount->execute([(int) $_SESSION['user_id']]);
+        $cartItemCount = (int) $stmtCartCount->fetchColumn();
+    }
 }
 ?>
 <!doctype html>
@@ -88,7 +102,7 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
             display: flex;
             flex-direction: column;
             gap: 16px;
-            padding: 12px 24px 20px;
+            padding: 8px 24px 20px;
         }
         .header-top {
             display: flex;
@@ -97,14 +111,24 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
         }
         .header-main {
             display: flex;
-            align-items: center;
-            gap: 32px;
+            align-items: flex-start;
+            gap: 24px;
         }
         .logo {
-            font-weight: 800; font-size: 26px; letter-spacing: -.02em;
-            color: #ffffff;
-            white-space: nowrap;
-            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-start;
+            flex: 0 0 auto;
+            min-width: 300px;
+            margin-top: -12px;
+        }
+        .logo-wordmark {
+            display: block;
+            width: auto;
+            height: 108px;
+            max-width: 430px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
         }
         .menu { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
         .menu a {
@@ -113,12 +137,129 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
             transition: color .2s, background .2s;
         }
         .menu a:hover { color: var(--text); background: rgba(124,58,237,.15); }
+        .menu .cart-icon-link {
+            position: relative;
+            width: 42px;
+            height: 42px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,.03);
+            color: var(--text);
+        }
+        .cart-icon-link svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+        }
+        .cart-count-badge {
+            position: absolute;
+            top: -7px;
+            right: -7px;
+            min-width: 21px;
+            height: 21px;
+            padding: 0 6px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gold);
+            color: #050505;
+            border: 2px solid var(--bg);
+            font-size: 11px;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .profile-menu {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+        .profile-trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 42px;
+            color: white;
+            border-left: 1px solid #374151;
+            padding: 5px 12px 5px 14px;
+            margin-left: 4px;
+            border-radius: 12px;
+            transition: background .2s, border-color .2s;
+        }
+        .profile-trigger:hover,
+        .profile-menu:focus-within .profile-trigger,
+        .profile-menu:hover .profile-trigger {
+            background: rgba(124,58,237,.15);
+            border-left-color: transparent;
+        }
+        .profile-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #fff;
+            flex: 0 0 32px;
+        }
+        .profile-avatar-fallback {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #4b5563;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            border: 2px solid #fff;
+            flex: 0 0 32px;
+        }
+        .profile-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            min-width: 190px;
+            padding: 8px;
+            border-radius: 16px;
+            background: rgba(18,18,31,.98);
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 48px rgba(0,0,0,.42);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-6px);
+            transition: opacity .18s ease, transform .18s ease, visibility .18s ease;
+            z-index: 120;
+        }
+        .profile-menu:hover .profile-dropdown,
+        .profile-menu:focus-within .profile-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .profile-dropdown a {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .profile-dropdown a:hover { background: rgba(124,58,237,.18); color: #fff; }
+        .profile-dropdown svg {
+            width: 18px;
+            height: 18px;
+            flex: 0 0 18px;
+        }
+        .profile-dropdown .dropdown-heart { color: #fb7185; fill: currentColor; stroke: currentColor; }
+        .profile-dropdown .dropdown-logout { color: var(--muted); }
 
         /* ── SEARCH ────────────────────────────────────────── */
-        .search-form {
-            display: flex; align-items: stretch;
-            flex: 1; max-width: none; gap: 12px;
-        }
+        .search-form { display: flex; align-items: stretch; flex: 1; max-width: none; padding-top: 18px; }
         .search-input-group {
             display: flex; align-items: center;
             flex: 1;
@@ -150,14 +291,33 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
         .search-input-group select:focus { border-color: transparent; background: transparent; }
 
         .search-form button {
-            margin: 0; padding: 14px 24px; border: 0;
-            background: var(--accent); color: #fff;
-            font-size: 15px; font-weight: 700; cursor: pointer;
-            border-radius: 16px;
-            transition: all .2s; white-space: nowrap;
-            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.25);
+            width: 52px;
+            min-width: 52px;
+            align-self: stretch;
+            margin: 0;
+            padding: 0;
+            border: 0;
+            border-left: 1px solid var(--border);
+            background: transparent;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 0;
+            transition: all .2s;
+            box-shadow: none;
         }
-        .search-form button:hover { background: var(--accent-h); transform: translateY(-2px); box-shadow: 0 12px 32px rgba(139, 92, 246, 0.4); }
+        .search-form button:hover {
+            background: rgba(255,255,255,.06);
+            transform: none;
+            box-shadow: none;
+        }
+        .search-form button svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+        }
 
         /* ── CARD ──────────────────────────────────────────── */
         .card {
@@ -179,6 +339,29 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
             outline-offset: 3px;
         }
         .annuncio-card { position: relative; }
+        .seller-name-line {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .seller-pro-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 9px;
+            border-radius: 999px;
+            background: #ffd400;
+            color: #070707;
+            border: 1px solid rgba(255,255,255,.35);
+            box-shadow: 0 0 12px rgba(255, 212, 0, .55), inset 0 1px 0 rgba(255,255,255,.55);
+            font-size: 11px;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: .02em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
         .wishlist-heart {
             position: absolute;
             top: 12px;
@@ -339,8 +522,9 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
             .header-inner { padding: 12px 0; gap: 16px; }
             .header-top { justify-content: center; }
             .header-main { flex-direction: column; align-items: stretch; gap: 12px; }
-            .logo { text-align: center; }
-            .search-form { flex-direction: column; }
+            .logo { text-align: center; min-width: 0; margin-top: 0; justify-content: center; }
+            .logo-wordmark { height: 86px; max-width: 100%; margin: 0 auto; }
+            .search-form { flex-direction: column; padding-top: 0; }
             .search-input-group { flex-direction: column; width: 100%; }
             .search-input-group select { border-left: none; border-top: 1px solid var(--border); max-width: 100%; width: 100%; }
             .search-form button { width: 100%; }
@@ -352,7 +536,6 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
 
 <header class="site-header">
     <div class="container header-inner">
-
         <div class="header-top">
             <nav class="menu">
                 <a href="index.php?route=home">Home</a>
@@ -368,15 +551,38 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
                     <?php elseif (!empty($_SESSION['is_business'])): ?>
                         <a href="index.php?route=business">Business</a>
                     <?php else: ?>
-                        <a href="index.php?route=carrello">Carrello</a>
-                        <a href="index.php?route=wishlist">Wishlist</a>
-                        <a href="index.php?route=business">Business</a>
+                        <a class="cart-icon-link" href="index.php?route=carrello" aria-label="Carrello: <?= e((string)$cartItemCount) ?> prodotti">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h8.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+                            <span class="cart-count-badge"><?= e((string)$cartItemCount) ?></span>
+                        </a>
                     <?php endif; ?>
-                    <a href="index.php?route=logout">Logout</a>
-                    <?php if (empty($_SESSION['is_admin'])): ?>
-                        <a href="index.php?route=profilo"
-                           style="display:flex;align-items:center;gap:8px;text-decoration:none;color:white;
-                                  border-left:1px solid #374151;padding-left:12px;margin-left:4px;">
+                    <?php if (empty($_SESSION['is_admin']) && empty($_SESSION['is_business'])): ?>
+                        <div class="profile-menu">
+                            <a class="profile-trigger" href="index.php?route=profilo" aria-haspopup="true" aria-expanded="false">
+                                <?php if (!empty($_SESSION['propic'])): ?>
+                                    <img class="profile-avatar" src="<?= e($_SESSION['propic']) ?>" alt="Foto profilo">
+                                <?php else: ?>
+                                    <span class="profile-avatar-fallback" aria-hidden="true">&#128100;</span>
+                                <?php endif; ?>
+                                <span><?= e($_SESSION['username'] ?? '') ?></span>
+                            </a>
+                            <div class="profile-dropdown">
+                                <a href="index.php?route=wishlist">
+                                    <svg class="dropdown-heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"></path></svg>
+                                    <span>Wishlist</span>
+                                </a>
+                                <a href="index.php?route=logout">
+                                    <svg class="dropdown-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path></svg>
+                                    <span>Logout</span>
+                                </a>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <a href="index.php?route=logout">Logout</a>
+                        <?php if (empty($_SESSION['is_admin'])): ?>
+                            <a href="index.php?route=profilo"
+                               style="display:flex;align-items:center;gap:8px;text-decoration:none;color:white;
+                                      border-left:1px solid #374151;padding-left:12px;margin-left:4px;">
                             <?php if (!empty($_SESSION['propic'])): ?>
                                 <img src="<?= e($_SESSION['propic']) ?>" alt="Foto profilo"
                                      style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #fff;">
@@ -386,7 +592,8 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
                                              border:2px solid #fff;">👤</span>
                             <?php endif; ?>
                             <span><?= e($_SESSION['username'] ?? '') ?></span>
-                        </a>
+                            </a>
+                        <?php endif; ?>
                     <?php endif; ?>
                 <?php else: ?>
                     <a href="index.php?route=login">Login</a>
@@ -396,7 +603,9 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
         </div>
 
         <div class="header-main">
-            <a class="logo" href="index.php?route=home">NerdVault</a>
+            <a class="logo" href="index.php?route=home" aria-label="NerdVault home">
+                <img class="logo-wordmark" src="assets/img/nerdvault-wordmark.png" alt="NerdVault">
+            </a>
 
             <form class="search-form" method="GET" action="index.php">
                 <input type="hidden" name="route" value="annunci">
@@ -419,9 +628,10 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
                             </option>
                         <?php endforeach; ?>
                     </select>
+                    <button type="submit" aria-label="Cerca annunci">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+                    </button>
                 </div>
-
-                <button type="submit">Cerca</button>
             </form>
         </div>
 

@@ -170,15 +170,17 @@ class UserService extends BaseService
         }
 
         $stmt = $this->db->prepare("
-            DELETE FROM indirizzi
-            WHERE id_utente = ? AND predefinito = 1
+            SELECT COUNT(*)
+            FROM indirizzi
+            WHERE id_utente = ?
         ");
         $stmt->execute([$idUtente]);
+        $predefinito = ((int) $stmt->fetchColumn()) === 0 ? 1 : 0;
 
         $stmt = $this->db->prepare("
             INSERT INTO indirizzi
                 (id_utente, via, numero, cap, citta, provincia, paese, predefinito)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->execute([
             $idUtente,
@@ -188,6 +190,74 @@ class UserService extends BaseService
             $citta,
             $provincia !== '' ? $provincia : null,
             $paese,
+            $predefinito,
         ]);
+    }
+
+    public function getIndirizziByUserId(int $idUtente): array
+    {
+        $this->requirePositiveId($idUtente, 'Utente');
+
+        $stmt = $this->db->prepare("
+            SELECT *
+            FROM indirizzi
+            WHERE id_utente = ?
+            ORDER BY predefinito DESC, id_indirizzo DESC
+        ");
+        $stmt->execute([$idUtente]);
+
+        return $stmt->fetchAll();
+    }
+
+    public function findIndirizzoByIdForUser(int $idIndirizzo, int $idUtente): ?array
+    {
+        $this->requirePositiveId($idIndirizzo, 'Indirizzo');
+        $this->requirePositiveId($idUtente, 'Utente');
+
+        $stmt = $this->db->prepare("
+            SELECT *
+            FROM indirizzi
+            WHERE id_indirizzo = ? AND id_utente = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$idIndirizzo, $idUtente]);
+
+        return $stmt->fetch() ?: null;
+    }
+
+    public function setIndirizzoPredefinito(int $idUtente, int $idIndirizzo): void
+    {
+        $this->requirePositiveId($idUtente, 'Utente');
+        $this->requirePositiveId($idIndirizzo, 'Indirizzo');
+
+        if (!$this->findIndirizzoByIdForUser($idIndirizzo, $idUtente)) {
+            throw new ServiceException('Indirizzo non valido.');
+        }
+
+        $this->db->beginTransaction();
+
+        try {
+            $stmt = $this->db->prepare("
+                UPDATE indirizzi
+                SET predefinito = 0
+                WHERE id_utente = ?
+            ");
+            $stmt->execute([$idUtente]);
+
+            $stmt = $this->db->prepare("
+                UPDATE indirizzi
+                SET predefinito = 1
+                WHERE id_indirizzo = ? AND id_utente = ?
+            ");
+            $stmt->execute([$idIndirizzo, $idUtente]);
+
+            $this->db->commit();
+        } catch (Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+
+            throw new ServiceException('Impossibile impostare l indirizzo predefinito.');
+        }
     }
 }

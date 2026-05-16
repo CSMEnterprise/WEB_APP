@@ -126,6 +126,9 @@ class UtenteController
     public function profilo(int $idUtente, string $filtroAnnunci = 'attivo'): void
     {
         $utente = $this->userService->findById($idUtente);
+        $indirizziUtente = !empty($_SESSION['is_business'])
+            ? []
+            : $this->userService->getIndirizziByUserId($idUtente);
         $filtroAnnunci = $filtroAnnunci === 'venduto' ? 'venduto' : 'attivo';
         $annunciUtente = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
         $titoloAnnunciProfilo = $filtroAnnunci === 'venduto' ? 'Annunci venduti' : 'Annunci attivi';
@@ -176,6 +179,9 @@ class UtenteController
         } catch (Exception $e) {
             $errore          = $e->getMessage();
             $utente          = $this->userService->findById($idUtente);
+            $indirizziUtente = !empty($_SESSION['is_business'])
+                ? []
+                : $this->userService->getIndirizziByUserId($idUtente);
             $filtroAnnunci   = 'attivo';
             $annunciUtente   = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
             $titoloAnnunciProfilo = 'Annunci attivi';
@@ -196,10 +202,29 @@ class UtenteController
         } catch (Exception $e) {
             $errore = $e->getMessage();
             $utente = $this->userService->findById($idUtente);
+            $indirizziUtente = $this->userService->getIndirizziByUserId($idUtente);
             $filtroAnnunci = 'attivo';
             $annunciUtente = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
             $titoloAnnunciProfilo = 'Annunci attivi';
 
+            require __DIR__ . '/../views/utenti/profilo.php';
+        }
+    }
+
+    public function impostaIndirizzoPredefinito(int $idIndirizzo, int $idUtente): void
+    {
+        try {
+            $this->userService->setIndirizzoPredefinito($idUtente, $idIndirizzo);
+            header('Location: index.php?route=profilo');
+            exit;
+        } catch (Exception $e) {
+            $errore = $e->getMessage();
+            $utente = $this->userService->findById($idUtente);
+            $indirizziUtente = $this->userService->getIndirizziByUserId($idUtente);
+            $filtroAnnunci = 'attivo';
+            $annunciUtente = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
+            $titoloAnnunciProfilo = 'Annunci attivi';
+            $cronologiaPagamenti = $this->paymentService->getCronologiaByUserId($idUtente);
             require __DIR__ . '/../views/utenti/profilo.php';
         }
     }

@@ -45,23 +45,46 @@ class PaymentService extends BaseService
         $this->denyBusinessBuyer($idUtente);
 
         $idAnnuncio = (int) ($data['id_annuncio'] ?? 0);
-        $paypalTransactionId = $this->clean($data['paypal_transaction_id'] ?? '');
+        $this->requirePositiveId($idAnnuncio, 'Annuncio');
 
-        $preparazione = $this->preparaPagamento($idUtente, $idAnnuncio);
-        $totale = $preparazione['totale'];
+        $idIndirizzo = (int) ($data['id_indirizzo'] ?? 0);
+        $this->requirePositiveId($idIndirizzo, 'Indirizzo di spedizione');
+
+        $paypalTransactionId = $this->clean($data['paypal_transaction_id'] ?? '');
 
         $this->db->beginTransaction();
 
         try {
+            $annuncio = $this->getAnnuncioForPaymentUpdate($idAnnuncio);
+
+            if (!$annuncio) {
+                throw new ServiceException('Annuncio non trovato.');
+            }
+
+            if (($annuncio['stato'] ?? '') !== 'attivo') {
+                throw new ServiceException('Annuncio non acquistabile.');
+            }
+
+            if ((int)($annuncio['id_utente'] ?? 0) === $idUtente) {
+                throw new ServiceException('Non puoi acquistare un tuo annuncio.');
+            }
+
+            if (!$this->indirizzoBelongsToUser($idIndirizzo, $idUtente)) {
+                throw new ServiceException('Indirizzo di spedizione non valido.');
+            }
+
+            $totale = (float) $annuncio['prezzo'];
+
             $stmt = $this->db->prepare("
                 INSERT INTO pagamento
-                (id_annuncio, id_acquirente, importo_totale, stato, paypal_transaction_id)
-                VALUES (?, ?, ?, 'Completato', ?)
+                (id_annuncio, id_acquirente, id_indirizzo_spedizione, importo_totale, stato, paypal_transaction_id)
+                VALUES (?, ?, ?, ?, 'Completato', ?)
             ");
 
             $stmt->execute([
                 $idAnnuncio,
                 $idUtente,
+                $idIndirizzo,
                 $totale,
                 $paypalTransactionId !== '' ? $paypalTransactionId : null
             ]);
@@ -71,9 +94,13 @@ class PaymentService extends BaseService
             $stmt = $this->db->prepare("
                 UPDATE annuncio
                 SET stato = 'venduto'
-                WHERE id_annuncio = ?
+                WHERE id_annuncio = ? AND stato = 'attivo'
             ");
             $stmt->execute([$idAnnuncio]);
+
+            if ($stmt->rowCount() !== 1) {
+                throw new ServiceException('Annuncio non acquistabile.');
+            }
 
             $stmt = $this->db->prepare("
                 DELETE e
@@ -93,9 +120,51 @@ class PaymentService extends BaseService
             return $idPagamento;
 
         } catch (Throwable $e) {
-            $this->db->rollBack();
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+
+            if ($e instanceof ServiceException) {
+                throw $e;
+            }
+
             throw new ServiceException('Errore durante la conferma del pagamento.');
         }
+    }
+
+    private function getAnnuncioForPaymentUpdate(int $idAnnuncio): ?array
+    {
+        $stmt = $this->db->prepare("
+            SELECT
+                a.*,
+                c.nome AS categoria_nome,
+                u.username AS venditore_username,
+                ab.id_acc_business AS venditore_business_id,
+                ab.nome_azienda AS venditore_nome_azienda
+            FROM annuncio a
+            LEFT JOIN categoria c ON c.id_categoria = a.id_categoria
+            LEFT JOIN utente_registrato u ON u.id_utente = a.id_utente
+            LEFT JOIN account_business ab ON ab.id_utente = a.id_utente
+            WHERE a.id_annuncio = ?
+            LIMIT 1
+            FOR UPDATE
+        ");
+        $stmt->execute([$idAnnuncio]);
+
+        return $stmt->fetch() ?: null;
+    }
+
+    private function indirizzoBelongsToUser(int $idIndirizzo, int $idUtente): bool
+    {
+        $stmt = $this->db->prepare("
+            SELECT 1
+            FROM indirizzi
+            WHERE id_indirizzo = ? AND id_utente = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$idIndirizzo, $idUtente]);
+
+        return (bool) $stmt->fetchColumn();
     }
 
     public function getCronologiaByUserId(int $idUtente): array

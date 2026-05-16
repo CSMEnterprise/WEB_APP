@@ -9,7 +9,9 @@
 
         <!-- COL 1: Brand -->
         <div class="footer-brand">
-            <a class="logo" href="index.php?route=home" style="font-size:26px;">NerdVault</a>
+            <a class="logo" href="index.php?route=home" aria-label="NerdVault home">
+                <img class="logo-wordmark" src="assets/img/nerdvault-wordmark.png" alt="NerdVault" style="height:82px;max-width:340px;">
+            </a>
             <p class="footer-tagline">Il marketplace per appassionati di manga, action figure, gaming e collezionismo.</p>
             <div class="footer-social">
                 <a href="#" class="footer-social-btn" title="Discord">

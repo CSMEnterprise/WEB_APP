@@ -19,6 +19,8 @@ class AnnuncioService extends BaseService
                 a.*,
                 c.nome AS categoria_nome,
                 u.username AS venditore_username,
+                ab.id_acc_business AS venditore_business_id,
+                ab.nome_azienda AS venditore_nome_azienda,
                 (
                     SELECT i.url
                     FROM immagine i
@@ -29,6 +31,7 @@ class AnnuncioService extends BaseService
             FROM annuncio a
             LEFT JOIN categoria c ON c.id_categoria = a.id_categoria
             LEFT JOIN utente_registrato u ON u.id_utente = a.id_utente
+            LEFT JOIN account_business ab ON ab.id_utente = a.id_utente
             WHERE a.stato = 'attivo'
             {$whereCategoria}
             ORDER BY a.data_creazione DESC
@@ -38,10 +41,11 @@ class AnnuncioService extends BaseService
         return $stmt->fetchAll();
     }
 
-    public function getAnnunciCasuali(int $limit = 8, ?int $excludeUserId = null): array
+    public function getAnnunciCasuali(int $limit = 8, ?int $excludeUserId = null, array $excludeAnnuncioIds = []): array
     {
         $limit = max(1, min($limit, 24));
         $whereUtente = '';
+        $whereAnnunci = '';
         $params = [];
 
         if ($excludeUserId !== null && $excludeUserId > 0) {
@@ -49,11 +53,20 @@ class AnnuncioService extends BaseService
             $params[] = $excludeUserId;
         }
 
+        $excludeAnnuncioIds = array_values(array_filter(array_map('intval', $excludeAnnuncioIds), static fn($id) => $id > 0));
+
+        if (!empty($excludeAnnuncioIds)) {
+            $whereAnnunci = ' AND a.id_annuncio NOT IN (' . implode(',', array_fill(0, count($excludeAnnuncioIds), '?')) . ')';
+            $params = array_merge($params, $excludeAnnuncioIds);
+        }
+
         $stmt = $this->db->prepare("
             SELECT
                 a.*,
                 c.nome AS categoria_nome,
                 u.username AS venditore_username,
+                ab.id_acc_business AS venditore_business_id,
+                ab.nome_azienda AS venditore_nome_azienda,
                 (
                     SELECT i.url
                     FROM immagine i
@@ -64,8 +77,10 @@ class AnnuncioService extends BaseService
             FROM annuncio a
             LEFT JOIN categoria c ON c.id_categoria = a.id_categoria
             LEFT JOIN utente_registrato u ON u.id_utente = a.id_utente
+            LEFT JOIN account_business ab ON ab.id_utente = a.id_utente
             WHERE a.stato = 'attivo'
             {$whereUtente}
+            {$whereAnnunci}
             ORDER BY RAND()
             LIMIT {$limit}
         ");
@@ -93,6 +108,8 @@ class AnnuncioService extends BaseService
                 a.*,
                 c.nome AS categoria_nome,
                 u.username AS venditore_username,
+                ab.id_acc_business AS venditore_business_id,
+                ab.nome_azienda AS venditore_nome_azienda,
                 (
                     SELECT i.url
                     FROM immagine i
@@ -103,6 +120,7 @@ class AnnuncioService extends BaseService
             FROM annuncio a
             LEFT JOIN categoria c ON c.id_categoria = a.id_categoria
             LEFT JOIN utente_registrato u ON u.id_utente = a.id_utente
+            LEFT JOIN account_business ab ON ab.id_utente = a.id_utente
             WHERE a.stato = 'attivo'
               AND a.id_categoria IN ({$placeholders})
               AND (a.id_utente IS NULL OR a.id_utente <> ?)
@@ -113,7 +131,14 @@ class AnnuncioService extends BaseService
 
         $annunci = $stmt->fetchAll();
 
-        return !empty($annunci) ? $annunci : $this->getAnnunciCasuali($limit, $idUtente);
+        if (count($annunci) >= $limit) {
+            return $annunci;
+        }
+
+        $annunciIds = array_map(static fn($annuncio) => (int)($annuncio['id_annuncio'] ?? 0), $annunci);
+        $fallback = $this->getAnnunciCasuali($limit - count($annunci), $idUtente, $annunciIds);
+
+        return array_merge($annunci, $fallback);
     }
 
     public function findById(int $idAnnuncio): ?array
@@ -121,10 +146,16 @@ class AnnuncioService extends BaseService
         $this->requirePositiveId($idAnnuncio, 'Annuncio');
 
         $stmt = $this->db->prepare("
-            SELECT a.*, c.nome AS categoria_nome, u.username AS venditore_username
+            SELECT
+                a.*,
+                c.nome AS categoria_nome,
+                u.username AS venditore_username,
+                ab.id_acc_business AS venditore_business_id,
+                ab.nome_azienda AS venditore_nome_azienda
             FROM annuncio a
             LEFT JOIN categoria c ON c.id_categoria = a.id_categoria
             LEFT JOIN utente_registrato u ON u.id_utente = a.id_utente
+            LEFT JOIN account_business ab ON ab.id_utente = a.id_utente
             WHERE a.id_annuncio = ?
             LIMIT 1
         ");
@@ -164,6 +195,8 @@ class AnnuncioService extends BaseService
                 a.*,
                 c.nome AS categoria_nome,
                 u.username AS venditore_username,
+                ab.id_acc_business AS venditore_business_id,
+                ab.nome_azienda AS venditore_nome_azienda,
                 (
                     SELECT i.url
                     FROM immagine i
@@ -174,6 +207,7 @@ class AnnuncioService extends BaseService
             FROM annuncio a
             LEFT JOIN categoria c ON c.id_categoria = a.id_categoria
             LEFT JOIN utente_registrato u ON u.id_utente = a.id_utente
+            LEFT JOIN account_business ab ON ab.id_utente = a.id_utente
             WHERE a.id_utente = ? {$whereStato}
             ORDER BY a.data_creazione DESC
         ");
@@ -300,6 +334,8 @@ class AnnuncioService extends BaseService
                 a.*,
                 c.nome AS categoria_nome,
                 u.username AS venditore_username,
+                ab.id_acc_business AS venditore_business_id,
+                ab.nome_azienda AS venditore_nome_azienda,
                 (
                     SELECT i.url
                     FROM immagine i
@@ -310,6 +346,7 @@ class AnnuncioService extends BaseService
             FROM annuncio a
             LEFT JOIN categoria c ON c.id_categoria = a.id_categoria
             LEFT JOIN utente_registrato u ON u.id_utente = a.id_utente
+            LEFT JOIN account_business ab ON ab.id_utente = a.id_utente
             WHERE {$whereSql}
             ORDER BY a.data_creazione DESC
         ");

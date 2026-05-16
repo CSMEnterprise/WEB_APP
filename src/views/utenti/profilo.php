@@ -441,6 +441,8 @@ require __DIR__ . '/../layout/header.php';
         }
 
         $indirizzoSpedizione = implode(', ', array_filter([$viaCompleta, $localitaSpedizione]));
+        $indirizziUtente = $indirizziUtente ?? [];
+        $indirizziCount = is_countable($indirizziUtente) ? count($indirizziUtente) : 0;
         $annunciCount = is_countable($annunciUtente ?? null) ? count($annunciUtente) : 0;
         $pagamentiCount = !$isBusiness && is_countable($cronologiaPagamenti ?? null) ? count($cronologiaPagamenti) : 0;
     ?>
@@ -481,11 +483,8 @@ require __DIR__ . '/../layout/header.php';
                     </div>
                     <?php if (!$isBusiness): ?>
                         <div class="profile-info-item">
-                            <span>Nome spedizione</span>
-                            <strong><?= e($utente['nome'] ?? 'Da completare') ?></strong>
-                        </div>
-                        <div class="profile-info-item">
                             <span>Indirizzo</span>
+                            <strong><?= e($utente['nome'] ?? 'Da completare') ?></strong>
                             <strong><?= $hasSpedizione ? e($indirizzoSpedizione) : 'Da completare' ?></strong>
                         </div>
                     <?php endif; ?>
@@ -509,7 +508,7 @@ require __DIR__ . '/../layout/header.php';
         <div class="profile-actions">
             <?php if (!$isBusiness): ?>
                 <button type="button" class="btn" id="toggle-indirizzo-btn" onclick="toggleIndirizzoForm()">
-                    <?= $hasSpedizione ? 'Modifica indirizzo di spedizione' : 'Aggiungi indirizzo di spedizione' ?>
+                    <?= $indirizziCount > 0 ? 'Aggiungi un altro indirizzo' : 'Aggiungi indirizzo di spedizione' ?>
                 </button>
             <?php endif; ?>
 
@@ -519,7 +518,7 @@ require __DIR__ . '/../layout/header.php';
 
         <?php if (!$isBusiness): ?>
         <div id="indirizzoForm" class="card profile-address-form is-hidden">
-            <h2>Indirizzo di spedizione</h2>
+            <h2><?= $indirizziCount > 0 ? 'Nuovo indirizzo di spedizione' : 'Indirizzo di spedizione' ?></h2>
 
             <form method="post" action="index.php">
                 <input type="hidden" name="route" value="profilo-indirizzo-store">
@@ -531,7 +530,7 @@ require __DIR__ . '/../layout/header.php';
                             type="text"
                             id="nome"
                             name="nome"
-                            value="<?= e($utente['nome'] ?? '') ?>"
+                            value="<?= $indirizziCount > 0 ? '' : e($utente['nome'] ?? '') ?>"
                             required>
                     </div>
 
@@ -541,7 +540,7 @@ require __DIR__ . '/../layout/header.php';
                             type="text"
                             id="via"
                             name="via"
-                            value="<?= e($utente['via'] ?? '') ?>"
+                            value=""
                             required>
                     </div>
 
@@ -551,7 +550,7 @@ require __DIR__ . '/../layout/header.php';
                             type="text"
                             id="numero"
                             name="numero"
-                            value="<?= e($utente['numero'] ?? '') ?>">
+                            value="">
                     </div>
 
                     <div>
@@ -561,7 +560,7 @@ require __DIR__ . '/../layout/header.php';
                             id="cap"
                             name="cap"
                             maxlength="5"
-                            value="<?= e($utente['cap'] ?? '') ?>">
+                            value="">
                     </div>
 
                     <div>
@@ -570,7 +569,7 @@ require __DIR__ . '/../layout/header.php';
                             type="text"
                             id="citta"
                             name="citta"
-                            value="<?= e($utente['citta'] ?? '') ?>"
+                            value=""
                             required>
                     </div>
 
@@ -581,13 +580,53 @@ require __DIR__ . '/../layout/header.php';
                             id="provincia"
                             name="provincia"
                             maxlength="2"
-                            value="<?= e($utente['provincia'] ?? '') ?>">
+                            value="">
                     </div>
                 </div>
 
-                <button type="submit" class="btn">Salva indirizzo</button>
+                <button type="submit" class="btn">Salva nuovo indirizzo</button>
             </form>
         </div>
+
+        <section>
+            <div class="profile-section-header">
+                <div>
+                    <h2>Tutti gli indirizzi</h2>
+                    <p>Visualizza gli indirizzi di spedizione salvati sul tuo profilo.</p>
+                </div>
+            </div>
+
+            <?php if (!empty($indirizziUtente)): ?>
+                <div class="grid">
+                    <?php foreach ($indirizziUtente as $indirizzo): ?>
+                        <?php
+                            $viaIndirizzo = trim(($indirizzo['via'] ?? '') . ' ' . ($indirizzo['numero'] ?? ''));
+                            $localitaIndirizzo = trim(($indirizzo['cap'] ?? '') . ' ' . ($indirizzo['citta'] ?? ''));
+
+                            if (!empty($indirizzo['provincia'])) {
+                                $localitaIndirizzo = trim($localitaIndirizzo . ' (' . $indirizzo['provincia'] . ')');
+                            }
+                        ?>
+                        <article class="card">
+                            <h3 style="margin-bottom: 10px;">
+                                Indirizzo <?= !empty($indirizzo['predefinito']) ? '<span class="seller-pro-badge">Predefinito</span>' : '' ?>
+                            </h3>
+                            <p><?= e(implode(', ', array_filter([$viaIndirizzo, $localitaIndirizzo]))) ?></p>
+                            <p class="muted"><?= e($indirizzo['paese'] ?? 'Italia') ?></p>
+                            <?php if (empty($indirizzo['predefinito'])): ?>
+                                <a class="btn btn-secondary" href="index.php?route=profilo-indirizzo-default&id=<?= e($indirizzo['id_indirizzo'] ?? '') ?>">
+                                    Imposta come predefinito
+                                </a>
+                            <?php endif; ?>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <div class="card profile-empty">
+                    <p>Non hai ancora indirizzi salvati.</p>
+                </div>
+            <?php endif; ?>
+        </section>
         <?php endif; ?>
 
         <section class="profile-annunci">

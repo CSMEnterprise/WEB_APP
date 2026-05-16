@@ -244,6 +244,13 @@ try {
             denyBusiness();
             (new UtenteController($pdo))->salvaIndirizzoSpedizione($_POST, currentUserId());
             break;
+
+        case 'profilo-indirizzo-default':
+            requireAuth();
+            denyAdmin();
+            denyBusiness();
+            (new UtenteController($pdo))->impostaIndirizzoPredefinito((int) ($_GET['id'] ?? 0), currentUserId());
+            break;
         /*
         |--------------------------------------------------------------------------
         | Annunci
@@ -364,7 +371,11 @@ try {
             requireAuth();
             denyAdmin();
             denyBusiness();
-            (new PagamentoController($pdo))->paypalPlaceholder(currentUserId(), (int) ($_GET['id'] ?? 0));
+            (new PagamentoController($pdo))->paypalPlaceholder(
+                currentUserId(),
+                (int) ($_GET['id'] ?? $_POST['id_annuncio'] ?? 0),
+                (int) ($_POST['id_indirizzo'] ?? $_GET['id_indirizzo'] ?? 0)
+            );
             break;
 
         case 'paypal-cancel':

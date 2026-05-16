@@ -39,7 +39,6 @@ CREATE TABLE `account_business` (
   `link_social` varchar(255) DEFAULT NULL,
   `verificato` tinyint(1) NOT NULL DEFAULT 0,
   `data_registrazione` timestamp NOT NULL DEFAULT current_timestamp(),
-  `id_admin_verifica` int(11) DEFAULT NULL,
   `data_verifica` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -191,6 +190,7 @@ CREATE TABLE `pagamento` (
   `id_pagamento` int(11) NOT NULL,
   `id_annuncio` int(11) NOT NULL,
   `id_acquirente` int(11) NOT NULL,
+  `id_indirizzo_spedizione` int(11) DEFAULT NULL,
   `importo_totale` decimal(10,2) NOT NULL,
   `stato` enum('In_attesa','Completato','Annullato','Rimborsato') NOT NULL DEFAULT 'In_attesa',
   `paypal_transaction_id` varchar(255) DEFAULT NULL,
@@ -259,8 +259,7 @@ ALTER TABLE `account_business`
   ADD PRIMARY KEY (`id_acc_business`),
   ADD UNIQUE KEY `id_utente` (`id_utente`),
   ADD UNIQUE KEY `p_iva` (`p_iva`),
-  ADD UNIQUE KEY `email_aziendale` (`email_aziendale`),
-  ADD KEY `id_admin_verifica` (`id_admin_verifica`);
+  ADD UNIQUE KEY `email_aziendale` (`email_aziendale`);
 
 --
 -- Indici per le tabelle `admin`
@@ -342,7 +341,8 @@ ALTER TABLE `pagamento`
   ADD PRIMARY KEY (`id_pagamento`),
   ADD UNIQUE KEY `paypal_transaction_id` (`paypal_transaction_id`),
   ADD KEY `id_annuncio` (`id_annuncio`),
-  ADD KEY `id_acquirente` (`id_acquirente`);
+  ADD KEY `id_acquirente` (`id_acquirente`),
+  ADD KEY `id_indirizzo_spedizione` (`id_indirizzo_spedizione`);
 
 --
 -- Indici per le tabelle `preferito`
@@ -461,8 +461,7 @@ ALTER TABLE `utente_registrato`
 -- Limiti per la tabella `account_business`
 --
 ALTER TABLE `account_business`
-  ADD CONSTRAINT `account_business_ibfk_1` FOREIGN KEY (`id_utente`) REFERENCES `utente_registrato` (`id_utente`) ON DELETE CASCADE,
-  ADD CONSTRAINT `account_business_ibfk_2` FOREIGN KEY (`id_admin_verifica`) REFERENCES `admin` (`id_admin`) ON DELETE SET NULL;
+  ADD CONSTRAINT `account_business_ibfk_1` FOREIGN KEY (`id_utente`) REFERENCES `utente_registrato` (`id_utente`) ON DELETE CASCADE;
 
 --
 -- Limiti per la tabella `annuncio`
@@ -526,7 +525,8 @@ ALTER TABLE `modera`
 --
 ALTER TABLE `pagamento`
   ADD CONSTRAINT `pagamento_ibfk_1` FOREIGN KEY (`id_annuncio`) REFERENCES `annuncio` (`id_annuncio`),
-  ADD CONSTRAINT `pagamento_ibfk_2` FOREIGN KEY (`id_acquirente`) REFERENCES `utente_registrato` (`id_utente`);
+  ADD CONSTRAINT `pagamento_ibfk_2` FOREIGN KEY (`id_acquirente`) REFERENCES `utente_registrato` (`id_utente`),
+  ADD CONSTRAINT `pagamento_ibfk_3` FOREIGN KEY (`id_indirizzo_spedizione`) REFERENCES `indirizzi` (`id_indirizzo`) ON DELETE SET NULL;
 
 --
 -- Limiti per la tabella `preferito`

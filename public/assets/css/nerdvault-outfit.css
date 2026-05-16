@@ -382,6 +382,31 @@ label {
     background: var(--paper-2);
 }
 
+.seller-name-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.seller-pro-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #ffd400;
+    color: #070707;
+    border: 1px solid rgba(255,255,255,.35);
+    box-shadow: 0 0 12px rgba(255, 212, 0, .55), inset 0 1px 0 rgba(255,255,255,.55);
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
 .cart-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(280px, 350px);

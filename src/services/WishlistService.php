@@ -25,6 +25,8 @@ class WishlistService extends BaseService
                 a.*,
                 c.nome AS categoria_nome,
                 u.username AS venditore_username,
+                ab.id_acc_business AS venditore_business_id,
+                ab.nome_azienda AS venditore_nome_azienda,
                 (
                     SELECT i.url
                     FROM immagine i
@@ -36,6 +38,7 @@ class WishlistService extends BaseService
             JOIN annuncio a ON a.id_annuncio = p.id_annuncio
             LEFT JOIN categoria c ON c.id_categoria = a.id_categoria
             LEFT JOIN utente_registrato u ON u.id_utente = a.id_utente
+            LEFT JOIN account_business ab ON ab.id_utente = a.id_utente
             WHERE p.id_utente = ?
               AND a.stato = 'attivo'
             ORDER BY p.data_aggiunta DESC

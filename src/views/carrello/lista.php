@@ -32,7 +32,12 @@ require __DIR__ . '/../layout/header.php';
                     <p>
                         <strong>Venditore:</strong>
                         <a href="index.php?route=venditore&id=<?= e($item['id_utente'] ?? '') ?>">
-                            <?= e($item['venditore_username'] ?? '') ?>
+                            <span class="seller-name-line">
+                                <?= e(!empty($item['venditore_business_id']) ? ($item['venditore_nome_azienda'] ?? '') : ($item['venditore_username'] ?? '')) ?>
+                                <?php if (!empty($item['venditore_business_id'])): ?>
+                                    <span class="seller-pro-badge">PRO</span>
+                                <?php endif; ?>
+                            </span>
                         </a>
                     </p>
                     <p><strong>Stato vendita:</strong> <?= e(ucfirst((string)($item['stato'] ?? ''))) ?></p>
@@ -55,8 +60,8 @@ require __DIR__ . '/../layout/header.php';
 
             <div class="cart-summary-actions">
                 <?php foreach ($purchasableItems as $item): ?>
-                    <a class="btn" href="index.php?route=paypal-placeholder&id=<?= e($item['id_annuncio'] ?? '') ?>">
-                        <?= count($purchasableItems) === 1 ? 'Acquista con PayPal' : 'PayPal: ' . e($item['titolo'] ?? 'Annuncio') ?>
+                    <a class="btn" href="index.php?route=checkout&id=<?= e($item['id_annuncio'] ?? '') ?>">
+                        <?= count($purchasableItems) === 1 ? 'Vai al checkout' : 'Checkout: ' . e($item['titolo'] ?? 'Annuncio') ?>
                     </a>
                 <?php endforeach; ?>
 
