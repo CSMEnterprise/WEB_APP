@@ -23,10 +23,44 @@ require __DIR__ . '/../layout/header.php';
         <h1><?= e($annuncio['titolo'] ?? '') ?></h1>
 
         <?php if (!empty($annuncio['immagini'])): ?>
-            <div class="annuncio-gallery">
-                <?php foreach ($annuncio['immagini'] as $immagine): ?>
-                    <img src="<?= e($immagine['url'] ?? '') ?>" alt="Foto annuncio">
-                <?php endforeach; ?>
+            <?php
+                $immaginiAnnuncio = array_values($annuncio['immagini']);
+                $hasMultipleImages = count($immaginiAnnuncio) > 1;
+            ?>
+            <div class="annuncio-detail-gallery" data-gallery>
+                <div class="annuncio-gallery-main">
+                    <?php if ($hasMultipleImages): ?>
+                        <button class="annuncio-gallery-nav annuncio-gallery-prev" type="button" data-gallery-prev aria-label="Foto precedente">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>
+                        </button>
+                    <?php endif; ?>
+
+                    <img
+                        src="<?= e($immaginiAnnuncio[0]['url'] ?? '') ?>"
+                        alt="Foto annuncio"
+                        data-gallery-main>
+
+                    <?php if ($hasMultipleImages): ?>
+                        <button class="annuncio-gallery-nav annuncio-gallery-next" type="button" data-gallery-next aria-label="Foto successiva">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+                        </button>
+                    <?php endif; ?>
+                </div>
+
+                <?php if ($hasMultipleImages): ?>
+                    <div class="annuncio-gallery-thumbs" aria-label="Foto annuncio">
+                        <?php foreach ($immaginiAnnuncio as $index => $immagine): ?>
+                            <button
+                                class="annuncio-gallery-thumb <?= $index === 0 ? 'is-active' : '' ?>"
+                                type="button"
+                                data-gallery-thumb
+                                data-gallery-src="<?= e($immagine['url'] ?? '') ?>"
+                                aria-label="Mostra foto <?= e((string)($index + 1)) ?>">
+                                <img src="<?= e($immagine['url'] ?? '') ?>" alt="">
+                            </button>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
 
@@ -82,6 +116,52 @@ require __DIR__ . '/../layout/header.php';
             <?php endif; ?>
         <?php endif; ?>
     </article>
+
+    <script>
+        document.querySelectorAll('[data-gallery]').forEach(function (gallery) {
+            const mainImage = gallery.querySelector('[data-gallery-main]');
+            const thumbs = Array.from(gallery.querySelectorAll('[data-gallery-thumb]'));
+            const prevButton = gallery.querySelector('[data-gallery-prev]');
+            const nextButton = gallery.querySelector('[data-gallery-next]');
+            let activeIndex = 0;
+
+            if (!mainImage || thumbs.length === 0) {
+                return;
+            }
+
+            function showImage(index) {
+                activeIndex = (index + thumbs.length) % thumbs.length;
+                const activeThumb = thumbs[activeIndex];
+                const nextSrc = activeThumb.getAttribute('data-gallery-src');
+
+                if (nextSrc) {
+                    mainImage.src = nextSrc;
+                }
+
+                thumbs.forEach(function (thumb, thumbIndex) {
+                    thumb.classList.toggle('is-active', thumbIndex === activeIndex);
+                });
+            }
+
+            thumbs.forEach(function (thumb, index) {
+                thumb.addEventListener('click', function () {
+                    showImage(index);
+                });
+            });
+
+            if (prevButton) {
+                prevButton.addEventListener('click', function () {
+                    showImage(activeIndex - 1);
+                });
+            }
+
+            if (nextButton) {
+                nextButton.addEventListener('click', function () {
+                    showImage(activeIndex + 1);
+                });
+            }
+        });
+    </script>
 <?php else: ?>
     <div class="alert alert-error">Annuncio non trovato.</div>
 <?php endif; ?>

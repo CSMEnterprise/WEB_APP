@@ -18,8 +18,8 @@ require __DIR__ . '/../layout/header.php';
             <?php foreach ($carrello as $item): ?>
                 <?php $isOwner = (int)($item['id_utente'] ?? 0) === (int)($_SESSION['user_id'] ?? 0); ?>
 
-                <div
-                    class="card clickable-card"
+                <article
+                    class="card clickable-card annuncio-card cart-item-card"
                     data-href="index.php?route=annuncio&id=<?= e($item['id_annuncio'] ?? '') ?>"
                     role="link"
                     tabindex="0">
@@ -50,7 +50,7 @@ require __DIR__ . '/../layout/header.php';
                     <?php if ($isOwner): ?>
                         <p class="muted">Non puoi acquistare un tuo annuncio.</p>
                     <?php endif; ?>
-                </div>
+                </article>
             <?php endforeach; ?>
         </div>
 

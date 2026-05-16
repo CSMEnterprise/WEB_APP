@@ -1,5 +1,8 @@
 Problemi da risolvere sito web:
-- Controllo di una mail valida (alla fine)
--regex su for registrazione account business
--gestione pagina business rimopzione wishlist , carelllo
--gestione pagina profilo e sezione business
+-MODIFICA PULSANTE wishlist E ECUORE NELLA CARD NON NEL DETTAGLIO IN WISHLIST
+-AGGIUNGERE MODIFICA ANNUNCIO
+-AGGIUNGERE ANNUNCI CONSIGLIATA NELLA PAGINA DETTAGLIO ANNUNCIO IN BASE ALL'ANNNCIO APERTO
+-CREAZIONE LOGICA DI RECUPERO CREDENZIALI
+-VERIFICA EMAIL VALIDA ALLA REGISTRAZIONE 
+-COMMENTARE TUTTE LE LINEE DI CODICE 
+-CREAZIONE PDF PER STRUTTURA E LOGICA DELLA WEB APP

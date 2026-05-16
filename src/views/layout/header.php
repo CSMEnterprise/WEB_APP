@@ -461,8 +461,91 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
         article.card h2 { font-size: 16px; font-weight: 700; margin: 0 0 2px; }
         article.card .btn, article.card .btn-secondary { margin-top: 8px; }
 
-        .annuncio-gallery { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0 18px; }
-        .annuncio-gallery img { width: 140px; height: 140px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); }
+        .annuncio-detail-gallery {
+            display: grid;
+            gap: 14px;
+            margin: 12px 0 22px;
+        }
+        .annuncio-gallery-main {
+            position: relative;
+            display: grid;
+            place-items: center;
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            min-height: 320px;
+            overflow: hidden;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,.03);
+        }
+        .annuncio-gallery-main img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        .annuncio-gallery-nav {
+            position: absolute;
+            top: 50%;
+            z-index: 2;
+            width: 46px;
+            height: 46px;
+            padding: 0;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: rgba(9,9,11,.72);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transform: translateY(-50%);
+            transition: background .2s, border-color .2s, transform .2s;
+            backdrop-filter: blur(12px);
+        }
+        .annuncio-gallery-nav:hover {
+            background: rgba(139,92,246,.88);
+            border-color: rgba(255,255,255,.24);
+            transform: translateY(-50%) scale(1.04);
+        }
+        .annuncio-gallery-nav svg {
+            width: 22px;
+            height: 22px;
+        }
+        .annuncio-gallery-prev { left: 14px; }
+        .annuncio-gallery-next { right: 14px; }
+        .annuncio-gallery-thumbs {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 2px 2px 8px;
+            scrollbar-width: thin;
+        }
+        .annuncio-gallery-thumb {
+            flex: 0 0 82px;
+            width: 82px;
+            height: 82px;
+            padding: 0;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            overflow: hidden;
+            background: var(--bg-input);
+            cursor: pointer;
+            opacity: .72;
+            transition: opacity .2s, border-color .2s, transform .2s;
+        }
+        .annuncio-gallery-thumb:hover,
+        .annuncio-gallery-thumb.is-active {
+            opacity: 1;
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+        .annuncio-gallery-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
 
         /* ── PHOTO UPLOAD ──────────────────────────────────── */
         .photo-upload-box { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 0 16px; }
@@ -473,7 +556,21 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
 
         /* ── CARRELLO ──────────────────────────────────────── */
         .cart-layout { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 20px; align-items: start; }
-        .cart-items { display: grid; gap: 16px; }
+        .cart-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+        .cart-item-card {
+            min-height: 100%;
+        }
+        .cart-item-card .annuncio-card-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            flex: 0 0 auto;
+        }
+        .cart-item-card h2 {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0 0 2px;
+        }
         .cart-summary { position: sticky; top: 88px; }
         .cart-summary-actions { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
         .cart-summary-actions .btn { text-align: center; }
@@ -528,6 +625,11 @@ if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
             .search-input-group { flex-direction: column; width: 100%; }
             .search-input-group select { border-left: none; border-top: 1px solid var(--border); max-width: 100%; width: 100%; }
             .search-form button { width: 100%; }
+            .annuncio-gallery-main { min-height: 240px; aspect-ratio: 4 / 3; }
+            .annuncio-gallery-nav { width: 40px; height: 40px; }
+            .annuncio-gallery-prev { left: 10px; }
+            .annuncio-gallery-next { right: 10px; }
+            .annuncio-gallery-thumb { flex-basis: 70px; width: 70px; height: 70px; }
         }
     </style>
 </head>
