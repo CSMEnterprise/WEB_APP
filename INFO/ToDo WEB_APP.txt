@@ -1,28 +1,5 @@
 Problemi da risolvere sito web:
-- UI di tutto(con aggiunta di simboli)
-- Regex sulla password alla registrazione ✅
-- Controllo di una mail valida (alla fine) 
-- Registrazione utente normale sistemare i campi [path: ] ✅
-- modificare attributo indirizzo registrato come array per averne di più su utente registrato 
-- scelta registrazione per utente normale o business (quindi con nuova pagina php), e rimozione registrazione dopo essersi loggati come utente registrato ✅
--creazione annuncio mettere inserimento foto
--modofica categoria e sottocategoria per la creazione annuncio
--modalità di consegna aggiustare le opzioni
--aggiustare Ui footer e header
--aggiunta propic nella registrazione
--aggiustare gestione delle foto sia annunci che propic , con uso della cartella uploads
+- Controllo di una mail valida (alla fine)
 -regex su for registrazione account business
--creazione barra di ricerca con filtri ecc ecc
--rimozione autoseganlazione dal proprio annuncio
--rimozione acquisto del proprio annuncio e aggiunta a wishlist e carrello 
--aggiustare pagina per visualizzare l'annuncio selezionato
--aggiustare pagina visualizzazione dei propri annunci
--aggiustare pagina per visualizzare annunci online filtrati subito 
--aggiustare pagina home page tipo subito
--aggiunta pagina preferiti e logica per aggiungere articoli alla wishlist preferiti
--menu a tendina su profilo header per visualizzare annunci ✅
-- Spostare la barra di ricerca sotto i menu per averla più lunga ✅
-- Scrivere finta privacy policy/termini e cookie ✅
-- Scritta nerdvault in bianco sia nella nav bar che nel footer ✅
-
-FATE PDF DI COME FUNZIONA IL SITO
+-gestione pagina business rimopzione wishlist , carelllo
+-gestione pagina profilo e sezione business
