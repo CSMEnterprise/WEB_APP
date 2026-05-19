@@ -218,6 +218,49 @@ class UtenteController
         }
     }
 
+    public function aggiornaProfiloUtente(array $data, int $idUtente): void
+    {
+        try {
+            $this->userService->aggiornaProfiloUtente($idUtente, $data);
+            header('Location: index.php?route=profilo&profilo_aggiornato=1');
+            exit;
+        } catch (Exception $e) {
+            $errore          = $e->getMessage();
+            $utente          = $this->userService->findById($idUtente);
+            $indirizziUtente = !empty($_SESSION['is_business']) ? [] : $this->userService->getIndirizziByUserId($idUtente);
+            $filtroAnnunci   = 'attivo';
+            $annunciUtente   = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
+            $titoloAnnunciProfilo = 'Annunci attivi';
+            $cronologiaPagamenti  = !empty($_SESSION['is_business']) ? [] : $this->paymentService->getCronologiaByUserId($idUtente);
+            $openProfiloEdit = true;
+            require __DIR__ . '/../views/utenti/profilo.php';
+        }
+    }
+
+    public function cambiaPassword(array $data, int $idUtente): void
+    {
+        try {
+            $this->authService->cambiaPassword(
+                $idUtente,
+                $data['password_attuale']  ?? '',
+                $data['nuova_password']    ?? '',
+                $data['password_confirm']  ?? ''
+            );
+            header('Location: index.php?route=profilo&password_aggiornata=1');
+            exit;
+        } catch (Exception $e) {
+            $errore          = $e->getMessage();
+            $utente          = $this->userService->findById($idUtente);
+            $indirizziUtente = !empty($_SESSION['is_business']) ? [] : $this->userService->getIndirizziByUserId($idUtente);
+            $filtroAnnunci   = 'attivo';
+            $annunciUtente   = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
+            $titoloAnnunciProfilo = 'Annunci attivi';
+            $cronologiaPagamenti  = !empty($_SESSION['is_business']) ? [] : $this->paymentService->getCronologiaByUserId($idUtente);
+            $openPasswordEdit = true;
+            require __DIR__ . '/../views/utenti/profilo.php';
+        }
+    }
+
     public function salvaIndirizzoSpedizione(array $data, int $idUtente): void
     {
         try {

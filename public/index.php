@@ -291,6 +291,18 @@ try {
             (new UtenteController($pdo))->aggiornaFotoProfilo($_FILES, currentUserId());
             break;
 
+        case 'profilo-update':
+            requireAuth();
+            denyAdmin();
+            (new UtenteController($pdo))->aggiornaProfiloUtente($_POST, currentUserId());
+            break;
+
+        case 'profilo-password':
+            requireAuth();
+            denyAdmin();
+            (new UtenteController($pdo))->cambiaPassword($_POST, currentUserId());
+            break;
+
         case 'profilo-indirizzo-store':
             requireAuth();
             denyAdmin();

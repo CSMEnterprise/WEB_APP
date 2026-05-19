@@ -489,6 +489,17 @@ require __DIR__ . '/../layout/header.php';
                         </div>
                     <?php endif; ?>
                 </div>
+
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+                    <button type="button" class="btn btn-secondary" onclick="toggleForm('editProfiloForm')"
+                            style="min-height:38px;padding:9px 14px;font-size:13px;border-radius:11px;">
+                        ✏️ Modifica dati
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="toggleForm('editPasswordForm')"
+                            style="min-height:38px;padding:9px 14px;font-size:13px;border-radius:11px;">
+                        🔑 Cambia password
+                    </button>
+                </div>
             </div>
 
             <div class="profile-stats" aria-label="Statistiche profilo">
@@ -505,15 +516,97 @@ require __DIR__ . '/../layout/header.php';
             </div>
         </section>
 
+        <?php
+            $openProfiloEdit  = $openProfiloEdit  ?? (!empty($_GET['profilo_aggiornato']) ? false : false);
+            $openPasswordEdit = $openPasswordEdit ?? false;
+            $profiloAggiornato   = !empty($_GET['profilo_aggiornato']);
+            $passwordAggiornata  = !empty($_GET['password_aggiornata']);
+        ?>
+
+        <?php if ($profiloAggiornato): ?>
+            <div class="alert alert-success">Profilo aggiornato con successo.</div>
+        <?php endif; ?>
+        <?php if ($passwordAggiornata): ?>
+            <div class="alert alert-success">Password aggiornata con successo.</div>
+        <?php endif; ?>
+
         <div class="profile-actions">
             <?php if (!$isBusiness): ?>
                 <button type="button" class="btn" id="toggle-indirizzo-btn" onclick="toggleIndirizzoForm()">
                     <?= $indirizziCount > 0 ? 'Aggiungi un altro indirizzo' : 'Aggiungi indirizzo di spedizione' ?>
                 </button>
             <?php endif; ?>
-
             <a class="btn btn-gold" href="index.php?route=annuncio-create">Crea annuncio</a>
             <a class="btn btn-secondary" href="index.php?route=feedback">I miei feedback</a>
+        </div>
+
+        <!-- Form modifica dati profilo -->
+        <div id="editProfiloForm" class="card profile-address-form <?= $openProfiloEdit ? '' : 'is-hidden' ?>">
+            <h2>Modifica dati personali</h2>
+            <form method="post" action="index.php?route=profilo-update">
+                <div class="profile-form-grid">
+                    <div class="profile-form-wide">
+                        <label for="edit_nome">Nome e cognome</label>
+                        <input type="text" id="edit_nome" name="nome"
+                               value="<?= e($utente['nome'] ?? '') ?>" required>
+                    </div>
+                    <div class="profile-form-wide">
+                        <label for="edit_telefono">Telefono</label>
+                        <input type="text" id="edit_telefono" name="telefono"
+                               value="<?= e($utente['telefono'] ?? '') ?>"
+                               placeholder="+39 333 1234567">
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
+                    <button type="submit" class="btn">Salva modifiche</button>
+                    <button type="button" class="btn btn-secondary" onclick="toggleForm('editProfiloForm')">Annulla</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Form cambio password -->
+        <div id="editPasswordForm" class="card profile-address-form <?= $openPasswordEdit ? '' : 'is-hidden' ?>">
+            <h2>Cambia password</h2>
+            <form method="post" action="index.php?route=profilo-password" autocomplete="off">
+                <div class="profile-form-grid">
+                    <div class="profile-form-wide">
+                        <label for="password_attuale">Password attuale</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="password_attuale" name="password_attuale"
+                                   autocomplete="current-password" required>
+                            <button class="btn btn-secondary btn-password-toggle" type="button"
+                                    onclick="togglePasswordVisibility('password_attuale', this)">Mostra</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="nuova_password">Nuova password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="nuova_password" name="nuova_password"
+                                   pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}"
+                                   title="Almeno 10 caratteri, una maiuscola e un carattere speciale."
+                                   autocomplete="new-password" required>
+                            <button class="btn btn-secondary btn-password-toggle" type="button"
+                                    onclick="togglePasswordVisibility('nuova_password', this)">Mostra</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="password_confirm">Conferma nuova password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="password_confirm" name="password_confirm"
+                                   autocomplete="new-password" required>
+                            <button class="btn btn-secondary btn-password-toggle" type="button"
+                                    onclick="togglePasswordVisibility('password_confirm', this)">Mostra</button>
+                        </div>
+                    </div>
+                </div>
+                <p class="muted" style="font-size:13px;margin-bottom:16px;">
+                    Almeno 10 caratteri, una lettera maiuscola e un carattere speciale.
+                </p>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <button type="submit" class="btn">Aggiorna password</button>
+                    <button type="button" class="btn btn-secondary" onclick="toggleForm('editPasswordForm')">Annulla</button>
+                </div>
+            </form>
         </div>
 
         <?php
@@ -792,23 +885,30 @@ require __DIR__ . '/../layout/header.php';
     </div>
 
     <script>
-        function toggleIndirizzoForm() {
-            const form = document.getElementById('indirizzoForm');
-            const trigger = document.getElementById('toggle-indirizzo-btn');
+        function toggleForm(formId, triggerEl) {
+            const form = document.getElementById(formId);
+            if (!form) return;
 
-            if (!form) {
-                return;
-            }
+            const willOpen = form.classList.contains('is-hidden');
 
-            form.classList.toggle('is-hidden');
+            // Chiudi tutti gli altri form collassabili
+            ['indirizzoForm', 'editProfiloForm', 'editPasswordForm'].forEach(function(id) {
+                const el = document.getElementById(id);
+                if (el && id !== formId) el.classList.add('is-hidden');
+            });
 
-            if (trigger) {
-                trigger.setAttribute('aria-expanded', String(!form.classList.contains('is-hidden')));
+            form.classList.toggle('is-hidden', !willOpen);
+
+            if (willOpen) {
+                setTimeout(function() { form.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
             }
         }
 
-        const propicInput = document.getElementById('propic-input');
+        function toggleIndirizzoForm() {
+            toggleForm('indirizzoForm');
+        }
 
+        const propicInput = document.getElementById('propic-input');
         if (propicInput) {
             propicInput.addEventListener('change', function () {
                 if (this.files.length > 0) {

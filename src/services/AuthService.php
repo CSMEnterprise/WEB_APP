@@ -287,6 +287,32 @@ class AuthService extends BaseService
         ")->execute([$token]);
     }
 
+    public function cambiaPassword(int $idUtente, string $passwordAttuale, string $nuovaPassword, string $conferma): void
+    {
+        if ($passwordAttuale === '' || $nuovaPassword === '' || $conferma === '') {
+            throw new ServiceException('Compila tutti i campi.');
+        }
+
+        $stmt = $this->db->prepare("SELECT password_hash FROM utente_registrato WHERE id_utente = ? LIMIT 1");
+        $stmt->execute([$idUtente]);
+        $row = $stmt->fetch();
+
+        if (!$row || !password_verify($passwordAttuale, $row['password_hash'])) {
+            throw new ServiceException('La password attuale non è corretta.');
+        }
+
+        if (!preg_match('/^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}$/', $nuovaPassword)) {
+            throw new ServiceException('La nuova password deve avere almeno 10 caratteri, una maiuscola e un carattere speciale.');
+        }
+
+        if ($nuovaPassword !== $conferma) {
+            throw new ServiceException('Le nuove password non coincidono.');
+        }
+
+        $stmt = $this->db->prepare("UPDATE utente_registrato SET password_hash = ? WHERE id_utente = ?");
+        $stmt->execute([password_hash($nuovaPassword, PASSWORD_DEFAULT), $idUtente]);
+    }
+
     public function getResetTokenUserId(string $token): int
     {
         $stmt = $this->db->prepare("

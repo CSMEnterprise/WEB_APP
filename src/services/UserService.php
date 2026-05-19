@@ -22,6 +22,33 @@ class UserService extends BaseService
         return $stmt->fetch() ?: null;
     }
 
+    public function aggiornaProfiloUtente(int $idUtente, array $data): void
+    {
+        $this->requirePositiveId($idUtente, 'Utente');
+
+        $nome     = $this->clean($data['nome']     ?? '');
+        $telefono = $this->clean($data['telefono'] ?? '');
+
+        if ($nome === '') {
+            throw new ServiceException('Il nome non può essere vuoto.');
+        }
+
+        if ($telefono !== '' && !preg_match('/^\+?[0-9 ]{8,15}$/', $telefono)) {
+            throw new ServiceException('Il telefono deve contenere 8-15 cifre e può iniziare con +.');
+        }
+
+        $stmt = $this->db->prepare("
+            UPDATE utente_registrato
+            SET nome = ?, telefono = ?
+            WHERE id_utente = ?
+        ");
+        $stmt->execute([
+            $nome,
+            $telefono !== '' ? $telefono : null,
+            $idUtente,
+        ]);
+    }
+
     public function search(string $q): array
     {
         $q = $this->clean($q);
