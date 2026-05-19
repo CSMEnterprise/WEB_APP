@@ -14,7 +14,16 @@ class CarrelloController
     public function lista(int $idUtente): void
     {
         $carrello = $this->cartService->getCarrelloUtente($idUtente);
-        $totale = $this->cartService->getTotale($idUtente);
+        $annunciRimossi = $this->cartService->getUltimiAnnunciRimossi();
+        $totale = 0.0;
+
+        foreach ($carrello as $item) {
+            $isOwner = (int)($item['id_utente'] ?? 0) === $idUtente;
+
+            if (!$isOwner && ($item['stato'] ?? '') === 'attivo') {
+                $totale += (float)($item['prezzo'] ?? 0);
+            }
+        }
 
         require __DIR__ . '/../views/carrello/lista.php';
     }

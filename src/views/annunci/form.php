@@ -13,6 +13,54 @@ require __DIR__ . '/../layout/header.php';
 require __DIR__ . '/../partials/flash.php';
 ?>
 
+<style>
+    .current-photo-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 0 0 16px;
+    }
+
+    .current-photo-item {
+        position: relative;
+        width: 82px;
+        height: 82px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--bg-input);
+    }
+
+    .current-photo-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .current-photo-delete {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        border: 0;
+        background: rgba(9, 9, 11, .72);
+        color: #fff;
+        font-size: 30px;
+        font-weight: 900;
+        line-height: 1;
+        cursor: pointer;
+        transition: opacity .18s ease;
+    }
+
+    .current-photo-item:hover .current-photo-delete,
+    .current-photo-delete:focus {
+        opacity: 1;
+    }
+</style>
+
 <div class="card">
     <h1><?= e($pageTitle) ?></h1>
 
@@ -54,10 +102,18 @@ require __DIR__ . '/../partials/flash.php';
 
         <?php if ($isEdit && !empty($annuncio['immagini'])): ?>
             <label>Foto attuali</label>
-            <div class="photo-preview">
+            <div class="current-photo-list">
                 <?php foreach ($annuncio['immagini'] as $immagine): ?>
-                    <div class="photo-preview-item">
+                    <div class="current-photo-item">
                         <img src="<?= e($immagine['url'] ?? '') ?>" alt="Foto annuncio">
+                        <button
+                            class="current-photo-delete"
+                            type="submit"
+                            form="delete-image-<?= e($immagine['id_immagine'] ?? '') ?>"
+                            aria-label="Rimuovi foto"
+                            title="Rimuovi foto">
+                            &times;
+                        </button>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -88,6 +144,19 @@ require __DIR__ . '/../partials/flash.php';
 
         <button class="btn" type="submit"><?= e($submitLabel) ?></button>
     </form>
+
+    <?php if ($isEdit && !empty($annuncio['immagini'])): ?>
+        <?php foreach ($annuncio['immagini'] as $immagine): ?>
+            <form
+                id="delete-image-<?= e($immagine['id_immagine'] ?? '') ?>"
+                method="post"
+                action="index.php"
+                style="display:none;">
+                <input type="hidden" name="route" value="annuncio-image-delete">
+                <input type="hidden" name="id_immagine" value="<?= e($immagine['id_immagine'] ?? '') ?>">
+            </form>
+        <?php endforeach; ?>
+    <?php endif; ?>
 </div>
 
 <script>

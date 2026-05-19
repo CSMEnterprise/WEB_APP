@@ -392,6 +392,12 @@ try {
             (new AnnuncioController($pdo))->aggiorna($_POST, currentUserId(), $_FILES);
             break;
 
+        case 'annuncio-image-delete':
+            requireAuth();
+            denyAdmin();
+            (new AnnuncioController($pdo))->eliminaImmagine($_POST, currentUserId());
+            break;
+
         case 'annuncio-delete':
             requireAuth();
             denyAdmin();

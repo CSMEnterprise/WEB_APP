@@ -365,6 +365,39 @@ class AnnuncioService extends BaseService
         }
     }
 
+    public function eliminaImmagine(int $idImmagine, int $idUtente): int
+    {
+        $this->requirePositiveId($idImmagine, 'Immagine');
+        $this->requirePositiveId($idUtente, 'Utente');
+
+        $stmt = $this->db->prepare("
+            SELECT i.id_immagine, i.id_annuncio, i.url
+            FROM immagine i
+            JOIN annuncio a ON a.id_annuncio = i.id_annuncio
+            WHERE i.id_immagine = ?
+              AND a.id_utente = ?
+              AND a.stato = 'attivo'
+            LIMIT 1
+        ");
+        $stmt->execute([$idImmagine, $idUtente]);
+        $immagine = $stmt->fetch();
+
+        if (!$immagine) {
+            throw new ServiceException('Non puoi rimuovere questa foto.');
+        }
+
+        $stmt = $this->db->prepare("DELETE FROM immagine WHERE id_immagine = ?");
+        $stmt->execute([$idImmagine]);
+
+        if ($stmt->rowCount() === 0) {
+            throw new ServiceException('Foto non rimossa.');
+        }
+
+        $this->eliminaFileImmagine((string)($immagine['url'] ?? ''));
+
+        return (int)$immagine['id_annuncio'];
+    }
+
     public function eliminaDaAdmin(int $idAnnuncio): void
     {
         $this->requirePositiveId($idAnnuncio, 'Annuncio');
@@ -543,6 +576,22 @@ class AnnuncioService extends BaseService
         $stmt->execute([$idAnnuncio]);
 
         return $stmt->fetchAll();
+    }
+
+    private function eliminaFileImmagine(string $url): void
+    {
+        $url = trim($url);
+
+        if ($url === '' || str_contains($url, '..')) {
+            return;
+        }
+
+        $path = realpath(__DIR__ . '/../../public/' . ltrim(str_replace('\\', '/', $url), '/'));
+        $publicRoot = realpath(__DIR__ . '/../../public');
+
+        if ($path && $publicRoot && str_starts_with($path, $publicRoot) && is_file($path)) {
+            @unlink($path);
+        }
     }
 
     private function salvaImmaginiAnnuncio(int $idAnnuncio, array $files): void

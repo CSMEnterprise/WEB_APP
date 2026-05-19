@@ -125,6 +125,19 @@ class AnnuncioController
         }
     }
 
+    public function eliminaImmagine(array $data, int $idUtente): void
+    {
+        try {
+            $idAnnuncio = $this->annuncioService->eliminaImmagine((int)($data['id_immagine'] ?? 0), $idUtente);
+            header('Location: index.php?route=annuncio-edit&id=' . $idAnnuncio);
+            exit;
+        } catch (Exception $e) {
+            http_response_code(403);
+            $errore = $e->getMessage();
+            require __DIR__ . '/../views/errors/400.php';
+        }
+    }
+
     public function elimina(int $idAnnuncio, int $idUtente): void
     {
         try {

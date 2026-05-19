@@ -5,6 +5,17 @@ require __DIR__ . '/../layout/header.php';
 
 <h1>Carrello</h1>
 
+<?php if (!empty($annunciRimossi)): ?>
+    <div class="alert alert-error">
+        <?php if (count($annunciRimossi) === 1): ?>
+            <?php $annuncioRimosso = $annunciRimossi[0]; ?>
+            L'articolo "<?= e($annuncioRimosso['titolo'] ?? 'selezionato') ?>" non è più disponibile perché è stato venduto, quindi è stato rimosso dal carrello.
+        <?php else: ?>
+            Alcuni articoli non sono più disponibili perché sono stati venduti, quindi sono stati rimossi dal carrello.
+        <?php endif; ?>
+    </div>
+<?php endif; ?>
+
 <?php if (!empty($carrello)): ?>
     <?php
         $purchasableItems = array_filter($carrello, static function ($item) {

@@ -2,15 +2,18 @@
 
 require_once __DIR__ . '/BaseService.php';
 require_once __DIR__ . '/AnnuncioService.php';
+require_once __DIR__ . '/CartService.php';
 
 class PaymentService extends BaseService
 {
     private AnnuncioService $annuncioService;
+    private CartService $cartService;
 
     public function __construct(PDO $db)
     {
         parent::__construct($db);
         $this->annuncioService = new AnnuncioService($db);
+        $this->cartService = new CartService($db);
     }
 
     public function preparaPagamento(int $idUtente, int $idAnnuncio): array
@@ -102,12 +105,7 @@ class PaymentService extends BaseService
                 throw new ServiceException('Annuncio non acquistabile.');
             }
 
-            $stmt = $this->db->prepare("
-                DELETE e
-                FROM elemento_carrello e
-                WHERE e.id_annuncio = ?
-            ");
-            $stmt->execute([$idAnnuncio]);
+            $this->cartService->rimuoviAnnuncioDaTuttiICarrelli($idAnnuncio);
 
             $stmt = $this->db->prepare("
                 DELETE FROM preferito
@@ -220,8 +218,7 @@ class PaymentService extends BaseService
                     throw new ServiceException('Uno o più articoli non sono più acquistabili.');
                 }
 
-                $stmt = $this->db->prepare("DELETE FROM elemento_carrello WHERE id_annuncio = ?");
-                $stmt->execute([$idAnnuncio]);
+                $this->cartService->rimuoviAnnuncioDaTuttiICarrelli($idAnnuncio);
 
                 $stmt = $this->db->prepare("DELETE FROM preferito WHERE id_annuncio = ?");
                 $stmt->execute([$idAnnuncio]);

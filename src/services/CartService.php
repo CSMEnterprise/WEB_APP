@@ -6,6 +6,7 @@ require_once __DIR__ . '/AnnuncioService.php';
 class CartService extends BaseService
 {
     private AnnuncioService $annuncioService;
+    private array $ultimiAnnunciRimossi = [];
 
     public function __construct(PDO $db)
     {
@@ -76,6 +77,11 @@ class CartService extends BaseService
         $stmt->execute([$idCarrello]);
 
         return $stmt->fetchAll();
+    }
+
+    public function getUltimiAnnunciRimossi(): array
+    {
+        return $this->ultimiAnnunciRimossi;
     }
 
     public function getTotale(int $idUtente): float
@@ -164,8 +170,33 @@ class CartService extends BaseService
         $stmt->execute([$idCarrello, $idAnnuncio]);
     }
 
+    public function rimuoviAnnuncioDaTuttiICarrelli(int $idAnnuncio): void
+    {
+        $this->requirePositiveId($idAnnuncio, 'Annuncio');
+
+        $stmt = $this->db->prepare("
+            DELETE FROM elemento_carrello
+            WHERE id_annuncio = ?
+        ");
+        $stmt->execute([$idAnnuncio]);
+    }
+
     private function rimuoviAnnunciNonAcquistabili(int $idCarrello): void
     {
+        $stmt = $this->db->prepare("
+            SELECT a.id_annuncio, a.titolo, a.stato
+            FROM elemento_carrello e
+            JOIN annuncio a ON a.id_annuncio = e.id_annuncio
+            WHERE e.id_carrello = ?
+              AND a.stato <> 'attivo'
+        ");
+        $stmt->execute([$idCarrello]);
+        $this->ultimiAnnunciRimossi = $stmt->fetchAll();
+
+        if (empty($this->ultimiAnnunciRimossi)) {
+            return;
+        }
+
         $stmt = $this->db->prepare("
             DELETE e
             FROM elemento_carrello e
