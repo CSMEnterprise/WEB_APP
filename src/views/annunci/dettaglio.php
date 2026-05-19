@@ -108,7 +108,10 @@ require __DIR__ . '/../layout/header.php';
                 <a class="btn btn-secondary" href="index.php?route=segnalazione-create&id_annuncio=<?= e($annuncio['id_annuncio'] ?? '') ?>">Segnala</a>
             <?php elseif ($isOwner): ?>
                 <div class="alert alert-success">Questo è un tuo annuncio: carrello e acquisto sono disattivati.</div>
-                <a class="btn btn-danger" href="index.php?route=annuncio-delete&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Elimina</a>
+                <?php if (($annuncio['stato'] ?? '') === 'attivo'): ?>
+                    <a class="btn" href="index.php?route=annuncio-edit&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Modifica</a>
+                    <a class="btn btn-danger" href="index.php?route=annuncio-delete&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Elimina</a>
+                <?php endif; ?>
             <?php else: ?>
                 <?php $isInCart = in_array((int)($annuncio['id_annuncio'] ?? 0), $carrelloIds ?? [], true); ?>
                 <?php if ($isInCart): ?>

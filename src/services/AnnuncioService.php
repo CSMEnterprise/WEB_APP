@@ -225,9 +225,21 @@ class AnnuncioService extends BaseService
         $idCategoria = (int) ($data['id_categoria'] ?? 0);
         $statoConservazione = $this->clean($data['stato_conservazione'] ?? '');
         $prezzo = (float) ($data['prezzo'] ?? 0);
+        $statiConservazioneValidi = [
+            'Nuovo',
+            'Usato come nuovo',
+            'Ottimo',
+            'Buono',
+            'Discreto',
+            'Scarso',
+        ];
 
         if ($titolo === '' || $idCategoria <= 0 || $statoConservazione === '' || $prezzo <= 0) {
             throw new ServiceException('Compila tutti i campi obbligatori dell’annuncio.');
+        }
+
+        if (!in_array($statoConservazione, $statiConservazioneValidi, true)) {
+            throw new ServiceException('Stato di conservazione non valido.');
         }
 
         try {
@@ -259,6 +271,76 @@ class AnnuncioService extends BaseService
             $this->db->commit();
 
             return $idAnnuncio;
+        } catch (Exception $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e;
+        }
+    }
+
+    public function aggiorna(int $idAnnuncio, int $idUtente, array $data, array $files = []): void
+    {
+        $this->requirePositiveId($idAnnuncio, 'Annuncio');
+        $this->requirePositiveId($idUtente, 'Utente');
+
+        $annuncio = $this->findById($idAnnuncio);
+        if (!$annuncio || (int)($annuncio['id_utente'] ?? 0) !== $idUtente) {
+            throw new ServiceException('Non puoi modificare questo annuncio.');
+        }
+
+        if (($annuncio['stato'] ?? '') !== 'attivo') {
+            throw new ServiceException('Puoi modificare solo annunci attivi.');
+        }
+
+        $titolo = $this->clean($data['titolo'] ?? '');
+        $descrizione = $this->clean($data['descrizione'] ?? '');
+        $idCategoria = (int) ($data['id_categoria'] ?? 0);
+        $statoConservazione = $this->clean($data['stato_conservazione'] ?? '');
+        $prezzo = (float) ($data['prezzo'] ?? 0);
+        $statiConservazioneValidi = [
+            'Nuovo',
+            'Usato come nuovo',
+            'Ottimo',
+            'Buono',
+            'Discreto',
+            'Scarso',
+        ];
+
+        if ($titolo === '' || $idCategoria <= 0 || $statoConservazione === '' || $prezzo <= 0) {
+            throw new ServiceException('Compila tutti i campi obbligatori dell’annuncio.');
+        }
+
+        if (!in_array($statoConservazione, $statiConservazioneValidi, true)) {
+            throw new ServiceException('Stato di conservazione non valido.');
+        }
+
+        try {
+            $this->db->beginTransaction();
+
+            $stmt = $this->db->prepare("
+                UPDATE annuncio
+                SET id_categoria = ?,
+                    titolo = ?,
+                    descrizione = ?,
+                    stato_conservazione = ?,
+                    prezzo = ?
+                WHERE id_annuncio = ? AND id_utente = ? AND stato = 'attivo'
+            ");
+
+            $stmt->execute([
+                $idCategoria,
+                $titolo,
+                $descrizione !== '' ? $descrizione : null,
+                $statoConservazione,
+                $prezzo,
+                $idAnnuncio,
+                $idUtente,
+            ]);
+
+            $this->salvaImmaginiAnnuncio($idAnnuncio, $files);
+
+            $this->db->commit();
         } catch (Exception $e) {
             if ($this->db->inTransaction()) {
                 $this->db->rollBack();
@@ -306,28 +388,31 @@ class AnnuncioService extends BaseService
         $stmt->execute([$idAnnuncio]);
     }
 
-    public function searchAnnunci(string $keywords, int $idCategoria = 0): array
+    public function searchAnnunci(
+        string $keywords,
+        int $idCategoria = 0,
+        ?float $prezzoMin = null,
+        ?float $prezzoMax = null,
+        string $ordinamento = 'data_desc',
+        ?int $limit = null,
+        int $offset = 0,
+        ?int $excludeUserId = null
+    ): array
     {
-        $keywords = $this->clean($keywords);
+        [$whereSql, $params] = $this->buildSearchWhere($keywords, $idCategoria, $prezzoMin, $prezzoMax, $excludeUserId);
+        $orderBy = match ($ordinamento) {
+            'prezzo_asc' => 'a.prezzo ASC, a.data_creazione DESC',
+            'prezzo_desc' => 'a.prezzo DESC, a.data_creazione DESC',
+            'data_asc' => 'a.data_creazione ASC',
+            default => 'a.data_creazione DESC',
+        };
 
-        $where = ["a.stato = 'attivo'"];
-        $params = [];
-
-        if ($keywords !== '') {
-            $where[] = "(
-                a.titolo LIKE CONCAT('%', ?, '%')
-                OR a.descrizione LIKE CONCAT('%', ?, '%')
-            )";
-            $params[] = $keywords;
-            $params[] = $keywords;
+        $limitSql = '';
+        if ($limit !== null) {
+            $limit = max(1, min($limit, 60));
+            $offset = max(0, $offset);
+            $limitSql = " LIMIT {$limit} OFFSET {$offset}";
         }
-
-        if ($idCategoria > 0) {
-            $where[] = 'a.id_categoria = ?';
-            $params[] = $idCategoria;
-        }
-
-        $whereSql = implode(' AND ', $where);
 
         $stmt = $this->db->prepare("
             SELECT
@@ -348,12 +433,65 @@ class AnnuncioService extends BaseService
             LEFT JOIN utente_registrato u ON u.id_utente = a.id_utente
             LEFT JOIN account_business ab ON ab.id_utente = a.id_utente
             WHERE {$whereSql}
-            ORDER BY a.data_creazione DESC
+            ORDER BY {$orderBy}
+            {$limitSql}
         ");
 
         $stmt->execute($params);
 
         return $stmt->fetchAll();
+    }
+
+    public function countSearchAnnunci(string $keywords, int $idCategoria = 0, ?float $prezzoMin = null, ?float $prezzoMax = null, ?int $excludeUserId = null): int
+    {
+        [$whereSql, $params] = $this->buildSearchWhere($keywords, $idCategoria, $prezzoMin, $prezzoMax, $excludeUserId);
+
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*)
+            FROM annuncio a
+            WHERE {$whereSql}
+        ");
+        $stmt->execute($params);
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    private function buildSearchWhere(string $keywords, int $idCategoria = 0, ?float $prezzoMin = null, ?float $prezzoMax = null, ?int $excludeUserId = null): array
+    {
+        $keywords = $this->clean($keywords);
+        $where = ["a.stato = 'attivo'"];
+        $params = [];
+
+        if ($keywords !== '') {
+            $where[] = "(
+                a.titolo LIKE CONCAT('%', ?, '%')
+                OR a.descrizione LIKE CONCAT('%', ?, '%')
+            )";
+            $params[] = $keywords;
+            $params[] = $keywords;
+        }
+
+        if ($idCategoria > 0) {
+            $where[] = 'a.id_categoria = ?';
+            $params[] = $idCategoria;
+        }
+
+        if ($prezzoMin !== null && $prezzoMin >= 0) {
+            $where[] = 'a.prezzo >= ?';
+            $params[] = $prezzoMin;
+        }
+
+        if ($prezzoMax !== null && $prezzoMax >= 0) {
+            $where[] = 'a.prezzo <= ?';
+            $params[] = $prezzoMax;
+        }
+
+        if ($excludeUserId !== null && $excludeUserId > 0) {
+            $where[] = '(a.id_utente IS NULL OR a.id_utente <> ?)';
+            $params[] = $excludeUserId;
+        }
+
+        return [implode(' AND ', $where), $params];
     }
 
     private function getCategorieInteresseUtente(int $idUtente): array
@@ -439,7 +577,15 @@ class AnnuncioService extends BaseService
             VALUES (?, ?, ?)
         ");
 
-        $ordine = 0;
+        $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM immagine WHERE id_annuncio = ?");
+        $stmtCount->execute([$idAnnuncio]);
+        $immaginiEsistenti = (int) $stmtCount->fetchColumn();
+
+        if ($immaginiEsistenti >= $maxFile) {
+            return;
+        }
+
+        $ordine = $immaginiEsistenti;
         $finfo = new finfo(FILEINFO_MIME_TYPE);
 
         foreach ($nomi as $index => $nomeOriginale) {

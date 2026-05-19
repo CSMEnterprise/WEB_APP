@@ -1,25 +1,40 @@
 <?php
-$pageTitle = 'Crea annuncio';
+$isEdit = !empty($isEdit);
+$annuncio = $annuncio ?? [];
+$pageTitle = $isEdit ? 'Modifica annuncio' : 'Crea annuncio';
+$formRoute = $isEdit ? 'annuncio-update' : 'annuncio-store';
+$submitLabel = $isEdit ? 'Salva modifiche' : 'Pubblica';
+$titoloValue = $_POST['titolo'] ?? ($annuncio['titolo'] ?? '');
+$descrizioneValue = $_POST['descrizione'] ?? ($annuncio['descrizione'] ?? '');
+$categoriaValue = (int)($_POST['id_categoria'] ?? ($annuncio['id_categoria'] ?? 0));
+$statoValue = $_POST['stato_conservazione'] ?? ($annuncio['stato_conservazione'] ?? 'Nuovo');
+$prezzoValue = $_POST['prezzo'] ?? ($annuncio['prezzo'] ?? '');
 require __DIR__ . '/../layout/header.php';
 require __DIR__ . '/../partials/flash.php';
 ?>
 
 <div class="card">
-    <h1>Crea annuncio</h1>
+    <h1><?= e($pageTitle) ?></h1>
 
     <form method="post" action="index.php" enctype="multipart/form-data">
-        <input type="hidden" name="route" value="annuncio-store">
+        <input type="hidden" name="route" value="<?= e($formRoute) ?>">
+        <?php if ($isEdit): ?>
+            <input type="hidden" name="id_annuncio" value="<?= e($annuncio['id_annuncio'] ?? '') ?>">
+        <?php endif; ?>
+
         <label for="titolo">Titolo</label>
-        <input type="text" id="titolo" name="titolo" required>
+        <input type="text" id="titolo" name="titolo" value="<?= e($titoloValue) ?>" required>
 
         <label for="descrizione">Descrizione</label>
-        <textarea id="descrizione" name="descrizione" required></textarea>
+        <textarea id="descrizione" name="descrizione" required><?= e($descrizioneValue) ?></textarea>
 
         <label for="id_categoria">Categoria</label>
         <select id="id_categoria" name="id_categoria" required>
             <option value="">Seleziona categoria</option>
             <?php foreach (($categorie ?? []) as $categoria): ?>
-                <option value="<?= e($categoria['id_categoria'] ?? '') ?>">
+                <option
+                    value="<?= e($categoria['id_categoria'] ?? '') ?>"
+                    <?= $categoriaValue === (int)($categoria['id_categoria'] ?? 0) ? 'selected' : '' ?>>
                     <?= e($categoria['nome'] ?? '') ?>
                 </option>
             <?php endforeach; ?>
@@ -27,16 +42,26 @@ require __DIR__ . '/../partials/flash.php';
 
         <label for="stato_conservazione">Stato conservazione</label>
         <select id="stato_conservazione" name="stato_conservazione" required>
-            <option value="Nuovo">Nuovo</option>
-            <option value="Usato come nuovo">Usato come nuovo</option>
-            <option value="Ottimo">Ottimo</option>
-            <option value="Buono">Buono</option>
-            <option value="Discreto">Discreto</option>
-            <option value="Scarso">Scarso</option>
+            <?php foreach (['Nuovo', 'Usato come nuovo', 'Ottimo', 'Buono', 'Discreto', 'Scarso'] as $stato): ?>
+                <option value="<?= e($stato) ?>" <?= $statoValue === $stato ? 'selected' : '' ?>>
+                    <?= e($stato) ?>
+                </option>
+            <?php endforeach; ?>
         </select>
 
         <label for="prezzo">Prezzo</label>
-        <input type="number" id="prezzo" name="prezzo" min="0.01" step="0.01" required>
+        <input type="number" id="prezzo" name="prezzo" min="0.01" step="0.01" value="<?= e($prezzoValue) ?>" required>
+
+        <?php if ($isEdit && !empty($annuncio['immagini'])): ?>
+            <label>Foto attuali</label>
+            <div class="photo-preview">
+                <?php foreach ($annuncio['immagini'] as $immagine): ?>
+                    <div class="photo-preview-item">
+                        <img src="<?= e($immagine['url'] ?? '') ?>" alt="Foto annuncio">
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
 
         <label>Foto annuncio</label>
         <div class="photo-upload-box">
@@ -44,6 +69,7 @@ require __DIR__ . '/../partials/flash.php';
                 type="file"
                 id="immagini"
                 name="immagini[]"
+                data-preview="photo-preview"
                 accept="image/jpeg,image/png,image/webp"
                 multiple
                 hidden
@@ -53,12 +79,14 @@ require __DIR__ . '/../partials/flash.php';
                 Scegli foto
             </label>
 
-            <span class="muted">Massimo 5 foto, formato JPG, PNG o WEBP.</span>
+            <span class="muted">
+                <?= $isEdit ? 'Puoi aggiungere nuove foto. Massimo 5 foto totali salvate per invio.' : 'Massimo 5 foto, formato JPG, PNG o WEBP.' ?>
+            </span>
         </div>
 
         <div id="photo-preview" class="photo-preview"></div>
 
-        <button class="btn" type="submit">Pubblica</button>
+        <button class="btn" type="submit"><?= e($submitLabel) ?></button>
     </form>
 </div>
 

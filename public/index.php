@@ -136,22 +136,46 @@ try {
             $homeAnnuncioService = new AnnuncioService($pdo);
             $q          = trim($_GET['q'] ?? '');
             $idCategoria = (int) ($_GET['id_categoria'] ?? 0);
+            $prezzoMin = isset($_GET['prezzo_min']) && $_GET['prezzo_min'] !== '' ? max(0, (float) $_GET['prezzo_min']) : null;
+            $prezzoMax = isset($_GET['prezzo_max']) && $_GET['prezzo_max'] !== '' ? max(0, (float) $_GET['prezzo_max']) : null;
+            $ordinamento = (string) ($_GET['ordinamento'] ?? 'data_desc');
+            $ordinamentiValidi = ['data_desc', 'data_asc', 'prezzo_asc', 'prezzo_desc'];
+            if (!in_array($ordinamento, $ordinamentiValidi, true)) {
+                $ordinamento = 'data_desc';
+            }
+            if ($prezzoMin !== null && $prezzoMax !== null && $prezzoMin > $prezzoMax) {
+                [$prezzoMin, $prezzoMax] = [$prezzoMax, $prezzoMin];
+            }
+            $hasFiltriAvanzati = $prezzoMin !== null || $prezzoMax !== null || $ordinamento !== 'data_desc';
+            $annunciPerPagina = 12;
+            $paginaCorrente = max(1, (int) ($_GET['page'] ?? 1));
+            $offsetAnnunci = ($paginaCorrente - 1) * $annunciPerPagina;
             $isRegularUser = !empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business']);
+            $excludeHomeUserId = $isRegularUser ? currentUserId() : null;
             $wishlistIds = [];
             $carrelloIds = [];
             $utenti      = [];
             $categorie   = (new CategoryService($pdo))->getAll();
 
-            if ($q !== '' || $idCategoria > 0) {
+            if ($q !== '' || $idCategoria > 0 || $hasFiltriAvanzati) {
                 // modalità ricerca
-                $homeAnnunci       = $homeAnnuncioService->searchAnnunci($q, $idCategoria);
+                $totaleAnnunci     = $homeAnnuncioService->countSearchAnnunci($q, $idCategoria, $prezzoMin, $prezzoMax, $excludeHomeUserId);
+                $totalePagine      = max(1, (int) ceil($totaleAnnunci / $annunciPerPagina));
+                if ($paginaCorrente > $totalePagine) {
+                    $paginaCorrente = $totalePagine;
+                    $offsetAnnunci = ($paginaCorrente - 1) * $annunciPerPagina;
+                }
+                $homeAnnunci       = $homeAnnuncioService->searchAnnunci($q, $idCategoria, $prezzoMin, $prezzoMax, $ordinamento, $annunciPerPagina, $offsetAnnunci, $excludeHomeUserId);
                 $utenti            = $q !== '' ? (new UserService($pdo))->search($q) : [];
                 $homeTitoloAnnunci = $q !== '' ? 'Risultati per "' . htmlspecialchars($q, ENT_QUOTES, 'UTF-8') . '"' : 'Risultati ricerca';
-            } elseif ($isRegularUser) {
-                $homeAnnunci       = $homeAnnuncioService->getAnnunciPerInteressiUtente(currentUserId());
-                $homeTitoloAnnunci = 'Annunci scelti per te';
             } else {
-                $homeAnnunci       = $homeAnnuncioService->getAnnunciCasuali();
+                $totaleAnnunci     = $homeAnnuncioService->countSearchAnnunci('', 0, null, null, $excludeHomeUserId);
+                $totalePagine      = max(1, (int) ceil($totaleAnnunci / $annunciPerPagina));
+                if ($paginaCorrente > $totalePagine) {
+                    $paginaCorrente = $totalePagine;
+                    $offsetAnnunci = ($paginaCorrente - 1) * $annunciPerPagina;
+                }
+                $homeAnnunci       = $homeAnnuncioService->searchAnnunci('', 0, null, null, 'data_desc', $annunciPerPagina, $offsetAnnunci, $excludeHomeUserId);
                 $homeTitoloAnnunci = 'Annunci in evidenza';
             }
 
@@ -354,6 +378,18 @@ try {
             requireAuth();
             denyAdmin();
             (new AnnuncioController($pdo))->crea($_POST, currentUserId(), $_FILES);
+            break;
+
+        case 'annuncio-edit':
+            requireAuth();
+            denyAdmin();
+            (new AnnuncioController($pdo))->formModifica((int) ($_GET['id'] ?? 0), currentUserId());
+            break;
+
+        case 'annuncio-update':
+            requireAuth();
+            denyAdmin();
+            (new AnnuncioController($pdo))->aggiorna($_POST, currentUserId(), $_FILES);
             break;
 
         case 'annuncio-delete':

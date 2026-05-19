@@ -795,6 +795,7 @@ require __DIR__ . '/../layout/header.php';
                                 <a class="btn" href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Dettagli</a>
 
                                 <?php if ($isAttivi): ?>
+                                    <a class="btn btn-secondary" href="index.php?route=annuncio-edit&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Modifica</a>
                                     <a class="btn btn-danger" href="index.php?route=annuncio-delete&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Elimina</a>
                                 <?php endif; ?>
                             </div>

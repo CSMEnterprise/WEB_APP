@@ -76,6 +76,25 @@ class AnnuncioController
         require __DIR__ . '/../views/annunci/form.php';
     }
 
+    public function formModifica(int $idAnnuncio, int $idUtente): void
+    {
+        try {
+            $annuncio = $this->annuncioService->findById($idAnnuncio);
+
+            if (!$annuncio || (int)($annuncio['id_utente'] ?? 0) !== $idUtente || ($annuncio['stato'] ?? '') !== 'attivo') {
+                throw new ServiceException('Non puoi modificare questo annuncio.');
+            }
+
+            $categorie = $this->categoryService->getAll();
+            $isEdit = true;
+            require __DIR__ . '/../views/annunci/form.php';
+        } catch (Exception $e) {
+            http_response_code(403);
+            $errore = $e->getMessage();
+            require __DIR__ . '/../views/errors/400.php';
+        }
+    }
+
     public function crea(array $data, int $idUtente, array $files = []): void
     {
         try {
@@ -85,6 +104,23 @@ class AnnuncioController
         } catch (Exception $e) {
             $errore = $e->getMessage();
             $categorie = $this->categoryService->getAll();
+            require __DIR__ . '/../views/annunci/form.php';
+        }
+    }
+
+    public function aggiorna(array $data, int $idUtente, array $files = []): void
+    {
+        $idAnnuncio = (int)($data['id_annuncio'] ?? 0);
+
+        try {
+            $this->annuncioService->aggiorna($idAnnuncio, $idUtente, $data, $files);
+            header('Location: index.php?route=annuncio&id=' . $idAnnuncio);
+            exit;
+        } catch (Exception $e) {
+            $errore = $e->getMessage();
+            $categorie = $this->categoryService->getAll();
+            $annuncio = $idAnnuncio > 0 ? ($this->annuncioService->findById($idAnnuncio) ?: $data) : $data;
+            $isEdit = true;
             require __DIR__ . '/../views/annunci/form.php';
         }
     }
