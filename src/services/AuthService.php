@@ -120,7 +120,14 @@ class AuthService extends BaseService
                 $scadenza,
             ]);
         } catch (PDOException $e) {
-            throw new ServiceException('Email o username già utilizzati.');
+            $msg = $e->getMessage();
+            if (str_contains($msg, "'email'") || str_contains($msg, 'email')) {
+                throw new ServiceException('Questa email è già registrata.');
+            }
+            if (str_contains($msg, "'username'") || str_contains($msg, 'username')) {
+                throw new ServiceException('Questo username è già in uso. Scegline un altro.');
+            }
+            throw new ServiceException('Registrazione non riuscita. Riprova.');
         }
 
         $idUtente = $this->lastInsertId();

@@ -303,11 +303,7 @@ class UtenteController
             $mail = new MailService();
             $this->authService->richiestaResetPassword($data['email'] ?? '', $mail);
         } catch (Exception $e) {
-            // DEBUG TEMPORANEO — rimuovere prima della produzione
-            error_log('[NerdVault] Reset password error: ' . $e->getMessage() . ' | ' . $e->getFile() . ':' . $e->getLine());
-            $errore = '[DEBUG] ' . $e->getMessage();
-            require __DIR__ . '/../views/utenti/recupero_password.php';
-            return;
+            // Silenziamo l'errore per non rivelare se l'email esiste
         }
         // Mostriamo sempre lo stesso messaggio di conferma
         $successo = 'Se l\'indirizzo è associato a un account, riceverai un\'email con le istruzioni.';
