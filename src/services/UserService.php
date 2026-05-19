@@ -260,4 +260,66 @@ class UserService extends BaseService
             throw new ServiceException('Impossibile impostare l indirizzo predefinito.');
         }
     }
+
+    public function modificaIndirizzo(int $idIndirizzo, int $idUtente, array $data): void
+    {
+        $this->requirePositiveId($idIndirizzo, 'Indirizzo');
+        $this->requirePositiveId($idUtente, 'Utente');
+
+        if (!$this->findIndirizzoByIdForUser($idIndirizzo, $idUtente)) {
+            throw new ServiceException('Indirizzo non trovato.');
+        }
+
+        $via       = $this->clean($data['via']       ?? '');
+        $numero    = $this->clean($data['numero']    ?? '');
+        $cap       = $this->clean($data['cap']       ?? '');
+        $citta     = $this->clean($data['citta']     ?? '');
+        $provincia = $this->clean($data['provincia'] ?? '');
+        $paese     = $this->clean($data['paese']     ?? 'Italia');
+
+        if ($via === '' || $citta === '') {
+            throw new ServiceException('Via e città sono obbligatori.');
+        }
+
+        $stmt = $this->db->prepare("
+            UPDATE indirizzi
+            SET via = ?, numero = ?, cap = ?, citta = ?, provincia = ?, paese = ?
+            WHERE id_indirizzo = ? AND id_utente = ?
+        ");
+        $stmt->execute([
+            $via,
+            $numero    !== '' ? $numero    : null,
+            $cap       !== '' ? $cap       : null,
+            $citta,
+            $provincia !== '' ? $provincia : null,
+            $paese,
+            $idIndirizzo,
+            $idUtente,
+        ]);
+    }
+
+    public function eliminaIndirizzo(int $idIndirizzo, int $idUtente): void
+    {
+        $this->requirePositiveId($idIndirizzo, 'Indirizzo');
+        $this->requirePositiveId($idUtente, 'Utente');
+
+        $indirizzo = $this->findIndirizzoByIdForUser($idIndirizzo, $idUtente);
+        if (!$indirizzo) {
+            throw new ServiceException('Indirizzo non trovato.');
+        }
+
+        $stmt = $this->db->prepare("DELETE FROM indirizzi WHERE id_indirizzo = ? AND id_utente = ?");
+        $stmt->execute([$idIndirizzo, $idUtente]);
+
+        // Se era predefinito, imposta come predefinito il più recente rimasto
+        if (!empty($indirizzo['predefinito'])) {
+            $stmt = $this->db->prepare("
+                UPDATE indirizzi SET predefinito = 1
+                WHERE id_utente = ?
+                ORDER BY id_indirizzo DESC
+                LIMIT 1
+            ");
+            $stmt->execute([$idUtente]);
+        }
+    }
 }

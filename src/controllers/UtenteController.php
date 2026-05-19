@@ -237,6 +237,55 @@ class UtenteController
         }
     }
 
+    public function showModificaIndirizzo(int $idIndirizzo, int $idUtente): void
+    {
+        $editingIndirizzo = $this->userService->findIndirizzoByIdForUser($idIndirizzo, $idUtente);
+        if (!$editingIndirizzo) {
+            header('Location: index.php?route=profilo');
+            exit;
+        }
+
+        $utente          = $this->userService->findById($idUtente);
+        $indirizziUtente = $this->userService->getIndirizziByUserId($idUtente);
+        $filtroAnnunci   = 'attivo';
+        $annunciUtente   = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
+        $titoloAnnunciProfilo = 'Annunci attivi';
+        $cronologiaPagamenti  = $this->paymentService->getCronologiaByUserId($idUtente);
+
+        require __DIR__ . '/../views/utenti/profilo.php';
+    }
+
+    public function aggiornaIndirizzo(array $data, int $idUtente): void
+    {
+        $idIndirizzo = (int) ($data['id_indirizzo'] ?? 0);
+        try {
+            $this->userService->modificaIndirizzo($idIndirizzo, $idUtente, $data);
+            header('Location: index.php?route=profilo');
+            exit;
+        } catch (Exception $e) {
+            $errore          = $e->getMessage();
+            $editingIndirizzo = $this->userService->findIndirizzoByIdForUser($idIndirizzo, $idUtente);
+            $utente          = $this->userService->findById($idUtente);
+            $indirizziUtente = $this->userService->getIndirizziByUserId($idUtente);
+            $filtroAnnunci   = 'attivo';
+            $annunciUtente   = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
+            $titoloAnnunciProfilo = 'Annunci attivi';
+            $cronologiaPagamenti  = $this->paymentService->getCronologiaByUserId($idUtente);
+            require __DIR__ . '/../views/utenti/profilo.php';
+        }
+    }
+
+    public function eliminaIndirizzo(int $idIndirizzo, int $idUtente): void
+    {
+        try {
+            $this->userService->eliminaIndirizzo($idIndirizzo, $idUtente);
+        } catch (Exception $e) {
+            // Ignora errori silenziosi, torna al profilo comunque
+        }
+        header('Location: index.php?route=profilo');
+        exit;
+    }
+
     public function impostaIndirizzoPredefinito(int $idIndirizzo, int $idUtente): void
     {
         try {

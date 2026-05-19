@@ -516,8 +516,13 @@ require __DIR__ . '/../layout/header.php';
             <a class="btn btn-secondary" href="index.php?route=feedback">I miei feedback</a>
         </div>
 
+        <?php
+            $editingIndirizzo = $editingIndirizzo ?? null;
+        ?>
+
         <?php if (!$isBusiness): ?>
-        <div id="indirizzoForm" class="card profile-address-form is-hidden">
+        <!-- Form aggiunta nuovo indirizzo -->
+        <div id="indirizzoForm" class="card profile-address-form <?= $editingIndirizzo ? 'is-hidden' : ($indirizziCount > 0 ? 'is-hidden' : '') ?>">
             <h2><?= $indirizziCount > 0 ? 'Nuovo indirizzo di spedizione' : 'Indirizzo di spedizione' ?></h2>
 
             <form method="post" action="index.php">
@@ -526,67 +531,75 @@ require __DIR__ . '/../layout/header.php';
                 <div class="profile-form-grid">
                     <div class="profile-form-wide">
                         <label for="nome">Nome e cognome</label>
-                        <input
-                            type="text"
-                            id="nome"
-                            name="nome"
-                            value="<?= $indirizziCount > 0 ? '' : e($utente['nome'] ?? '') ?>"
-                            required>
+                        <input type="text" id="nome" name="nome"
+                               value="<?= $indirizziCount > 0 ? '' : e($utente['nome'] ?? '') ?>" required>
                     </div>
-
                     <div class="profile-form-wide">
                         <label for="via">Via / Corso / Piazza</label>
-                        <input
-                            type="text"
-                            id="via"
-                            name="via"
-                            value=""
-                            required>
+                        <input type="text" id="via" name="via" value="" required>
                     </div>
-
                     <div>
                         <label for="numero">Numero civico</label>
-                        <input
-                            type="text"
-                            id="numero"
-                            name="numero"
-                            value="">
+                        <input type="text" id="numero" name="numero" value="">
                     </div>
-
                     <div>
                         <label for="cap">CAP</label>
-                        <input
-                            type="text"
-                            id="cap"
-                            name="cap"
-                            maxlength="5"
-                            value="">
+                        <input type="text" id="cap" name="cap" maxlength="5" value="">
                     </div>
-
                     <div>
                         <label for="citta">Citt&agrave;</label>
-                        <input
-                            type="text"
-                            id="citta"
-                            name="citta"
-                            value=""
-                            required>
+                        <input type="text" id="citta" name="citta" value="" required>
                     </div>
-
                     <div>
                         <label for="provincia">Provincia</label>
-                        <input
-                            type="text"
-                            id="provincia"
-                            name="provincia"
-                            maxlength="2"
-                            value="">
+                        <input type="text" id="provincia" name="provincia" maxlength="2" value="">
                     </div>
                 </div>
 
                 <button type="submit" class="btn">Salva nuovo indirizzo</button>
             </form>
         </div>
+
+        <!-- Form modifica indirizzo esistente -->
+        <?php if ($editingIndirizzo): ?>
+        <div class="card profile-address-form" id="editIndirizzoForm">
+            <h2>Modifica indirizzo</h2>
+            <form method="post" action="index.php?route=profilo-indirizzo-update">
+                <input type="hidden" name="id_indirizzo" value="<?= e($editingIndirizzo['id_indirizzo']) ?>">
+                <div class="profile-form-grid">
+                    <div class="profile-form-wide">
+                        <label for="edit_via">Via / Corso / Piazza</label>
+                        <input type="text" id="edit_via" name="via"
+                               value="<?= e($editingIndirizzo['via'] ?? '') ?>" required>
+                    </div>
+                    <div>
+                        <label for="edit_numero">Numero civico</label>
+                        <input type="text" id="edit_numero" name="numero"
+                               value="<?= e($editingIndirizzo['numero'] ?? '') ?>">
+                    </div>
+                    <div>
+                        <label for="edit_cap">CAP</label>
+                        <input type="text" id="edit_cap" name="cap" maxlength="5"
+                               value="<?= e($editingIndirizzo['cap'] ?? '') ?>">
+                    </div>
+                    <div>
+                        <label for="edit_citta">Citt&agrave;</label>
+                        <input type="text" id="edit_citta" name="citta"
+                               value="<?= e($editingIndirizzo['citta'] ?? '') ?>" required>
+                    </div>
+                    <div>
+                        <label for="edit_provincia">Provincia</label>
+                        <input type="text" id="edit_provincia" name="provincia" maxlength="2"
+                               value="<?= e($editingIndirizzo['provincia'] ?? '') ?>">
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
+                    <button type="submit" class="btn">Salva modifiche</button>
+                    <a href="index.php?route=profilo" class="btn btn-secondary">Annulla</a>
+                </div>
+            </form>
+        </div>
+        <?php endif; ?>
 
         <section>
             <div class="profile-section-header">
@@ -600,24 +613,38 @@ require __DIR__ . '/../layout/header.php';
                 <div class="grid">
                     <?php foreach ($indirizziUtente as $indirizzo): ?>
                         <?php
+                            $idInd = (int)($indirizzo['id_indirizzo'] ?? 0);
                             $viaIndirizzo = trim(($indirizzo['via'] ?? '') . ' ' . ($indirizzo['numero'] ?? ''));
                             $localitaIndirizzo = trim(($indirizzo['cap'] ?? '') . ' ' . ($indirizzo['citta'] ?? ''));
-
                             if (!empty($indirizzo['provincia'])) {
                                 $localitaIndirizzo = trim($localitaIndirizzo . ' (' . $indirizzo['provincia'] . ')');
                             }
+                            $isEditing = $editingIndirizzo && (int)$editingIndirizzo['id_indirizzo'] === $idInd;
                         ?>
-                        <article class="card">
-                            <h3 style="margin-bottom: 10px;">
+                        <article class="card" style="<?= $isEditing ? 'border-color:var(--accent);' : '' ?>">
+                            <h3 style="margin-bottom:10px;">
                                 Indirizzo <?= !empty($indirizzo['predefinito']) ? '<span class="seller-pro-badge">Predefinito</span>' : '' ?>
+                                <?= $isEditing ? '<span class="seller-pro-badge" style="background:rgba(124,58,237,.2);color:#a78bfa;">In modifica</span>' : '' ?>
                             </h3>
                             <p><?= e(implode(', ', array_filter([$viaIndirizzo, $localitaIndirizzo]))) ?></p>
                             <p class="muted"><?= e($indirizzo['paese'] ?? 'Italia') ?></p>
-                            <?php if (empty($indirizzo['predefinito'])): ?>
-                                <a class="btn btn-secondary" href="index.php?route=profilo-indirizzo-default&id=<?= e($indirizzo['id_indirizzo'] ?? '') ?>">
-                                    Imposta come predefinito
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
+                                <?php if (empty($indirizzo['predefinito'])): ?>
+                                    <a class="btn btn-secondary" style="min-height:34px;padding:7px 12px;font-size:13px;border-radius:10px;"
+                                       href="index.php?route=profilo-indirizzo-default&id=<?= $idInd ?>">
+                                        Predefinito
+                                    </a>
+                                <?php endif; ?>
+                                <a class="btn btn-secondary" style="min-height:34px;padding:7px 12px;font-size:13px;border-radius:10px;"
+                                   href="index.php?route=profilo-indirizzo-edit&id=<?= $idInd ?>">
+                                    Modifica
                                 </a>
-                            <?php endif; ?>
+                                <a class="btn btn-danger" style="min-height:34px;padding:7px 12px;font-size:13px;border-radius:10px;"
+                                   href="index.php?route=profilo-indirizzo-delete&id=<?= $idInd ?>"
+                                   onclick="return confirm('Eliminare questo indirizzo?')">
+                                    Elimina
+                                </a>
+                            </div>
                         </article>
                     <?php endforeach; ?>
                 </div>

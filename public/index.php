@@ -304,6 +304,28 @@ try {
             denyBusiness();
             (new UtenteController($pdo))->impostaIndirizzoPredefinito((int) ($_GET['id'] ?? 0), currentUserId());
             break;
+
+        case 'profilo-indirizzo-edit':
+            requireAuth();
+            denyAdmin();
+            denyBusiness();
+            (new UtenteController($pdo))->showModificaIndirizzo((int) ($_GET['id'] ?? 0), currentUserId());
+            break;
+
+        case 'profilo-indirizzo-update':
+            requireAuth();
+            denyAdmin();
+            denyBusiness();
+            (new UtenteController($pdo))->aggiornaIndirizzo($_POST, currentUserId());
+            break;
+
+        case 'profilo-indirizzo-delete':
+            requireAuth();
+            denyAdmin();
+            denyBusiness();
+            (new UtenteController($pdo))->eliminaIndirizzo((int) ($_GET['id'] ?? 0), currentUserId());
+            break;
+
         /*
         |--------------------------------------------------------------------------
         | Annunci
