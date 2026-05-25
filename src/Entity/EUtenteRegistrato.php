@@ -55,6 +55,9 @@ class EUtenteRegistrato extends EBaseEntity
         $utente->setStatoBan(self::boolFromDb(self::read($data, 'stato_ban', 'statoBan', false)));
         $utente->setDataRegistrazione(self::read($data, 'data_registrazione', 'dataRegistrazione'));
 
+        $utente->rememberExtra($data, array_keys($utente->toArray()));
+
+
         return $utente;
     }
 
@@ -200,7 +203,7 @@ class EUtenteRegistrato extends EBaseEntity
 
     public function toArray(): array
     {
-        return [
+        return $this->withExtra([
             'id_utente' => $this->idUtente,
             'email' => $this->email,
             'email_verificata' => self::boolToDb($this->emailVerificata),
@@ -213,7 +216,7 @@ class EUtenteRegistrato extends EBaseEntity
             'propic' => $this->propic,
             'stato_ban' => self::boolToDb($this->statoBan),
             'data_registrazione' => $this->dataRegistrazione,
-        ];
+        ]);
     }
 
     public function __toString(): string

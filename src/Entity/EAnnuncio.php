@@ -57,6 +57,9 @@ class EAnnuncio extends EBaseEntity
             $annuncio->addImmagine($immagine instanceof EImmagine ? $immagine : EImmagine::fromArray((array) $immagine));
         }
 
+        $annuncio->rememberExtra($data, array_keys($annuncio->toArray()));
+
+
         return $annuncio;
     }
 
@@ -120,7 +123,7 @@ class EAnnuncio extends EBaseEntity
 
     public function toArray(): array
     {
-        return [
+        return $this->withExtra([
             'id_annuncio' => $this->idAnnuncio,
             'id_utente' => $this->idUtente,
             'id_business' => $this->idBusiness,
@@ -134,7 +137,7 @@ class EAnnuncio extends EBaseEntity
             'data_creazione' => $this->dataCreazione,
             'data_scadenza' => $this->dataScadenza,
             'immagini' => array_map(static fn($immagine) => $immagine instanceof EImmagine ? $immagine->toArray() : $immagine, $this->immagini),
-        ];
+        ]);
     }
 
     public function __toString(): string

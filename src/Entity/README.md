@@ -15,9 +15,13 @@ Ogni Entity segue lo stile del modello usato a lezione:
 - `jsonSerialize()`;
 - `__toString()`.
 
-Le Entity sono introdotte gradualmente: i service possono ancora restituire array compatibili con le view esistenti, ma espongono anche metodi che restituiscono oggetti quando il controller o la logica applicativa sono pronti a usarli.
+Le Entity sono introdotte gradualmente: i service espongono metodi che restituiscono oggetti, mentre le view PHP esistenti ricevono ancora array per non obbligare a riscrivere tutta l'interfaccia in una sola volta.
 
-Primo passo gia applicato:
+`App\Controllers\BaseController` contiene i metodi di conversione da Entity ad array. In questo modo controller e service possono ragionare sugli oggetti, e la conversione resta confinata al confine con le view.
+
+`EBaseEntity` conserva anche i campi extra letti dalle query con join, per esempio `categoria_nome`, `immagine_principale`, `venditore_username`, `annuncio_titolo`. Questo evita di perdere dati utili alle pagine quando una riga del database viene trasformata in Entity.
+
+Primi passi applicati:
 
 - `AnnuncioService` mantiene i metodi storici basati su array;
 - `AnnuncioService` espone metodi equivalenti che restituiscono `EAnnuncio`;
@@ -34,6 +38,12 @@ Passi successivi applicati:
 - `FeedbackService` usa `EFeedback` in creazione e lettura;
 - `AdminService` espone `EAdmin`/`EModera` e usa `EAdmin` nei controlli di moderazione;
 - `SegnalazioneService` usa `ESegnalazione` in creazione e lettura.
+
+Stato attuale:
+
+- i controller principali chiamano i metodi `...Entity()` dei service;
+- le view restano compatibili perche ricevono array generati dalle Entity;
+- le Entity sono il punto di passaggio tra dati del database e logica applicativa.
 
 Mappatura principale:
 

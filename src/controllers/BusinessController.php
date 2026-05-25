@@ -24,7 +24,7 @@ use App\Services\WishlistService;
 use Exception;
 use PDO;
 
-class BusinessController
+class BusinessController extends BaseController
 {
     private BusinessService $businessService;
     private AnnuncioService $annuncioService;
@@ -37,8 +37,8 @@ class BusinessController
 
     public function dashboard(int $idUtente): void
     {
-        $business = $this->businessService->findByUserId($idUtente);
-        $annunci  = $this->annuncioService->getByUserId($idUtente);
+        $business = $this->entityToArray($this->businessService->findEntityByUserId($idUtente));
+        $annunci  = $this->entitiesToArrays($this->annuncioService->getByUserIdEntity($idUtente));
 
         require __DIR__ . '/../views/business/profilo.php';
     }
@@ -62,8 +62,7 @@ class BusinessController
 
     public function salvaIndirizzo(array $data, int $idUtente): void
     {
-        $business = $this->businessService->findByUserId($idUtente);
-        $businessEntity = $business ? EAccountBusiness::fromArray($business) : null;
+        $businessEntity = $this->businessService->findEntityByUserId($idUtente);
 
         if (!$businessEntity) {
             header('Location: index.php?route=business');
@@ -79,14 +78,15 @@ class BusinessController
             exit;
         } catch (Exception $e) {
             $errore  = $e->getMessage();
-            $annunci = $this->annuncioService->getByUserId($idUtente);
+            $business = $this->entityToArray($businessEntity);
+            $annunci = $this->entitiesToArrays($this->annuncioService->getByUserIdEntity($idUtente));
             require __DIR__ . '/../views/business/profilo.php';
         }
     }
 
     public function ordini(int $idUtente): void
     {
-        $ordini = $this->businessService->getOrdiniRicevuti($idUtente);
+        $ordini = $this->entitiesToArrays($this->businessService->getOrdiniRicevutiEntity($idUtente));
         require __DIR__ . '/../views/business/ordini.php';
     }
 }

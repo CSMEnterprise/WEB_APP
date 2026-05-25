@@ -6,6 +6,8 @@ use JsonSerializable;
 
 abstract class EBaseEntity implements JsonSerializable
 {
+    protected array $extra = [];
+
     protected static function read(array $data, string $snakeKey, ?string $camelKey = null, mixed $default = null): mixed
     {
         if (array_key_exists($snakeKey, $data)) {
@@ -49,6 +51,28 @@ abstract class EBaseEntity implements JsonSerializable
     protected static function boolToDb(bool $value): int
     {
         return $value ? 1 : 0;
+    }
+
+    protected function rememberExtra(array $source, array $knownKeys): void
+    {
+        $known = [];
+
+        foreach ($knownKeys as $key) {
+            $known[$key] = true;
+            $known[self::snakeToCamel($key)] = true;
+        }
+
+        $this->extra = array_diff_key($source, $known);
+    }
+
+    protected function withExtra(array $data): array
+    {
+        return array_merge($this->extra, $data);
+    }
+
+    private static function snakeToCamel(string $key): string
+    {
+        return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
     }
 
     abstract public function toArray(): array;

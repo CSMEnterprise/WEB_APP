@@ -32,6 +32,8 @@ class EModera extends EBaseEntity
         $modera->setIdAnnuncio(self::intOrNull(self::read($data, 'id_annuncio', 'idAnnuncio')));
         $modera->setIdBusiness(self::intOrNull(self::read($data, 'id_business', 'idBusiness')));
         $modera->setDataAzione(self::read($data, 'data_azione', 'dataAzione'));
+        $modera->rememberExtra($data, array_keys($modera->toArray()));
+
         return $modera;
     }
 
@@ -54,7 +56,7 @@ class EModera extends EBaseEntity
 
     public function toArray(): array
     {
-        return [
+        return $this->withExtra([
             'id_moderazione' => $this->idModerazione,
             'id_admin' => $this->idAdmin,
             'id_utente' => $this->idUtente,
@@ -63,7 +65,7 @@ class EModera extends EBaseEntity
             'id_business' => $this->idBusiness,
             'azione_compiuta' => $this->azioneCompiuta,
             'data_azione' => $this->dataAzione,
-        ];
+        ]);
     }
 
     public function __toString(): string

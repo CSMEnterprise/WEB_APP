@@ -36,6 +36,8 @@ class EPagamento extends EBaseEntity
         $pagamento->setStato((string) self::read($data, 'stato', 'stato', 'In_attesa'));
         $pagamento->setPaypalTransactionId(self::read($data, 'paypal_transaction_id', 'paypalTransactionId'));
         $pagamento->setData(self::read($data, 'data', 'data'));
+        $pagamento->rememberExtra($data, array_keys($pagamento->toArray()));
+
         return $pagamento;
     }
 
@@ -73,7 +75,7 @@ class EPagamento extends EBaseEntity
 
     public function toArray(): array
     {
-        return [
+        return $this->withExtra([
             'id_pagamento' => $this->idPagamento,
             'id_annuncio' => $this->idAnnuncio,
             'id_acquirente' => $this->idAcquirente,
@@ -82,7 +84,7 @@ class EPagamento extends EBaseEntity
             'stato' => $this->stato,
             'paypal_transaction_id' => $this->paypalTransactionId,
             'data' => $this->data,
-        ];
+        ]);
     }
 
     public function __toString(): string

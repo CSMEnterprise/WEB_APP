@@ -24,7 +24,7 @@ use App\Services\WishlistService;
 use Exception;
 use PDO;
 
-class PagamentoController
+class PagamentoController extends BaseController
 {
     private PaymentService $paymentService;
     private UserService    $userService;
@@ -40,10 +40,10 @@ class PagamentoController
     public function checkout(int $idUtente, int $idAnnuncio): void
     {
         try {
-            $pagamento = $this->paymentService->preparaPagamento($idUtente, $idAnnuncio);
-            $annuncio = $pagamento['annuncio'];
+            $pagamento = $this->paymentService->preparaPagamentoEntity($idUtente, $idAnnuncio);
+            $annuncio = $pagamento['annuncio']->toArray();
             $totale = $pagamento['totale'];
-            $indirizziUtente = $this->userService->getIndirizziByUserId($idUtente);
+            $indirizziUtente = $this->entitiesToArrays($this->userService->getIndirizziByUserIdEntity($idUtente));
 
             require __DIR__ . '/../views/pagamenti/checkout.php';
         } catch (Exception $e) {
@@ -55,11 +55,11 @@ class PagamentoController
     public function paypalPlaceholder(int $idUtente, int $idAnnuncio, int $idIndirizzo = 0): void
     {
         try {
-            $pagamento = $this->paymentService->preparaPagamento($idUtente, $idAnnuncio);
-            $annuncio = $pagamento['annuncio'];
+            $pagamento = $this->paymentService->preparaPagamentoEntity($idUtente, $idAnnuncio);
+            $annuncio = $pagamento['annuncio']->toArray();
             $totale = $pagamento['totale'];
-            $indirizzoSpedizione = $this->userService->findIndirizzoByIdForUser($idIndirizzo, $idUtente);
-            $indirizzoSpedizioneEntity = $indirizzoSpedizione ? EIndirizzo::fromArray($indirizzoSpedizione) : null;
+            $indirizzoSpedizioneEntity = $this->userService->findIndirizzoEntityByIdForUser($idIndirizzo, $idUtente);
+            $indirizzoSpedizione = $this->entityToArray($indirizzoSpedizioneEntity);
 
             if (!$indirizzoSpedizioneEntity) {
                 throw new ServiceException('Seleziona un indirizzo di spedizione valido.');
@@ -89,7 +89,7 @@ class PagamentoController
     public function checkoutCarrello(int $idUtente): void
     {
         try {
-            $carrello = $this->cartService->getCarrelloUtente($idUtente);
+            $carrello = $this->entitiesToArrays($this->cartService->getCarrelloUtenteEntity($idUtente));
             $items = array_values(array_filter($carrello, static function ($item) use ($idUtente) {
                 return ($item['stato'] ?? '') === 'attivo'
                     && (int)($item['id_utente'] ?? 0) !== $idUtente;
@@ -101,7 +101,7 @@ class PagamentoController
             }
 
             $totale = array_sum(array_column($items, 'prezzo'));
-            $indirizziUtente = $this->userService->getIndirizziByUserId($idUtente);
+            $indirizziUtente = $this->entitiesToArrays($this->userService->getIndirizziByUserIdEntity($idUtente));
 
             require __DIR__ . '/../views/pagamenti/checkout_carrello.php';
         } catch (Exception $e) {
@@ -113,7 +113,7 @@ class PagamentoController
     public function paypalPlaceholderCarrello(int $idUtente, int $idIndirizzo): void
     {
         try {
-            $carrello = $this->cartService->getCarrelloUtente($idUtente);
+            $carrello = $this->entitiesToArrays($this->cartService->getCarrelloUtenteEntity($idUtente));
             $items = array_values(array_filter($carrello, static function ($item) use ($idUtente) {
                 return ($item['stato'] ?? '') === 'attivo'
                     && (int)($item['id_utente'] ?? 0) !== $idUtente;
@@ -124,8 +124,8 @@ class PagamentoController
                 exit;
             }
 
-            $indirizzoSpedizione = $this->userService->findIndirizzoByIdForUser($idIndirizzo, $idUtente);
-            $indirizzoSpedizioneEntity = $indirizzoSpedizione ? EIndirizzo::fromArray($indirizzoSpedizione) : null;
+            $indirizzoSpedizioneEntity = $this->userService->findIndirizzoEntityByIdForUser($idIndirizzo, $idUtente);
+            $indirizzoSpedizione = $this->entityToArray($indirizzoSpedizioneEntity);
 
             if (!$indirizzoSpedizioneEntity) {
                 throw new \Exception('Seleziona un indirizzo di spedizione valido.');

@@ -24,7 +24,7 @@ use App\Services\WishlistService;
 use Exception;
 use PDO;
 
-class WishlistController
+class WishlistController extends BaseController
 {
     private WishlistService $wishlistService;
 
@@ -35,7 +35,7 @@ class WishlistController
 
     public function lista(int $idUtente): void
     {
-        $wishlist = $this->wishlistService->getWishlistUtente($idUtente);
+        $wishlist = $this->entitiesToArrays($this->wishlistService->getWishlistUtenteEntity($idUtente));
 
         require __DIR__ . '/../views/wishlist/lista.php';
     }

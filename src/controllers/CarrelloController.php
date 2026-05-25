@@ -24,7 +24,7 @@ use App\Services\WishlistService;
 use Exception;
 use PDO;
 
-class CarrelloController
+class CarrelloController extends BaseController
 {
     private CartService $cartService;
 
@@ -35,7 +35,7 @@ class CarrelloController
 
     public function lista(int $idUtente): void
     {
-        $carrello = $this->cartService->getCarrelloUtente($idUtente);
+        $carrello = $this->entitiesToArrays($this->cartService->getCarrelloUtenteEntity($idUtente));
         $annunciRimossi = $this->cartService->getUltimiAnnunciRimossi();
         $totale = 0.0;
 

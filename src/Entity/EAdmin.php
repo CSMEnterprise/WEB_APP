@@ -36,6 +36,8 @@ class EAdmin extends EBaseEntity
         );
 
         $admin->setIdAdmin(self::intOrNull(self::read($data, 'id_admin', 'idAdmin')));
+        $admin->rememberExtra($data, array_keys($admin->toArray()));
+
         return $admin;
     }
 
@@ -116,14 +118,14 @@ class EAdmin extends EBaseEntity
 
     public function toArray(): array
     {
-        return [
+        return $this->withExtra([
             'id_admin' => $this->idAdmin,
             'email' => $this->email,
             'password_hash' => $this->passwordHash,
             'livello_sicurezza' => $this->livelloSicurezza,
             'stato_ban' => self::boolToDb($this->statoBan),
             'data_creazione' => $this->dataCreazione,
-        ];
+        ]);
     }
 
     public function __toString(): string

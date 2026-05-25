@@ -22,6 +22,8 @@ class EPreferito extends EBaseEntity
             (int) self::read($data, 'id_annuncio', 'idAnnuncio', 0)
         );
         $preferito->setDataAggiunta(self::read($data, 'data_aggiunta', 'dataAggiunta'));
+        $preferito->rememberExtra($data, array_keys($preferito->toArray()));
+
         return $preferito;
     }
 
@@ -34,11 +36,11 @@ class EPreferito extends EBaseEntity
 
     public function toArray(): array
     {
-        return [
+        return $this->withExtra([
             'id_utente' => $this->idUtente,
             'id_annuncio' => $this->idAnnuncio,
             'data_aggiunta' => $this->dataAggiunta,
-        ];
+        ]);
     }
 
     public function __toString(): string

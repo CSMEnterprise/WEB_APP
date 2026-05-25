@@ -24,7 +24,7 @@ use App\Services\WishlistService;
 use Exception;
 use PDO;
 
-class AnnuncioController
+class AnnuncioController extends BaseController
 {
     private AnnuncioService  $annuncioService;
     private CategoryService  $categoryService;
@@ -47,13 +47,13 @@ class AnnuncioController
     {
         $q = trim($_GET['q'] ?? '');
         $idCategoria = (int) ($_GET['id_categoria'] ?? 0);
-        $categorie = $this->categoryService->getAll();
+        $categorie = $this->entitiesToArrays($this->categoryService->getAllEntity());
 
         if ($q !== '' || $idCategoria > 0) {
-            $annunci = $this->annuncioService->searchAnnunci($q, $idCategoria);
-            $utenti  = $this->userService->search($q);
+            $annunci = $this->entitiesToArrays($this->annuncioService->searchAnnunciEntity($q, $idCategoria));
+            $utenti  = $this->entitiesToArrays($this->userService->searchEntity($q));
         } else {
-            $annunci = $this->annuncioService->getAnnunciAttivi();
+            $annunci = $this->entitiesToArrays($this->annuncioService->getAnnunciAttiviEntity());
             $utenti  = [];
         }
 
@@ -68,15 +68,15 @@ class AnnuncioController
 
     public function dettaglio(int $idAnnuncio): void
     {
-        $annuncio = $this->annuncioService->findById($idAnnuncio);
+        $annuncioEntity = $this->annuncioService->findEntityById($idAnnuncio);
 
-        if (!$annuncio) {
+        if (!$annuncioEntity) {
             http_response_code(404);
             require __DIR__ . '/../views/errors/404.php';
             return;
         }
 
-        $annuncioEntity     = EAnnuncio::fromArray($annuncio);
+        $annuncio           = $annuncioEntity->toArray();
         $idVenditore        = (int) ($annuncioEntity->getIdUtente() ?? 0);
         $feedbackVenditore  = $idVenditore > 0 ? $this->feedbackService->getByVenditoreId($idVenditore) : [];
         $mediaVenditore     = $idVenditore > 0 ? $this->feedbackService->getMediaVoto($idVenditore) : 0.0;
@@ -90,21 +90,21 @@ class AnnuncioController
 
     public function formCreazione(): void
     {
-        $categorie = $this->categoryService->getAll();
+        $categorie = $this->entitiesToArrays($this->categoryService->getAllEntity());
         require __DIR__ . '/../views/annunci/form.php';
     }
 
     public function formModifica(int $idAnnuncio, int $idUtente): void
     {
         try {
-            $annuncio = $this->annuncioService->findById($idAnnuncio);
-            $annuncioEntity = $annuncio ? EAnnuncio::fromArray($annuncio) : null;
+            $annuncioEntity = $this->annuncioService->findEntityById($idAnnuncio);
+            $annuncio = $this->entityToArray($annuncioEntity);
 
             if (!$annuncioEntity || (int)($annuncioEntity->getIdUtente() ?? 0) !== $idUtente || !$annuncioEntity->isAttivo()) {
                 throw new ServiceException('Non puoi modificare questo annuncio.');
             }
 
-            $categorie = $this->categoryService->getAll();
+            $categorie = $this->entitiesToArrays($this->categoryService->getAllEntity());
             $isEdit = true;
             require __DIR__ . '/../views/annunci/form.php';
         } catch (Exception $e) {
@@ -122,7 +122,7 @@ class AnnuncioController
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
-            $categorie = $this->categoryService->getAll();
+            $categorie = $this->entitiesToArrays($this->categoryService->getAllEntity());
             require __DIR__ . '/../views/annunci/form.php';
         }
     }
@@ -137,8 +137,9 @@ class AnnuncioController
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
-            $categorie = $this->categoryService->getAll();
-            $annuncio = $idAnnuncio > 0 ? ($this->annuncioService->findById($idAnnuncio) ?: $data) : $data;
+            $categorie = $this->entitiesToArrays($this->categoryService->getAllEntity());
+            $annuncioEntity = $idAnnuncio > 0 ? $this->annuncioService->findEntityById($idAnnuncio) : null;
+            $annuncio = $annuncioEntity ? $annuncioEntity->toArray() : $data;
             $isEdit = true;
             require __DIR__ . '/../views/annunci/form.php';
         }

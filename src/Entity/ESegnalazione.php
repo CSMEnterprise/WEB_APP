@@ -43,6 +43,9 @@ class ESegnalazione extends EBaseEntity
         $segnalazione->setIdAdmin(self::intOrNull(self::read($data, 'id_admin', 'idAdmin')));
         $segnalazione->setDataRisoluzione(self::read($data, 'data_risoluzione', 'dataRisoluzione'));
 
+        $segnalazione->rememberExtra($data, array_keys($segnalazione->toArray()));
+
+
         return $segnalazione;
     }
 
@@ -85,7 +88,7 @@ class ESegnalazione extends EBaseEntity
 
     public function toArray(): array
     {
-        return [
+        return $this->withExtra([
             'id_segnalazione' => $this->idSegnalazione,
             'id_segnalante' => $this->idSegnalante,
             'id_annuncio' => $this->idAnnuncio,
@@ -98,7 +101,7 @@ class ESegnalazione extends EBaseEntity
             'data_segnalazione' => $this->dataSegnalazione,
             'id_admin' => $this->idAdmin,
             'data_risoluzione' => $this->dataRisoluzione,
-        ];
+        ]);
     }
 
     public function __toString(): string

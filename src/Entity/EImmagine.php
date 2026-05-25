@@ -24,6 +24,8 @@ class EImmagine extends EBaseEntity
             (int) self::read($data, 'ordine', 'ordine', 0)
         );
         $immagine->setIdImmagine(self::intOrNull(self::read($data, 'id_immagine', 'idImmagine')));
+        $immagine->rememberExtra($data, array_keys($immagine->toArray()));
+
         return $immagine;
     }
 
@@ -38,12 +40,12 @@ class EImmagine extends EBaseEntity
 
     public function toArray(): array
     {
-        return [
+        return $this->withExtra([
             'id_immagine' => $this->idImmagine,
             'id_annuncio' => $this->idAnnuncio,
             'url' => $this->url,
             'ordine' => $this->ordine,
-        ];
+        ]);
     }
 
     public function __toString(): string

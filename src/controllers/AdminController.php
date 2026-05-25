@@ -24,7 +24,7 @@ use App\Services\WishlistService;
 use Exception;
 use PDO;
 
-class AdminController
+class AdminController extends BaseController
 {
     private AdminService $adminService;
     private UserService $userService;
@@ -42,13 +42,13 @@ class AdminController
     public function dashboard(int $idAdmin): void
     {
         $stats = $this->adminService->getDashboardStats();
-        $azioniModera = $this->adminService->getAzioniByAdmin($idAdmin);
+        $azioniModera = $this->entitiesToArrays($this->adminService->getAzioniByAdminEntity($idAdmin));
         require __DIR__ . '/../views/admin/dashboard.php';
     }
 
     public function dashboardModerazione(array $filters): void
     {
-        $azioniModerazione = $this->adminService->getAzioniModerazione($filters);
+        $azioniModerazione = $this->entitiesToArrays($this->adminService->getAzioniModerazioneEntity($filters));
         $filters = [
             'admin' => trim((string) ($filters['admin'] ?? '')),
         ];
@@ -59,9 +59,9 @@ class AdminController
     public function utenti(array $filters = []): void
     {
         $searchUtente = trim((string) ($filters['q_utente'] ?? ''));
-        $utenti = $this->userService->getAll($searchUtente);
+        $utenti = $this->entitiesToArrays($this->userService->getAllEntity($searchUtente));
         $admins = ((int) ($_SESSION['livello_sicurezza'] ?? 1) === 2)
-            ? $this->adminService->getAllAdmins()
+            ? $this->entitiesToArrays($this->adminService->getAllAdminsEntity())
             : [];
         $filters = ['q_utente' => $searchUtente];
 
@@ -114,7 +114,7 @@ class AdminController
 
     public function segnalazioni(array $filters = []): void
     {
-        $segnalazioni = $this->segnalazioneService->getFiltrate($filters);
+        $segnalazioni = $this->entitiesToArrays($this->segnalazioneService->getFiltrateEntity($filters));
         $filters = [
             'oggetto' => trim((string) ($filters['oggetto'] ?? '')),
             'tipologia' => trim((string) ($filters['tipologia'] ?? '')),

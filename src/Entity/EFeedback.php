@@ -30,6 +30,8 @@ class EFeedback extends EBaseEntity
         );
         $feedback->setIdFeedback(self::intOrNull(self::read($data, 'id_feedback', 'idFeedback')));
         $feedback->setDataFeedback(self::read($data, 'data_feedback', 'dataFeedback'));
+        $feedback->rememberExtra($data, array_keys($feedback->toArray()));
+
         return $feedback;
     }
 
@@ -48,14 +50,14 @@ class EFeedback extends EBaseEntity
 
     public function toArray(): array
     {
-        return [
+        return $this->withExtra([
             'id_feedback' => $this->idFeedback,
             'id_autore' => $this->idAutore,
             'id_pagamento' => $this->idPagamento,
             'valutazione' => $this->valutazione,
             'commento' => $this->commento,
             'data_feedback' => $this->dataFeedback,
-        ];
+        ]);
     }
 
     public function __toString(): string

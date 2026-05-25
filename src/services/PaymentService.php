@@ -35,17 +35,25 @@ class PaymentService extends BaseService
 
     public function preparaPagamento(int $idUtente, int $idAnnuncio): array
     {
+        $pagamento = $this->preparaPagamentoEntity($idUtente, $idAnnuncio);
+
+        return [
+            'annuncio' => $pagamento['annuncio']->toArray(),
+            'totale' => $pagamento['totale'],
+        ];
+    }
+
+    public function preparaPagamentoEntity(int $idUtente, int $idAnnuncio): array
+    {
         $this->requirePositiveId($idUtente, 'Utente');
         $this->requirePositiveId($idAnnuncio, 'Annuncio');
         $this->denyBusinessBuyer($idUtente);
 
-        $annuncio = $this->annuncioService->findById($idAnnuncio);
+        $annuncioEntity = $this->annuncioService->findEntityById($idAnnuncio);
 
-        if (!$annuncio) {
+        if (!$annuncioEntity) {
             throw new ServiceException('Annuncio non trovato.');
         }
-
-        $annuncioEntity = EAnnuncio::fromArray($annuncio);
 
         if (!$annuncioEntity->isAttivo()) {
             throw new ServiceException('Annuncio non acquistabile.');
@@ -56,7 +64,7 @@ class PaymentService extends BaseService
         }
 
         return [
-            'annuncio' => $annuncio,
+            'annuncio' => $annuncioEntity,
             'totale' => $annuncioEntity->getPrezzo()
         ];
     }

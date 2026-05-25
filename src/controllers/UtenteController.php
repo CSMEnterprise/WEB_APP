@@ -24,7 +24,7 @@ use App\Services\WishlistService;
 use Exception;
 use PDO;
 
-class UtenteController
+class UtenteController extends BaseController
 {
     private AuthService $authService;
     private UserService $userService;
@@ -166,16 +166,7 @@ class UtenteController
 
     public function profilo(int $idUtente, string $filtroAnnunci = 'attivo'): void
     {
-        $utente = $this->userService->findById($idUtente);
-        $indirizziUtente = !empty($_SESSION['is_business'])
-            ? []
-            : $this->userService->getIndirizziByUserId($idUtente);
-        $filtroAnnunci = $filtroAnnunci === 'venduto' ? 'venduto' : 'attivo';
-        $annunciUtente = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
-        $titoloAnnunciProfilo = $filtroAnnunci === 'venduto' ? 'Annunci venduti' : 'Annunci attivi';
-        $cronologiaPagamenti = !empty($_SESSION['is_business'])
-            ? []
-            : $this->paymentService->getCronologiaByUserId($idUtente);
+        extract($this->loadProfiloData($idUtente, $filtroAnnunci));
 
         require __DIR__ . '/../views/utenti/profilo.php';
     }
@@ -188,8 +179,8 @@ class UtenteController
             return;
         }
 
-        $venditore = $this->userService->findById($idVenditore);
-        $venditoreEntity = $venditore ? EUtenteRegistrato::fromArray($venditore) : null;
+        $venditoreEntity = $this->userService->findEntityById($idVenditore);
+        $venditore = $this->entityToArray($venditoreEntity);
 
         if (!$venditoreEntity || $venditoreEntity->isBannato()) {
             http_response_code(404);
@@ -197,7 +188,7 @@ class UtenteController
             return;
         }
 
-        $annunciVenditore = $this->annuncioService->getByUserIdAndStato($idVenditore, 'attivo');
+        $annunciVenditore = $this->entitiesToArrays($this->annuncioService->getByUserIdAndStatoEntity($idVenditore, 'attivo'));
         $feedbackVenditore = $this->feedbackService->getByVenditoreId($idVenditore);
         $mediaVenditore = $this->feedbackService->getMediaVoto($idVenditore);
 
@@ -220,16 +211,7 @@ class UtenteController
             exit;
         } catch (Exception $e) {
             $errore          = $e->getMessage();
-            $utente          = $this->userService->findById($idUtente);
-            $indirizziUtente = !empty($_SESSION['is_business'])
-                ? []
-                : $this->userService->getIndirizziByUserId($idUtente);
-            $filtroAnnunci   = 'attivo';
-            $annunciUtente   = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
-            $titoloAnnunciProfilo = 'Annunci attivi';
-            $cronologiaPagamenti  = !empty($_SESSION['is_business'])
-                ? []
-                : $this->paymentService->getCronologiaByUserId($idUtente);
+            extract($this->loadProfiloData($idUtente));
             require __DIR__ . '/../views/utenti/profilo.php';
         }
     }
@@ -242,12 +224,7 @@ class UtenteController
             exit;
         } catch (Exception $e) {
             $errore          = $e->getMessage();
-            $utente          = $this->userService->findById($idUtente);
-            $indirizziUtente = !empty($_SESSION['is_business']) ? [] : $this->userService->getIndirizziByUserId($idUtente);
-            $filtroAnnunci   = 'attivo';
-            $annunciUtente   = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
-            $titoloAnnunciProfilo = 'Annunci attivi';
-            $cronologiaPagamenti  = !empty($_SESSION['is_business']) ? [] : $this->paymentService->getCronologiaByUserId($idUtente);
+            extract($this->loadProfiloData($idUtente));
             $openProfiloEdit = true;
             require __DIR__ . '/../views/utenti/profilo.php';
         }
@@ -266,12 +243,7 @@ class UtenteController
             exit;
         } catch (Exception $e) {
             $errore          = $e->getMessage();
-            $utente          = $this->userService->findById($idUtente);
-            $indirizziUtente = !empty($_SESSION['is_business']) ? [] : $this->userService->getIndirizziByUserId($idUtente);
-            $filtroAnnunci   = 'attivo';
-            $annunciUtente   = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
-            $titoloAnnunciProfilo = 'Annunci attivi';
-            $cronologiaPagamenti  = !empty($_SESSION['is_business']) ? [] : $this->paymentService->getCronologiaByUserId($idUtente);
+            extract($this->loadProfiloData($idUtente));
             $openPasswordEdit = true;
             require __DIR__ . '/../views/utenti/profilo.php';
         }
@@ -286,11 +258,7 @@ class UtenteController
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
-            $utente = $this->userService->findById($idUtente);
-            $indirizziUtente = $this->userService->getIndirizziByUserId($idUtente);
-            $filtroAnnunci = 'attivo';
-            $annunciUtente = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
-            $titoloAnnunciProfilo = 'Annunci attivi';
+            extract($this->loadProfiloData($idUtente));
 
             require __DIR__ . '/../views/utenti/profilo.php';
         }
@@ -298,20 +266,15 @@ class UtenteController
 
     public function showModificaIndirizzo(int $idIndirizzo, int $idUtente): void
     {
-        $editingIndirizzo = $this->userService->findIndirizzoByIdForUser($idIndirizzo, $idUtente);
-        $editingIndirizzoEntity = $editingIndirizzo ? EIndirizzo::fromArray($editingIndirizzo) : null;
+        $editingIndirizzoEntity = $this->userService->findIndirizzoEntityByIdForUser($idIndirizzo, $idUtente);
+        $editingIndirizzo = $this->entityToArray($editingIndirizzoEntity);
 
         if (!$editingIndirizzoEntity) {
             header('Location: index.php?route=profilo');
             exit;
         }
 
-        $utente          = $this->userService->findById($idUtente);
-        $indirizziUtente = $this->userService->getIndirizziByUserId($idUtente);
-        $filtroAnnunci   = 'attivo';
-        $annunciUtente   = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
-        $titoloAnnunciProfilo = 'Annunci attivi';
-        $cronologiaPagamenti  = $this->paymentService->getCronologiaByUserId($idUtente);
+        extract($this->loadProfiloData($idUtente));
 
         require __DIR__ . '/../views/utenti/profilo.php';
     }
@@ -325,13 +288,8 @@ class UtenteController
             exit;
         } catch (Exception $e) {
             $errore          = $e->getMessage();
-            $editingIndirizzo = $this->userService->findIndirizzoByIdForUser($idIndirizzo, $idUtente);
-            $utente          = $this->userService->findById($idUtente);
-            $indirizziUtente = $this->userService->getIndirizziByUserId($idUtente);
-            $filtroAnnunci   = 'attivo';
-            $annunciUtente   = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
-            $titoloAnnunciProfilo = 'Annunci attivi';
-            $cronologiaPagamenti  = $this->paymentService->getCronologiaByUserId($idUtente);
+            $editingIndirizzo = $this->entityToArray($this->userService->findIndirizzoEntityByIdForUser($idIndirizzo, $idUtente));
+            extract($this->loadProfiloData($idUtente));
             require __DIR__ . '/../views/utenti/profilo.php';
         }
     }
@@ -355,12 +313,7 @@ class UtenteController
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
-            $utente = $this->userService->findById($idUtente);
-            $indirizziUtente = $this->userService->getIndirizziByUserId($idUtente);
-            $filtroAnnunci = 'attivo';
-            $annunciUtente = $this->annuncioService->getByUserIdAndStato($idUtente, $filtroAnnunci);
-            $titoloAnnunciProfilo = 'Annunci attivi';
-            $cronologiaPagamenti = $this->paymentService->getCronologiaByUserId($idUtente);
+            extract($this->loadProfiloData($idUtente));
             require __DIR__ . '/../views/utenti/profilo.php';
         }
     }
@@ -441,6 +394,21 @@ class UtenteController
             $idUtente = $this->authService->getResetTokenUserId($token);
             require __DIR__ . '/../views/utenti/reset_password.php';
         }
+    }
+
+    private function loadProfiloData(int $idUtente, string $filtroAnnunci = 'attivo'): array
+    {
+        $filtroAnnunci = $filtroAnnunci === 'venduto' ? 'venduto' : 'attivo';
+        $isBusiness = !empty($_SESSION['is_business']);
+
+        return [
+            'utente' => $this->entityToArray($this->userService->findEntityById($idUtente)),
+            'indirizziUtente' => $isBusiness ? [] : $this->entitiesToArrays($this->userService->getIndirizziByUserIdEntity($idUtente)),
+            'filtroAnnunci' => $filtroAnnunci,
+            'annunciUtente' => $this->entitiesToArrays($this->annuncioService->getByUserIdAndStatoEntity($idUtente, $filtroAnnunci)),
+            'titoloAnnunciProfilo' => $filtroAnnunci === 'venduto' ? 'Annunci venduti' : 'Annunci attivi',
+            'cronologiaPagamenti' => $isBusiness ? [] : $this->entitiesToArrays($this->paymentService->getCronologiaByUserIdEntity($idUtente)),
+        ];
     }
 
     private function renderLogin(string $errore = ''): void

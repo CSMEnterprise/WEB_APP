@@ -29,6 +29,9 @@ class ECarrello extends EBaseEntity
             $carrello->addElemento($elemento instanceof EElementoCarrello ? $elemento : EElementoCarrello::fromArray((array) $elemento));
         }
 
+        $carrello->rememberExtra($data, array_keys($carrello->toArray()));
+
+
         return $carrello;
     }
 
@@ -61,13 +64,13 @@ class ECarrello extends EBaseEntity
 
     public function toArray(): array
     {
-        return [
+        return $this->withExtra([
             'id_carrello' => $this->idCarrello,
             'id_utente' => $this->idUtente,
             'data_creazione' => $this->dataCreazione,
             'data_aggiornamento' => $this->dataAggiornamento,
             'elementi' => array_map(static fn($elemento) => $elemento instanceof EElementoCarrello ? $elemento->toArray() : $elemento, $this->elementi),
-        ];
+        ]);
     }
 
     public function __toString(): string

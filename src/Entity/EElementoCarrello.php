@@ -24,6 +24,8 @@ class EElementoCarrello extends EBaseEntity
         );
         $elemento->setIdElementoCarrello(self::intOrNull(self::read($data, 'id_elemento_carrello', 'idElementoCarrello')));
         $elemento->setDataAggiunta(self::read($data, 'data_aggiunta', 'dataAggiunta'));
+        $elemento->rememberExtra($data, array_keys($elemento->toArray()));
+
         return $elemento;
     }
 
@@ -38,12 +40,12 @@ class EElementoCarrello extends EBaseEntity
 
     public function toArray(): array
     {
-        return [
+        return $this->withExtra([
             'id_elemento_carrello' => $this->idElementoCarrello,
             'id_carrello' => $this->idCarrello,
             'id_annuncio' => $this->idAnnuncio,
             'data_aggiunta' => $this->dataAggiunta,
-        ];
+        ]);
     }
 
     public function __toString(): string

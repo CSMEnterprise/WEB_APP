@@ -24,7 +24,7 @@ use App\Services\WishlistService;
 use Exception;
 use PDO;
 
-class SegnalazioneController
+class SegnalazioneController extends BaseController
 {
     private SegnalazioneService $segnalazioneService;
     private AdminService $adminService;
@@ -54,7 +54,7 @@ class SegnalazioneController
 
     public function lista(): void
     {
-        $segnalazioni = $this->segnalazioneService->getAll();
+        $segnalazioni = $this->entitiesToArrays($this->segnalazioneService->getAllEntity());
         require __DIR__ . '/../views/segnalazioni/lista.php';
     }
 

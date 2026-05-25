@@ -57,6 +57,9 @@ class EAccountBusiness extends EBaseEntity
         $business->setIdAdminVerifica(self::intOrNull(self::read($data, 'id_admin_verifica', 'idAdminVerifica')));
         $business->setDataVerifica(self::read($data, 'data_verifica', 'dataVerifica'));
 
+        $business->rememberExtra($data, array_keys($business->toArray()));
+
+
         return $business;
     }
 
@@ -97,7 +100,7 @@ class EAccountBusiness extends EBaseEntity
 
     public function toArray(): array
     {
-        return [
+        return $this->withExtra([
             'id_acc_business' => $this->idAccBusiness,
             'id_utente' => $this->idUtente,
             'p_iva' => $this->pIva,
@@ -111,7 +114,7 @@ class EAccountBusiness extends EBaseEntity
             'data_registrazione' => $this->dataRegistrazione,
             'id_admin_verifica' => $this->idAdminVerifica,
             'data_verifica' => $this->dataVerifica,
-        ];
+        ]);
     }
 
     public function __toString(): string

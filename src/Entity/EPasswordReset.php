@@ -30,6 +30,8 @@ class EPasswordReset extends EBaseEntity
         $reset->setIdReset(self::intOrNull(self::read($data, 'id_reset', 'idReset')));
         $reset->setUsato(self::boolFromDb(self::read($data, 'usato', 'usato', false)));
         $reset->setCreatoIl(self::read($data, 'creato_il', 'creatoIl'));
+        $reset->rememberExtra($data, array_keys($reset->toArray()));
+
         return $reset;
     }
 
@@ -54,14 +56,14 @@ class EPasswordReset extends EBaseEntity
 
     public function toArray(): array
     {
-        return [
+        return $this->withExtra([
             'id_reset' => $this->idReset,
             'id_utente' => $this->idUtente,
             'token' => $this->token,
             'scadenza' => $this->scadenza,
             'usato' => self::boolToDb($this->usato),
             'creato_il' => $this->creatoIl,
-        ];
+        ]);
     }
 
     public function __toString(): string

@@ -24,7 +24,7 @@ use App\Services\WishlistService;
 use Exception;
 use PDO;
 
-class FeedbackController
+class FeedbackController extends BaseController
 {
     private FeedbackService $feedbackService;
     private PaymentService  $paymentService;
@@ -37,8 +37,8 @@ class FeedbackController
 
     public function form(int $idPagamento, int $idAutore): void
     {
-        $pagamento = $this->paymentService->findById($idPagamento);
-        $pagamentoEntity = $pagamento ? EPagamento::fromArray($pagamento) : null;
+        $pagamentoEntity = $this->paymentService->findEntityById($idPagamento);
+        $pagamento = $this->entityToArray($pagamentoEntity);
 
         if (!$pagamentoEntity || $pagamentoEntity->getIdAcquirente() !== $idAutore) {
             http_response_code(403);
@@ -63,20 +63,20 @@ class FeedbackController
         } catch (Exception $e) {
             $errore   = $e->getMessage();
             $idPagamento = (int) ($data['id_pagamento'] ?? 0);
-            $pagamento   = $this->paymentService->findById($idPagamento);
+            $pagamento   = $this->entityToArray($this->paymentService->findEntityById($idPagamento));
             require __DIR__ . '/../views/feedback/form.php';
         }
     }
 
     public function lista(int $idUtente): void
     {
-        $feedback = $this->feedbackService->getByUserId($idUtente);
+        $feedback = $this->entitiesToArrays($this->feedbackService->getByUserIdEntity($idUtente));
         require __DIR__ . '/../views/feedback/lista.php';
     }
 
     public function listaVenditore(int $idVenditore): void
     {
-        $feedback = $this->feedbackService->getByVenditoreId($idVenditore);
+        $feedback = $this->entitiesToArrays($this->feedbackService->getByVenditoreIdEntity($idVenditore));
         $media    = $this->feedbackService->getMediaVoto($idVenditore);
         require __DIR__ . '/../views/feedback/lista_venditore.php';
     }

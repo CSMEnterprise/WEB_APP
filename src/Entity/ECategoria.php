@@ -23,6 +23,8 @@ class ECategoria extends EBaseEntity
             self::intOrNull(self::read($data, 'id_padre', 'idPadre'))
         );
         $categoria->setIdCategoria(self::intOrNull(self::read($data, 'id_categoria', 'idCategoria')));
+        $categoria->rememberExtra($data, array_keys($categoria->toArray()));
+
         return $categoria;
     }
 
@@ -74,12 +76,12 @@ class ECategoria extends EBaseEntity
 
     public function toArray(): array
     {
-        return [
+        return $this->withExtra([
             'id_categoria' => $this->idCategoria,
             'nome' => $this->nome,
             'id_padre' => $this->idPadre,
             'figli' => array_map(static fn($figlio) => $figlio instanceof ECategoria ? $figlio->toArray() : $figlio, $this->figli),
-        ];
+        ]);
     }
 
     public function __toString(): string

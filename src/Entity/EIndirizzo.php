@@ -47,6 +47,9 @@ class EIndirizzo extends EBaseEntity
         $indirizzo->setPaese((string) self::read($data, 'paese', 'paese', 'Italia'));
         $indirizzo->setPredefinito(self::boolFromDb(self::read($data, 'predefinito', 'predefinito', false)));
 
+        $indirizzo->rememberExtra($data, array_keys($indirizzo->toArray()));
+
+
         return $indirizzo;
     }
 
@@ -76,7 +79,7 @@ class EIndirizzo extends EBaseEntity
 
     public function toArray(): array
     {
-        return [
+        return $this->withExtra([
             'id_indirizzo' => $this->idIndirizzo,
             'id_utente' => $this->idUtente,
             'id_business' => $this->idBusiness,
@@ -88,7 +91,7 @@ class EIndirizzo extends EBaseEntity
             'provincia' => $this->provincia,
             'paese' => $this->paese,
             'predefinito' => self::boolToDb($this->predefinito),
-        ];
+        ]);
     }
 
     public function __toString(): string

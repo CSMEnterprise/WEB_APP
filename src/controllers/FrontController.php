@@ -18,7 +18,7 @@ use function App\Middleware\requireAuth;
 use function App\Middleware\requireBusiness;
 use function App\Middleware\requireGuest;
 
-class FrontController
+class FrontController extends BaseController
 {
     private PDO $pdo;
     private string $viewsPath;
@@ -160,7 +160,7 @@ class FrontController
                     $wishlistIds = [];
                     $carrelloIds = [];
                     $utenti      = [];
-                    $categorie   = (new CategoryService($this->pdo))->getAll();
+                    $categorie   = $this->entitiesToArrays((new CategoryService($this->pdo))->getAllEntity());
 
                     if ($q !== '' || $idCategoria > 0 || $hasFiltriAvanzati) {
                         // modalità ricerca
@@ -170,8 +170,8 @@ class FrontController
                             $paginaCorrente = $totalePagine;
                             $offsetAnnunci = ($paginaCorrente - 1) * $annunciPerPagina;
                         }
-                        $homeAnnunci       = $homeAnnuncioService->searchAnnunci($q, $idCategoria, $prezzoMin, $prezzoMax, $ordinamento, $annunciPerPagina, $offsetAnnunci, $excludeHomeUserId);
-                        $utenti            = $q !== '' ? (new UserService($this->pdo))->search($q) : [];
+                        $homeAnnunci       = $this->entitiesToArrays($homeAnnuncioService->searchAnnunciEntity($q, $idCategoria, $prezzoMin, $prezzoMax, $ordinamento, $annunciPerPagina, $offsetAnnunci, $excludeHomeUserId));
+                        $utenti            = $q !== '' ? $this->entitiesToArrays((new UserService($this->pdo))->searchEntity($q)) : [];
                         $homeTitoloAnnunci = $q !== '' ? 'Risultati per "' . htmlspecialchars($q, ENT_QUOTES, 'UTF-8') . '"' : 'Risultati ricerca';
                     } else {
                         $totaleAnnunci     = $homeAnnuncioService->countSearchAnnunci('', 0, null, null, $excludeHomeUserId);
@@ -180,7 +180,7 @@ class FrontController
                             $paginaCorrente = $totalePagine;
                             $offsetAnnunci = ($paginaCorrente - 1) * $annunciPerPagina;
                         }
-                        $homeAnnunci       = $homeAnnuncioService->searchAnnunci('', 0, null, null, 'data_desc', $annunciPerPagina, $offsetAnnunci, $excludeHomeUserId);
+                        $homeAnnunci       = $this->entitiesToArrays($homeAnnuncioService->searchAnnunciEntity('', 0, null, null, 'data_desc', $annunciPerPagina, $offsetAnnunci, $excludeHomeUserId));
                         $homeTitoloAnnunci = 'Annunci in evidenza';
                     }
 
