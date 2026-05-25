@@ -25,6 +25,7 @@ WEB_APP/
 |   |-- config/
 |   |   `-- db.php
 |   |-- controllers/
+|   |-- Entity/
 |   |-- helpers/
 |   |-- middleware/
 |   |-- models/
@@ -45,7 +46,7 @@ WEB_APP/
 |       `-- wishlist/
 |-- database/
 |   |-- nerdvault.sql
-|   `-- migrazione_foto_annunci.sql
+|   `-- README.md
 |-- INFO/
 |   |-- categorie.txt
 |   |-- Struttura DB.txt
@@ -62,12 +63,13 @@ WEB_APP/
 - `public/uploads/`: contiene i file caricati dagli utenti, per esempio le immagini degli annunci.
 - `src/config/`: contiene la configurazione dell'applicazione, inclusa la connessione al database.
 - `src/controllers/`: riceve le richieste dal router e coordina servizi e viste.
+- `src/Entity/`: contiene le classi Entity con proprieta private, getter, setter e metodi di utilita.
 - `src/services/`: contiene la logica applicativa e le query al database tramite PDO.
 - `src/models/`: contiene classi modello semplici.
 - `src/views/`: contiene le pagine PHP renderizzate dall'applicazione.
 - `src/middleware/`: contiene i controlli di accesso per utenti autenticati, admin, business e guest.
 - `src/helpers/`: contiene funzioni comuni, come l'escape HTML.
-- `database/`: contiene dump e migrazioni SQL.
+- `database/`: contiene lo schema SQL completo per creare il database.
 - `INFO/`: contiene documentazione, appunti, schema DB e materiali del progetto.
 
 ## Funzionalita' principali
@@ -118,23 +120,17 @@ git pull origin Develop
 
 1. Avviare MySQL/MariaDB da XAMPP.
 2. Aprire phpMyAdmin.
-3. Creare un database chiamato:
-
-```text
-nerdvault
-```
-
-4. Importare il file:
+3. Importare il file:
 
 ```text
 database/nerdvault.sql
 ```
 
-Se necessario, applicare anche eventuali migrazioni presenti in `database/`, per esempio:
+Il file crea automaticamente il database `nerdvault`, tutte le tabelle, le chiavi, i vincoli e le categorie di base.
 
-```text
-database/migrazione_foto_annunci.sql
-```
+Se esiste gia un vecchio database `nerdvault` e vuoi ricrearlo da zero, esporta prima un backup e poi elimina il vecchio database da phpMyAdmin prima di importare questo file.
+
+Non ci sono migrazioni SQL aggiuntive da applicare dopo questo file.
 
 ### 4. Configurare la connessione al database
 

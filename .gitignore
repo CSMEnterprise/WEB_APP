@@ -2,3 +2,4 @@ vendor/
 src/config/mail.php
 public/uploads/
 *.sql
+.DS_Store
