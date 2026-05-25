@@ -2,6 +2,8 @@
 
 require_once __DIR__ . '/BaseService.php';
 require_once __DIR__ . '/AnnuncioService.php';
+require_once __DIR__ . '/../Entity/EAnnuncio.php';
+require_once __DIR__ . '/../Entity/EPreferito.php';
 
 class WishlistService extends BaseService
 {
@@ -48,6 +50,27 @@ class WishlistService extends BaseService
         return $stmt->fetchAll();
     }
 
+    public function getWishlistUtenteEntity(int $idUtente): array
+    {
+        return array_map(static fn(array $annuncio) => EAnnuncio::fromArray($annuncio), $this->getWishlistUtente($idUtente));
+    }
+
+    public function getPreferitiEntityByUserId(int $idUtente): array
+    {
+        $this->requirePositiveId($idUtente, 'Utente');
+        $this->denyBusinessBuyer($idUtente);
+
+        $stmt = $this->db->prepare("
+            SELECT id_utente, id_annuncio, data_aggiunta
+            FROM preferito
+            WHERE id_utente = ?
+            ORDER BY data_aggiunta DESC
+        ");
+        $stmt->execute([$idUtente]);
+
+        return array_map(static fn(array $preferito) => EPreferito::fromArray($preferito), $stmt->fetchAll());
+    }
+
     public function getWishlistIds(int $idUtente): array
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -69,25 +92,27 @@ class WishlistService extends BaseService
         $this->requirePositiveId($idAnnuncio, 'Annuncio');
         $this->denyBusinessBuyer($idUtente);
 
-        $annuncio = $this->annuncioService->findById($idAnnuncio);
+        $annuncio = $this->annuncioService->findEntityById($idAnnuncio);
 
         if (!$annuncio) {
             throw new ServiceException('Annuncio non trovato.');
         }
 
-        if (($annuncio['stato'] ?? '') !== 'attivo') {
+        if (!$annuncio->isAttivo()) {
             throw new ServiceException('Non puoi aggiungere alla wishlist un annuncio non disponibile.');
         }
 
-        if ((int)($annuncio['id_utente'] ?? 0) === $idUtente) {
+        if ((int)($annuncio->getIdUtente() ?? 0) === $idUtente) {
             throw new ServiceException('Non puoi aggiungere alla wishlist un tuo annuncio.');
         }
+
+        $preferito = new EPreferito($idUtente, $idAnnuncio);
 
         $stmt = $this->db->prepare("
             INSERT IGNORE INTO preferito (id_utente, id_annuncio)
             VALUES (?, ?)
         ");
-        $stmt->execute([$idUtente, $idAnnuncio]);
+        $stmt->execute([$preferito->getIdUtente(), $preferito->getIdAnnuncio()]);
     }
 
     public function rimuoviAnnuncio(int $idUtente, int $idAnnuncio): void

@@ -1,6 +1,8 @@
 <?php
 
 require_once __DIR__ . '/BaseService.php';
+require_once __DIR__ . '/../Entity/EAdmin.php';
+require_once __DIR__ . '/../Entity/EModera.php';
 
 class AdminService extends BaseService
 {
@@ -25,6 +27,11 @@ class AdminService extends BaseService
         return $stmt->fetchAll();
     }
 
+    public function getAllAdminsEntity(): array
+    {
+        return array_map(static fn(array $admin) => EAdmin::fromArray($admin), $this->getAllAdmins());
+    }
+
     public function getAzioniByAdmin(int $idAdmin): array
     {
         $this->requirePositiveId($idAdmin, 'Admin');
@@ -38,6 +45,11 @@ class AdminService extends BaseService
         $stmt->execute([$idAdmin]);
 
         return $stmt->fetchAll();
+    }
+
+    public function getAzioniByAdminEntity(int $idAdmin): array
+    {
+        return $this->toModeraEntities($this->getAzioniByAdmin($idAdmin));
     }
 
     public function getAzioniModerazione(array $filters = []): array
@@ -70,6 +82,11 @@ class AdminService extends BaseService
         return $stmt->fetchAll();
     }
 
+    public function getAzioniModerazioneEntity(array $filters = []): array
+    {
+        return $this->toModeraEntities($this->getAzioniModerazione($filters));
+    }
+
     public function registraAzione(
         int $idAdmin,
         string $azione,
@@ -78,8 +95,21 @@ class AdminService extends BaseService
         ?int $idAnnuncio = null,
         ?int $idBusiness = null
     ): void {
+        $moderazione = new EModera($idAdmin, $azione);
+        $moderazione->setIdUtente($idUtente);
+        $moderazione->setIdFeedback($idFeedback);
+        $moderazione->setIdAnnuncio($idAnnuncio);
+        $moderazione->setIdBusiness($idBusiness);
+
+        $this->registraAzioneDaEntity($moderazione);
+    }
+
+    public function registraAzioneDaEntity(EModera $moderazione): void
+    {
+        $idAdmin = $moderazione->getIdAdmin();
+        $azione = $this->clean($moderazione->getAzioneCompiuta());
+
         $this->requirePositiveId($idAdmin, 'Admin');
-        $azione = $this->clean($azione);
 
         if ($azione === '') {
             throw new ServiceException('Azione admin non valida.');
@@ -92,10 +122,10 @@ class AdminService extends BaseService
         ");
         $stmt->execute([
             $idAdmin,
-            $idUtente,
-            $idFeedback,
-            $idAnnuncio,
-            $idBusiness,
+            $moderazione->getIdUtente(),
+            $moderazione->getIdFeedback(),
+            $moderazione->getIdAnnuncio(),
+            $moderazione->getIdBusiness(),
             $azione,
         ]);
     }
@@ -130,7 +160,7 @@ class AdminService extends BaseService
         $stmt->execute([$idAdminDaSbloccare]);
     }
 
-    private function findAdminForModeration(int $idAdmin): array
+    private function findAdminForModeration(int $idAdmin): EAdmin
     {
         $this->requirePositiveId($idAdmin, 'Admin');
 
@@ -148,21 +178,26 @@ class AdminService extends BaseService
             throw new ServiceException('Admin non trovato.');
         }
 
-        return $admin;
+        return EAdmin::fromArray($admin);
     }
 
-    private function ensureCanModerateAdmin(array $target, array $current): void
+    private function ensureCanModerateAdmin(EAdmin $target, EAdmin $current): void
     {
-        if ((int) ($current['livello_sicurezza'] ?? 1) !== 2) {
+        if ($current->getLivelloSicurezza() !== 2) {
             throw new ServiceException('Solo un admin di livello 2 puo moderare altri admin.');
         }
 
-        if ((int) ($target['id_admin'] ?? 0) === (int) ($current['id_admin'] ?? 0)) {
+        if ((int) ($target->getIdAdmin() ?? 0) === (int) ($current->getIdAdmin() ?? 0)) {
             throw new ServiceException('Non puoi bannare o sbloccare il tuo account admin.');
         }
 
-        if ((int) ($target['livello_sicurezza'] ?? 1) !== 1) {
+        if ($target->getLivelloSicurezza() !== 1) {
             throw new ServiceException('Puoi moderare solo admin di livello 1.');
         }
+    }
+
+    private function toModeraEntities(array $azioni): array
+    {
+        return array_map(static fn(array $azione) => EModera::fromArray($azione), $azioni);
     }
 }

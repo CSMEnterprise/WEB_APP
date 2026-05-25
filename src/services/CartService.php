@@ -2,6 +2,9 @@
 
 require_once __DIR__ . '/BaseService.php';
 require_once __DIR__ . '/AnnuncioService.php';
+require_once __DIR__ . '/../Entity/EAnnuncio.php';
+require_once __DIR__ . '/../Entity/ECarrello.php';
+require_once __DIR__ . '/../Entity/EElementoCarrello.php';
 
 class CartService extends BaseService
 {
@@ -12,6 +15,15 @@ class CartService extends BaseService
     {
         parent::__construct($db);
         $this->annuncioService = new AnnuncioService($db);
+    }
+
+    public function getOrCreateCartEntity(int $idUtente): ECarrello
+    {
+        $idCarrello = $this->getOrCreateCartId($idUtente);
+        $carrello = $this->findCartEntityById($idCarrello);
+        $carrello->setElementi($this->getCarrelloUtenteEntity($idUtente));
+
+        return $carrello;
     }
 
     public function getOrCreateCartId(int $idUtente): int
@@ -53,6 +65,8 @@ class CartService extends BaseService
         $stmt = $this->db->prepare("
             SELECT
                 e.id_elemento_carrello,
+                e.id_carrello,
+                e.data_aggiunta,
                 a.*,
                 c.nome AS categoria_nome,
                 u.username AS venditore_username,
@@ -79,6 +93,11 @@ class CartService extends BaseService
         return $stmt->fetchAll();
     }
 
+    public function getCarrelloUtenteEntity(int $idUtente): array
+    {
+        return $this->toElementoCarrelloEntities($this->getCarrelloUtente($idUtente));
+    }
+
     public function getUltimiAnnunciRimossi(): array
     {
         return $this->ultimiAnnunciRimossi;
@@ -90,15 +109,17 @@ class CartService extends BaseService
         $totale = 0;
 
         foreach ($items as $item) {
-            if ((int)($item['id_utente'] ?? 0) === $idUtente) {
+            $annuncio = EAnnuncio::fromArray($item);
+
+            if ((int)($annuncio->getIdUtente() ?? 0) === $idUtente) {
                 continue;
             }
 
-            if (($item['stato'] ?? '') !== 'attivo') {
+            if (!$annuncio->isAttivo()) {
                 continue;
             }
 
-            $totale += (float) ($item['prezzo'] ?? 0);
+            $totale += $annuncio->getPrezzo();
         }
 
         return $totale;
@@ -127,28 +148,29 @@ class CartService extends BaseService
         $this->requirePositiveId($idAnnuncio, 'Annuncio');
         $this->denyBusinessBuyer($idUtente);
 
-        $annuncio = $this->annuncioService->findById($idAnnuncio);
+        $annuncio = $this->annuncioService->findEntityById($idAnnuncio);
 
         if (!$annuncio) {
             throw new ServiceException('Annuncio non trovato.');
         }
 
-        if (($annuncio['stato'] ?? '') !== 'attivo') {
+        if (!$annuncio->isAttivo()) {
             throw new ServiceException('Questo annuncio non è acquistabile.');
         }
 
-        if ((int)($annuncio['id_utente'] ?? 0) === $idUtente) {
+        if ((int)($annuncio->getIdUtente() ?? 0) === $idUtente) {
             throw new ServiceException('Non puoi aggiungere al carrello un tuo annuncio.');
         }
 
         $idCarrello = $this->getOrCreateCartId($idUtente);
+        $elemento = new EElementoCarrello($idCarrello, $idAnnuncio);
 
         $stmt = $this->db->prepare("
             INSERT IGNORE INTO elemento_carrello
             (id_carrello, id_annuncio)
             VALUES (?, ?)
         ");
-        $stmt->execute([$idCarrello, $idAnnuncio]);
+        $stmt->execute([$elemento->getIdCarrello(), $elemento->getIdAnnuncio()]);
 
         // Se l'annuncio era nella wishlist, lo rimuoviamo automaticamente:
         // quando un prodotto passa al carrello non deve restare anche tra i preferiti.
@@ -216,5 +238,31 @@ class CartService extends BaseService
             WHERE id_carrello = ?
         ");
         $stmt->execute([$idCarrello]);
+    }
+
+    private function findCartEntityById(int $idCarrello): ECarrello
+    {
+        $this->requirePositiveId($idCarrello, 'Carrello');
+
+        $stmt = $this->db->prepare("
+            SELECT *
+            FROM carrello
+            WHERE id_carrello = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$idCarrello]);
+
+        $carrello = $stmt->fetch();
+
+        if (!$carrello) {
+            throw new ServiceException('Carrello non trovato.');
+        }
+
+        return ECarrello::fromArray($carrello);
+    }
+
+    private function toElementoCarrelloEntities(array $elementi): array
+    {
+        return array_map(static fn(array $elemento) => EElementoCarrello::fromArray($elemento), $elementi);
     }
 }

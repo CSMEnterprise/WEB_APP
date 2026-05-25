@@ -1,9 +1,19 @@
 <?php
 
 require_once __DIR__ . '/BaseService.php';
+require_once __DIR__ . '/../Entity/EAccountBusiness.php';
+require_once __DIR__ . '/../Entity/EIndirizzo.php';
+require_once __DIR__ . '/../Entity/EPagamento.php';
 
 class BusinessService extends BaseService
 {
+    public function findEntityByUserId(int $idUtente): ?EAccountBusiness
+    {
+        $business = $this->findByUserId($idUtente);
+
+        return $business ? $this->toBusinessEntity($business) : null;
+    }
+
     public function findByUserId(int $idUtente): ?array
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -18,6 +28,17 @@ class BusinessService extends BaseService
         $stmt->execute([$idUtente]);
 
         return $stmt->fetch() ?: null;
+    }
+
+    public function creaDaEntity(EAccountBusiness $business, ?EIndirizzo $indirizzo = null): int
+    {
+        $data = $business->toArray();
+
+        if ($indirizzo !== null) {
+            $data = array_merge($data, $indirizzo->toArray());
+        }
+
+        return $this->creaAccount($data, $business->getIdUtente());
     }
 
     public function creaAccount(array $data, int $idUtente): int
@@ -112,6 +133,17 @@ class BusinessService extends BaseService
         return $idBusiness;
     }
 
+    public function aggiornaIndirizzoDaEntity(EIndirizzo $indirizzo): void
+    {
+        $idBusiness = $indirizzo->getIdBusiness();
+
+        if ($idBusiness === null) {
+            throw new ServiceException('Business non valido.');
+        }
+
+        $this->aggiornaIndirizzo($idBusiness, $indirizzo->toArray());
+    }
+
     public function aggiornaIndirizzo(int $idBusiness, array $data): void
     {
         $this->requirePositiveId($idBusiness, 'Business');
@@ -163,5 +195,15 @@ class BusinessService extends BaseService
         $stmt->execute([$idUtente]);
 
         return $stmt->fetchAll();
+    }
+
+    public function getOrdiniRicevutiEntity(int $idUtente): array
+    {
+        return array_map(static fn(array $ordine) => EPagamento::fromArray($ordine), $this->getOrdiniRicevuti($idUtente));
+    }
+
+    private function toBusinessEntity(array $business): EAccountBusiness
+    {
+        return EAccountBusiness::fromArray($business);
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../Entity/EIndirizzo.php';
+require_once __DIR__ . '/../Entity/EUtenteRegistrato.php';
 require_once __DIR__ . '/../services/AuthService.php';
 require_once __DIR__ . '/../services/UserService.php';
 require_once __DIR__ . '/../services/AnnuncioService.php';
@@ -174,8 +176,9 @@ class UtenteController
         }
 
         $venditore = $this->userService->findById($idVenditore);
+        $venditoreEntity = $venditore ? EUtenteRegistrato::fromArray($venditore) : null;
 
-        if (!$venditore || !empty($venditore['stato_ban'])) {
+        if (!$venditoreEntity || $venditoreEntity->isBannato()) {
             http_response_code(404);
             require __DIR__ . '/../views/errors/404.php';
             return;
@@ -283,7 +286,9 @@ class UtenteController
     public function showModificaIndirizzo(int $idIndirizzo, int $idUtente): void
     {
         $editingIndirizzo = $this->userService->findIndirizzoByIdForUser($idIndirizzo, $idUtente);
-        if (!$editingIndirizzo) {
+        $editingIndirizzoEntity = $editingIndirizzo ? EIndirizzo::fromArray($editingIndirizzo) : null;
+
+        if (!$editingIndirizzoEntity) {
             header('Location: index.php?route=profilo');
             exit;
         }

@@ -1,16 +1,28 @@
 <?php
 
 require_once __DIR__ . '/BaseService.php';
+require_once __DIR__ . '/../Entity/EFeedback.php';
 
 class FeedbackService extends BaseService
 {
     public function crea(array $data, int $idAutore): int
     {
-        $this->requirePositiveId($idAutore, 'Autore');
+        $feedback = EFeedback::fromArray(array_merge($data, [
+            'id_autore' => $idAutore,
+            'valutazione' => (int) ($data['valutazione'] ?? $data['voto'] ?? 0),
+        ]));
 
-        $idPagamento = (int) ($data['id_pagamento'] ?? 0);
-        $valutazione = (int) ($data['valutazione'] ?? $data['voto'] ?? 0);
-        $commento = $this->clean($data['commento'] ?? '');
+        return $this->creaDaEntity($feedback);
+    }
+
+    public function creaDaEntity(EFeedback $feedback): int
+    {
+        $idAutore = $feedback->getIdAutore();
+        $idPagamento = $feedback->getIdPagamento();
+        $valutazione = $feedback->getValutazione();
+        $commento = $this->clean($feedback->getCommento());
+
+        $this->requirePositiveId($idAutore, 'Autore');
 
         if ($idPagamento <= 0) {
             throw new ServiceException('Pagamento obbligatorio.');
@@ -51,6 +63,11 @@ class FeedbackService extends BaseService
         return $stmt->fetchAll();
     }
 
+    public function getByPagamentoIdEntity(int $idPagamento): array
+    {
+        return $this->toFeedbackEntities($this->getByPagamentoId($idPagamento));
+    }
+
     public function getByUserId(int $idUtente): array
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -67,6 +84,11 @@ class FeedbackService extends BaseService
         $stmt->execute([$idUtente, $idUtente]);
 
         return $stmt->fetchAll();
+    }
+
+    public function getByUserIdEntity(int $idUtente): array
+    {
+        return $this->toFeedbackEntities($this->getByUserId($idUtente));
     }
 
     public function hasFeedback(int $idPagamento, int $idAutore): bool
@@ -101,6 +123,11 @@ class FeedbackService extends BaseService
         return $stmt->fetchAll();
     }
 
+    public function getByVenditoreIdEntity(int $idVenditore): array
+    {
+        return $this->toFeedbackEntities($this->getByVenditoreId($idVenditore));
+    }
+
     public function getMediaVoto(int $idUtente): float
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -115,5 +142,10 @@ class FeedbackService extends BaseService
         $stmt->execute([$idUtente]);
 
         return (float) $stmt->fetchColumn();
+    }
+
+    private function toFeedbackEntities(array $feedbackList): array
+    {
+        return array_map(static fn(array $feedback) => EFeedback::fromArray($feedback), $feedbackList);
     }
 }

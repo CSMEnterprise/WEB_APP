@@ -1,5 +1,6 @@
 <?php
 
+require_once __DIR__ . '/../Entity/EPagamento.php';
 require_once __DIR__ . '/../services/FeedbackService.php';
 require_once __DIR__ . '/../services/PaymentService.php';
 
@@ -17,8 +18,9 @@ class FeedbackController
     public function form(int $idPagamento, int $idAutore): void
     {
         $pagamento = $this->paymentService->findById($idPagamento);
+        $pagamentoEntity = $pagamento ? EPagamento::fromArray($pagamento) : null;
 
-        if (!$pagamento || (int) $pagamento['id_acquirente'] !== $idAutore) {
+        if (!$pagamentoEntity || $pagamentoEntity->getIdAcquirente() !== $idAutore) {
             http_response_code(403);
             require __DIR__ . '/../views/errors/400.php';
             return;

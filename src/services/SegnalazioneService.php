@@ -1,20 +1,35 @@
 <?php
 
 require_once __DIR__ . '/BaseService.php';
+require_once __DIR__ . '/../Entity/ESegnalazione.php';
 
 class SegnalazioneService extends BaseService
 {
     public function crea(array $data, int $idSegnalante): int
     {
+        $segnalazione = ESegnalazione::fromArray(array_merge($data, [
+            'id_segnalante' => $idSegnalante,
+            'id_annuncio' => $this->nullablePositiveInt($data['id_annuncio'] ?? null),
+            'id_utente_segnalato' => $this->nullablePositiveInt($data['id_utente_segnalato'] ?? null),
+            'id_business' => $this->nullablePositiveInt($data['id_business'] ?? null),
+            'id_feedback' => $this->nullablePositiveInt($data['id_feedback'] ?? null),
+        ]));
+
+        return $this->creaDaEntity($segnalazione);
+    }
+
+    public function creaDaEntity(ESegnalazione $segnalazione): int
+    {
+        $idSegnalante = $segnalazione->getIdSegnalante();
+        $tipologia = $this->clean($segnalazione->getTipologia());
+        $descrizione = $this->clean($segnalazione->getDescrizione());
+
+        $idAnnuncio = $this->nullablePositiveInt($segnalazione->getIdAnnuncio());
+        $idUtenteSegnalato = $this->nullablePositiveInt($segnalazione->getIdUtenteSegnalato());
+        $idBusiness = $this->nullablePositiveInt($segnalazione->getIdBusiness());
+        $idFeedback = $this->nullablePositiveInt($segnalazione->getIdFeedback());
+
         $this->requirePositiveId($idSegnalante, 'Segnalante');
-
-        $tipologia = $this->clean($data['tipologia'] ?? '');
-        $descrizione = $this->clean($data['descrizione'] ?? '');
-
-        $idAnnuncio = $this->nullablePositiveInt($data['id_annuncio'] ?? null);
-        $idUtenteSegnalato = $this->nullablePositiveInt($data['id_utente_segnalato'] ?? null);
-        $idBusiness = $this->nullablePositiveInt($data['id_business'] ?? null);
-        $idFeedback = $this->nullablePositiveInt($data['id_feedback'] ?? null);
 
         $targets = array_filter([$idAnnuncio, $idUtenteSegnalato, $idBusiness, $idFeedback], fn($v) => $v !== null);
 
@@ -67,6 +82,11 @@ class SegnalazioneService extends BaseService
         return $stmt->fetchAll();
     }
 
+    public function getAllEntity(): array
+    {
+        return $this->toSegnalazioneEntities($this->getAll());
+    }
+
     public function getFiltrate(array $filters = []): array
     {
         $oggetto = $this->clean($filters['oggetto'] ?? '');
@@ -115,6 +135,11 @@ class SegnalazioneService extends BaseService
         return $stmt->fetchAll();
     }
 
+    public function getFiltrateEntity(array $filters = []): array
+    {
+        return $this->toSegnalazioneEntities($this->getFiltrate($filters));
+    }
+
     public function chiudi(int $idSegnalazione, int $idAdmin): void
     {
         $this->requirePositiveId($idSegnalazione, 'Segnalazione');
@@ -150,5 +175,10 @@ class SegnalazioneService extends BaseService
         $intValue = (int) $value;
 
         return $intValue > 0 ? $intValue : null;
+    }
+
+    private function toSegnalazioneEntities(array $segnalazioni): array
+    {
+        return array_map(static fn(array $segnalazione) => ESegnalazione::fromArray($segnalazione), $segnalazioni);
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+require_once __DIR__ . '/../Entity/EAccountBusiness.php';
 require_once __DIR__ . '/../services/BusinessService.php';
 require_once __DIR__ . '/../services/AnnuncioService.php';
 
@@ -42,15 +43,16 @@ class BusinessController
     public function salvaIndirizzo(array $data, int $idUtente): void
     {
         $business = $this->businessService->findByUserId($idUtente);
+        $businessEntity = $business ? EAccountBusiness::fromArray($business) : null;
 
-        if (!$business) {
+        if (!$businessEntity) {
             header('Location: index.php?route=business');
             exit;
         }
 
         try {
             $this->businessService->aggiornaIndirizzo(
-                (int) $business['id_acc_business'],
+                (int) ($businessEntity->getIdAccBusiness() ?? 0),
                 $data
             );
             header('Location: index.php?route=business');

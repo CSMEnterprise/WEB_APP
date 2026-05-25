@@ -3,6 +3,8 @@
 require_once __DIR__ . '/BaseService.php';
 require_once __DIR__ . '/AnnuncioService.php';
 require_once __DIR__ . '/CartService.php';
+require_once __DIR__ . '/../Entity/EAnnuncio.php';
+require_once __DIR__ . '/../Entity/EPagamento.php';
 
 class PaymentService extends BaseService
 {
@@ -28,17 +30,19 @@ class PaymentService extends BaseService
             throw new ServiceException('Annuncio non trovato.');
         }
 
-        if (($annuncio['stato'] ?? '') !== 'attivo') {
+        $annuncioEntity = EAnnuncio::fromArray($annuncio);
+
+        if (!$annuncioEntity->isAttivo()) {
             throw new ServiceException('Annuncio non acquistabile.');
         }
 
-        if ((int)($annuncio['id_utente'] ?? 0) === $idUtente) {
+        if ((int)($annuncioEntity->getIdUtente() ?? 0) === $idUtente) {
             throw new ServiceException('Non puoi acquistare un tuo annuncio.');
         }
 
         return [
             'annuncio' => $annuncio,
-            'totale' => (float) $annuncio['prezzo']
+            'totale' => $annuncioEntity->getPrezzo()
         ];
     }
 
@@ -64,11 +68,13 @@ class PaymentService extends BaseService
                 throw new ServiceException('Annuncio non trovato.');
             }
 
-            if (($annuncio['stato'] ?? '') !== 'attivo') {
+            $annuncioEntity = EAnnuncio::fromArray($annuncio);
+
+            if (!$annuncioEntity->isAttivo()) {
                 throw new ServiceException('Annuncio non acquistabile.');
             }
 
-            if ((int)($annuncio['id_utente'] ?? 0) === $idUtente) {
+            if ((int)($annuncioEntity->getIdUtente() ?? 0) === $idUtente) {
                 throw new ServiceException('Non puoi acquistare un tuo annuncio.');
             }
 
@@ -76,20 +82,23 @@ class PaymentService extends BaseService
                 throw new ServiceException('Indirizzo di spedizione non valido.');
             }
 
-            $totale = (float) $annuncio['prezzo'];
+            $pagamento = new EPagamento($idAnnuncio, $idUtente, $idIndirizzo, $annuncioEntity->getPrezzo());
+            $pagamento->completa();
+            $pagamento->setPaypalTransactionId($paypalTransactionId !== '' ? $paypalTransactionId : null);
 
             $stmt = $this->db->prepare("
                 INSERT INTO pagamento
                 (id_annuncio, id_acquirente, id_indirizzo_spedizione, importo_totale, stato, paypal_transaction_id)
-                VALUES (?, ?, ?, ?, 'Completato', ?)
+                VALUES (?, ?, ?, ?, ?, ?)
             ");
 
             $stmt->execute([
-                $idAnnuncio,
-                $idUtente,
-                $idIndirizzo,
-                $totale,
-                $paypalTransactionId !== '' ? $paypalTransactionId : null
+                $pagamento->getIdAnnuncio(),
+                $pagamento->getIdAcquirente(),
+                $pagamento->getIdIndirizzoSpedizione(),
+                $pagamento->getImportoTotale(),
+                $pagamento->getStato(),
+                $pagamento->getPaypalTransactionId()
             ]);
 
             $idPagamento = $this->lastInsertId();
@@ -191,21 +200,31 @@ class PaymentService extends BaseService
 
             foreach ($idAnnunci as $idAnnuncio) {
                 $annuncio = $this->getAnnuncioForPaymentUpdate($idAnnuncio);
+                $annuncioEntity = $annuncio ? EAnnuncio::fromArray($annuncio) : null;
 
-                if (!$annuncio || ($annuncio['stato'] ?? '') !== 'attivo') {
+                if (!$annuncioEntity || !$annuncioEntity->isAttivo()) {
                     continue; // salta articoli non più disponibili
                 }
 
-                if ((int)($annuncio['id_utente'] ?? 0) === $idUtente) {
+                if ((int)($annuncioEntity->getIdUtente() ?? 0) === $idUtente) {
                     continue; // salta articoli propri
                 }
+
+                $pagamento = new EPagamento($idAnnuncio, $idUtente, $idIndirizzo, $annuncioEntity->getPrezzo());
+                $pagamento->completa();
 
                 $stmt = $this->db->prepare("
                     INSERT INTO pagamento
                     (id_annuncio, id_acquirente, id_indirizzo_spedizione, importo_totale, stato)
-                    VALUES (?, ?, ?, ?, 'Completato')
+                    VALUES (?, ?, ?, ?, ?)
                 ");
-                $stmt->execute([$idAnnuncio, $idUtente, $idIndirizzo, (float) $annuncio['prezzo']]);
+                $stmt->execute([
+                    $pagamento->getIdAnnuncio(),
+                    $pagamento->getIdAcquirente(),
+                    $pagamento->getIdIndirizzoSpedizione(),
+                    $pagamento->getImportoTotale(),
+                    $pagamento->getStato()
+                ]);
                 $idPagamenti[] = $this->lastInsertId();
 
                 $stmt = $this->db->prepare("
@@ -266,6 +285,11 @@ class PaymentService extends BaseService
         return $stmt->fetchAll();
     }
 
+    public function getCronologiaByUserIdEntity(int $idUtente): array
+    {
+        return $this->toPagamentoEntities($this->getCronologiaByUserId($idUtente));
+    }
+
     public function findById(int $idPagamento): ?array
     {
         $this->requirePositiveId($idPagamento, 'Pagamento');
@@ -280,5 +304,22 @@ class PaymentService extends BaseService
         $stmt->execute([$idPagamento]);
 
         return $stmt->fetch() ?: null;
+    }
+
+    public function findEntityById(int $idPagamento): ?EPagamento
+    {
+        $pagamento = $this->findById($idPagamento);
+
+        return $pagamento ? $this->toPagamentoEntity($pagamento) : null;
+    }
+
+    private function toPagamentoEntity(array $pagamento): EPagamento
+    {
+        return EPagamento::fromArray($pagamento);
+    }
+
+    private function toPagamentoEntities(array $pagamenti): array
+    {
+        return array_map(fn(array $pagamento) => $this->toPagamentoEntity($pagamento), $pagamenti);
     }
 }

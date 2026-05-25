@@ -23,6 +23,18 @@ Primo passo gia applicato:
 - `AnnuncioService` espone metodi equivalenti che restituiscono `EAnnuncio`;
 - `AnnuncioController` usa `EAnnuncio` per leggere proprieta e stato dell'annuncio senza rompere le view.
 
+Passi successivi applicati:
+
+- `UserService` espone `EUtenteRegistrato` ed `EIndirizzo` e usa `EIndirizzo` in alcuni controlli sugli indirizzi;
+- `CategoryService` espone `ECategoria`;
+- `BusinessService` espone `EAccountBusiness`, `EIndirizzo` ed `EPagamento`;
+- `CartService` espone `ECarrello`/`EElementoCarrello` e usa `EAnnuncio` quando controlla gli articoli;
+- `WishlistService` espone `EPreferito` e usa `EAnnuncio` quando controlla i preferiti;
+- `PaymentService` usa `EAnnuncio` ed `EPagamento` durante la conferma acquisto;
+- `FeedbackService` usa `EFeedback` in creazione e lettura;
+- `AdminService` espone `EAdmin`/`EModera` e usa `EAdmin` nei controlli di moderazione;
+- `SegnalazioneService` usa `ESegnalazione` in creazione e lettura.
+
 Mappatura principale:
 
 - `EAdmin` -> tabella `admin`

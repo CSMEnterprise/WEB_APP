@@ -1,9 +1,18 @@
 <?php
 
 require_once __DIR__ . '/BaseService.php';
+require_once __DIR__ . '/../Entity/EIndirizzo.php';
+require_once __DIR__ . '/../Entity/EUtenteRegistrato.php';
 
 class UserService extends BaseService
 {
+    public function findEntityById(int $idUtente): ?EUtenteRegistrato
+    {
+        $utente = $this->findById($idUtente);
+
+        return $utente ? $this->toUtenteEntity($utente) : null;
+    }
+
     public function findById(int $idUtente): ?array
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -20,6 +29,17 @@ class UserService extends BaseService
         $stmt->execute([$idUtente]);
 
         return $stmt->fetch() ?: null;
+    }
+
+    public function aggiornaProfiloDaEntity(EUtenteRegistrato $utente): void
+    {
+        $idUtente = $utente->getIdUtente();
+
+        if ($idUtente === null) {
+            throw new ServiceException('Utente non valido.');
+        }
+
+        $this->aggiornaProfiloUtente($idUtente, $utente->toArray());
     }
 
     public function aggiornaProfiloUtente(int $idUtente, array $data): void
@@ -71,6 +91,11 @@ class UserService extends BaseService
         return $stmt->fetchAll();
     }
 
+    public function searchEntity(string $q): array
+    {
+        return $this->toUtenteEntities($this->search($q));
+    }
+
     public function getAll(string $q = ''): array
     {
         $q = $this->clean($q);
@@ -99,6 +124,11 @@ class UserService extends BaseService
         $stmt->execute($params);
 
         return $stmt->fetchAll();
+    }
+
+    public function getAllEntity(string $q = ''): array
+    {
+        return $this->toUtenteEntities($this->getAll($q));
     }
 
     public function banna(int $idUtente): void
@@ -170,6 +200,17 @@ class UserService extends BaseService
         return $url;
     }
 
+    public function updateIndirizzoSpedizioneDaEntity(EIndirizzo $indirizzo): void
+    {
+        $idUtente = $indirizzo->getIdUtente();
+
+        if ($idUtente === null) {
+            throw new ServiceException('Utente non valido.');
+        }
+
+        $this->updateIndirizzoSpedizione($idUtente, $indirizzo->toArray());
+    }
+
     public function updateIndirizzoSpedizione(int $idUtente, array $data): void
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -236,6 +277,11 @@ class UserService extends BaseService
         return $stmt->fetchAll();
     }
 
+    public function getIndirizziByUserIdEntity(int $idUtente): array
+    {
+        return $this->toIndirizzoEntities($this->getIndirizziByUserId($idUtente));
+    }
+
     public function findIndirizzoByIdForUser(int $idIndirizzo, int $idUtente): ?array
     {
         $this->requirePositiveId($idIndirizzo, 'Indirizzo');
@@ -252,12 +298,19 @@ class UserService extends BaseService
         return $stmt->fetch() ?: null;
     }
 
+    public function findIndirizzoEntityByIdForUser(int $idIndirizzo, int $idUtente): ?EIndirizzo
+    {
+        $indirizzo = $this->findIndirizzoByIdForUser($idIndirizzo, $idUtente);
+
+        return $indirizzo ? $this->toIndirizzoEntity($indirizzo) : null;
+    }
+
     public function setIndirizzoPredefinito(int $idUtente, int $idIndirizzo): void
     {
         $this->requirePositiveId($idUtente, 'Utente');
         $this->requirePositiveId($idIndirizzo, 'Indirizzo');
 
-        if (!$this->findIndirizzoByIdForUser($idIndirizzo, $idUtente)) {
+        if (!$this->findIndirizzoEntityByIdForUser($idIndirizzo, $idUtente)) {
             throw new ServiceException('Indirizzo non valido.');
         }
 
@@ -293,7 +346,7 @@ class UserService extends BaseService
         $this->requirePositiveId($idIndirizzo, 'Indirizzo');
         $this->requirePositiveId($idUtente, 'Utente');
 
-        if (!$this->findIndirizzoByIdForUser($idIndirizzo, $idUtente)) {
+        if (!$this->findIndirizzoEntityByIdForUser($idIndirizzo, $idUtente)) {
             throw new ServiceException('Indirizzo non trovato.');
         }
 
@@ -325,12 +378,24 @@ class UserService extends BaseService
         ]);
     }
 
+    public function modificaIndirizzoDaEntity(EIndirizzo $indirizzo): void
+    {
+        $idIndirizzo = $indirizzo->getIdIndirizzo();
+        $idUtente = $indirizzo->getIdUtente();
+
+        if ($idIndirizzo === null || $idUtente === null) {
+            throw new ServiceException('Indirizzo non valido.');
+        }
+
+        $this->modificaIndirizzo($idIndirizzo, $idUtente, $indirizzo->toArray());
+    }
+
     public function eliminaIndirizzo(int $idIndirizzo, int $idUtente): void
     {
         $this->requirePositiveId($idIndirizzo, 'Indirizzo');
         $this->requirePositiveId($idUtente, 'Utente');
 
-        $indirizzo = $this->findIndirizzoByIdForUser($idIndirizzo, $idUtente);
+        $indirizzo = $this->findIndirizzoEntityByIdForUser($idIndirizzo, $idUtente);
         if (!$indirizzo) {
             throw new ServiceException('Indirizzo non trovato.');
         }
@@ -339,7 +404,7 @@ class UserService extends BaseService
         $stmt->execute([$idIndirizzo, $idUtente]);
 
         // Se era predefinito, imposta come predefinito il più recente rimasto
-        if (!empty($indirizzo['predefinito'])) {
+        if ($indirizzo->isPredefinito()) {
             $stmt = $this->db->prepare("
                 UPDATE indirizzi SET predefinito = 1
                 WHERE id_utente = ?
@@ -348,5 +413,25 @@ class UserService extends BaseService
             ");
             $stmt->execute([$idUtente]);
         }
+    }
+
+    private function toUtenteEntity(array $utente): EUtenteRegistrato
+    {
+        return EUtenteRegistrato::fromArray($utente);
+    }
+
+    private function toUtenteEntities(array $utenti): array
+    {
+        return array_map(fn(array $utente) => $this->toUtenteEntity($utente), $utenti);
+    }
+
+    private function toIndirizzoEntity(array $indirizzo): EIndirizzo
+    {
+        return EIndirizzo::fromArray($indirizzo);
+    }
+
+    private function toIndirizzoEntities(array $indirizzi): array
+    {
+        return array_map(fn(array $indirizzo) => $this->toIndirizzoEntity($indirizzo), $indirizzi);
     }
 }

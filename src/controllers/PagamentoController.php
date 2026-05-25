@@ -1,5 +1,6 @@
 <?php
 
+require_once __DIR__ . '/../Entity/EIndirizzo.php';
 require_once __DIR__ . '/../services/PaymentService.php';
 require_once __DIR__ . '/../services/UserService.php';
 require_once __DIR__ . '/../services/CartService.php';
@@ -39,8 +40,9 @@ class PagamentoController
             $annuncio = $pagamento['annuncio'];
             $totale = $pagamento['totale'];
             $indirizzoSpedizione = $this->userService->findIndirizzoByIdForUser($idIndirizzo, $idUtente);
+            $indirizzoSpedizioneEntity = $indirizzoSpedizione ? EIndirizzo::fromArray($indirizzoSpedizione) : null;
 
-            if (!$indirizzoSpedizione) {
+            if (!$indirizzoSpedizioneEntity) {
                 throw new ServiceException('Seleziona un indirizzo di spedizione valido.');
             }
 
@@ -104,8 +106,9 @@ class PagamentoController
             }
 
             $indirizzoSpedizione = $this->userService->findIndirizzoByIdForUser($idIndirizzo, $idUtente);
+            $indirizzoSpedizioneEntity = $indirizzoSpedizione ? EIndirizzo::fromArray($indirizzoSpedizione) : null;
 
-            if (!$indirizzoSpedizione) {
+            if (!$indirizzoSpedizioneEntity) {
                 throw new \Exception('Seleziona un indirizzo di spedizione valido.');
             }
 
