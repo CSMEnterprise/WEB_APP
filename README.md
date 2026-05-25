@@ -2,7 +2,7 @@
 
 NerdVault e' una web app marketplace sviluppata in PHP per la gestione di annunci, utenti, wishlist, carrello, pagamenti simulati, account business, feedback, segnalazioni e area amministratore.
 
-Il progetto usa una struttura MVC leggera senza framework esterni: `public/index.php` funziona da front controller, mentre controller, servizi, viste, middleware e configurazione sono separati nella cartella `src`.
+Il progetto usa una struttura MVC leggera senza framework esterni: `public/index.php` fa solo da bootstrap, mentre il routing principale e' gestito dalla classe `App\Controllers\FrontController`. Controller, servizi, entity, viste, middleware e configurazione sono separati nella cartella `src`.
 
 ## Tecnologie
 
@@ -87,7 +87,7 @@ Namespace principali:
 - `App\Entity\` -> `src/Entity/`
 - `App\Foundation\` -> `src/Foundation/`
 
-Il front controller `public/index.php` carica `vendor/autoload.php`; da li in poi controller, service, entity e foundation vengono caricati automaticamente. Le funzioni helper e middleware vengono caricate tramite la sezione `autoload.files` di `composer.json`.
+Il bootstrap `public/index.php` carica `vendor/autoload.php`; da li in poi controller, service, entity e foundation vengono caricati automaticamente. Le funzioni helper e middleware vengono caricate tramite la sezione `autoload.files` di `composer.json`.
 
 Quando si aggiunge o rinomina una classe, eseguire:
 
@@ -250,11 +250,19 @@ La prima pagina convertita e' il login: `UtenteController` renderizza `src/templ
 
 ## Routing
 
-Il routing e' gestito in:
+Il punto di ingresso pubblico e':
 
 ```text
 public/index.php
 ```
+
+Questo file avvia la sessione, carica Composer, apre la connessione al database e delega tutto a:
+
+```text
+src/controllers/FrontController.php
+```
+
+La classe `App\Controllers\FrontController` normalizza la rotta e contiene lo `switch` principale dell'applicazione.
 
 Le rotte vengono lette da:
 
@@ -282,6 +290,7 @@ Il flusso principale dell'applicazione e':
 ```text
 Browser
   -> public/index.php
+  -> App\Controllers\FrontController
   -> middleware, se richiesto
   -> controller
   -> service
@@ -294,6 +303,7 @@ Esempio per la lista annunci:
 
 ```text
 public/index.php
+  -> FrontController::handle()
   -> AnnuncioController::lista()
   -> AnnuncioService::getAnnunciAttivi()
   -> src/views/annunci/lista.php
