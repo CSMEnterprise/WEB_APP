@@ -1,7 +1,6 @@
 <?php
 
-require_once __DIR__ . '/EBaseEntity.php';
-require_once __DIR__ . '/EElementoCarrello.php';
+namespace App\Entity;
 
 class ECarrello extends EBaseEntity
 {

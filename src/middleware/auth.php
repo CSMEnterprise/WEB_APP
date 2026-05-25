@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Middleware;
+
 function requireAuth(): void
 {
     if (session_status() === PHP_SESSION_NONE) {

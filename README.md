@@ -76,6 +76,25 @@ WEB_APP/
 - `database/`: contiene lo schema SQL completo per creare il database.
 - `INFO/`: contiene documentazione, appunti, schema DB e materiali del progetto.
 
+## Namespace e autoload
+
+Il progetto usa Composer anche per caricare le classi interne.
+
+Namespace principali:
+
+- `App\Controllers\` -> `src/controllers/`
+- `App\Services\` -> `src/services/`
+- `App\Entity\` -> `src/Entity/`
+- `App\Foundation\` -> `src/Foundation/`
+
+Il front controller `public/index.php` carica `vendor/autoload.php`; da li in poi controller, service, entity e foundation vengono caricati automaticamente. Le funzioni helper e middleware vengono caricate tramite la sezione `autoload.files` di `composer.json`.
+
+Quando si aggiunge o rinomina una classe, eseguire:
+
+```bash
+composer dump-autoload
+```
+
 ## Funzionalita' principali
 
 - Registrazione utente normale

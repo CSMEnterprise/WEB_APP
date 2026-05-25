@@ -1,8 +1,8 @@
 <?php
 
-require_once __DIR__ . '/../../vendor/autoload.php';
-require_once __DIR__ . '/../helpers/functions.php';
+namespace App\Foundation;
 
+use RuntimeException;
 use Smarty\Smarty;
 
 class SmartyView

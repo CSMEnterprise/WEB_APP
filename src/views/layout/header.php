@@ -16,8 +16,7 @@ $categorieHeader = [];
 $cartItemCount = 0;
 
 if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
-    require_once __DIR__ . '/../../services/CategoryService.php';
-    $categorieHeader = (new CategoryService($GLOBALS['pdo']))->getAll();
+    $categorieHeader = (new \App\Services\CategoryService($GLOBALS['pdo']))->getAll();
 
     if ($isLogged && empty($_SESSION['is_admin']) && empty($_SESSION['is_business'])) {
         $stmtCartCount = $GLOBALS['pdo']->prepare("

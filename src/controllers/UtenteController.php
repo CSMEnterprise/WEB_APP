@@ -1,15 +1,28 @@
 <?php
 
-require_once __DIR__ . '/../Entity/EIndirizzo.php';
-require_once __DIR__ . '/../Entity/EUtenteRegistrato.php';
-require_once __DIR__ . '/../Foundation/SmartyView.php';
-require_once __DIR__ . '/../services/AuthService.php';
-require_once __DIR__ . '/../services/UserService.php';
-require_once __DIR__ . '/../services/AnnuncioService.php';
-require_once __DIR__ . '/../services/BusinessService.php';
-require_once __DIR__ . '/../services/PaymentService.php';
-require_once __DIR__ . '/../services/FeedbackService.php';
-require_once __DIR__ . '/../services/MailService.php';
+namespace App\Controllers;
+
+use App\Entity\EAccountBusiness;
+use App\Entity\EAnnuncio;
+use App\Entity\EIndirizzo;
+use App\Entity\EPagamento;
+use App\Entity\EUtenteRegistrato;
+use App\Foundation\SmartyView;
+use App\Services\AdminService;
+use App\Services\AnnuncioService;
+use App\Services\AuthService;
+use App\Services\BusinessService;
+use App\Services\CartService;
+use App\Services\CategoryService;
+use App\Services\FeedbackService;
+use App\Services\MailService;
+use App\Services\PaymentService;
+use App\Services\SegnalazioneService;
+use App\Services\ServiceException;
+use App\Services\UserService;
+use App\Services\WishlistService;
+use Exception;
+use PDO;
 
 class UtenteController
 {

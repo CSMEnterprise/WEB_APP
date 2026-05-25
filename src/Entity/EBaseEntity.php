@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Entity;
+
+use JsonSerializable;
+
 abstract class EBaseEntity implements JsonSerializable
 {
     protected static function read(array $data, string $snakeKey, ?string $camelKey = null, mixed $default = null): mixed

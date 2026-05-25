@@ -1,7 +1,9 @@
 <?php
 
-require_once __DIR__ . '/auth.php';
-require_once __DIR__ . '/../services/BusinessService.php';
+namespace App\Middleware;
+
+use App\Services\BusinessService;
+use PDO;
 
 function requireBusiness(PDO $pdo): void
 {

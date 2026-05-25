@@ -1,24 +1,32 @@
 <?php
 
+use App\Controllers\AdminController;
+use App\Controllers\AnnuncioController;
+use App\Controllers\BusinessController;
+use App\Controllers\CarrelloController;
+use App\Controllers\FeedbackController;
+use App\Controllers\PagamentoController;
+use App\Controllers\SegnalazioneController;
+use App\Controllers\UtenteController;
+use App\Controllers\WishlistController;
+use App\Services\AnnuncioService;
+use App\Services\CartService;
+use App\Services\CategoryService;
+use App\Services\UserService;
+use App\Services\WishlistService;
+use function App\Middleware\currentUserId;
+use function App\Middleware\denyAdmin;
+use function App\Middleware\denyBusiness;
+use function App\Middleware\requireAdmin;
+use function App\Middleware\requireAdminLivello2;
+use function App\Middleware\requireAuth;
+use function App\Middleware\requireBusiness;
+use function App\Middleware\requireGuest;
+
 session_start();
 
-require_once __DIR__ . '/../src/helpers/functions.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/config/db.php';
-
-require_once __DIR__ . '/../src/middleware/auth.php';
-require_once __DIR__ . '/../src/middleware/admin.php';
-require_once __DIR__ . '/../src/middleware/business.php';
-require_once __DIR__ . '/../src/middleware/guest.php';
-
-require_once __DIR__ . '/../src/controllers/UtenteController.php';
-require_once __DIR__ . '/../src/controllers/AnnuncioController.php';
-require_once __DIR__ . '/../src/controllers/CarrelloController.php';
-require_once __DIR__ . '/../src/controllers/WishlistController.php';
-require_once __DIR__ . '/../src/controllers/PagamentoController.php';
-require_once __DIR__ . '/../src/controllers/BusinessController.php';
-require_once __DIR__ . '/../src/controllers/FeedbackController.php';
-require_once __DIR__ . '/../src/controllers/SegnalazioneController.php';
-require_once __DIR__ . '/../src/controllers/AdminController.php';
 
 
 /*
@@ -127,12 +135,6 @@ try {
         */
 
         case 'home':
-            require_once __DIR__ . '/../src/services/AnnuncioService.php';
-            require_once __DIR__ . '/../src/services/WishlistService.php';
-            require_once __DIR__ . '/../src/services/CartService.php';
-            require_once __DIR__ . '/../src/services/UserService.php';
-            require_once __DIR__ . '/../src/services/CategoryService.php';
-
             $homeAnnuncioService = new AnnuncioService($pdo);
             $q          = trim($_GET['q'] ?? '');
             $idCategoria = (int) ($_GET['id_categoria'] ?? 0);

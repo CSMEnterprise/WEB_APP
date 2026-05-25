@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/EBaseEntity.php';
+namespace App\Entity;
 
 class ECategoria extends EBaseEntity
 {

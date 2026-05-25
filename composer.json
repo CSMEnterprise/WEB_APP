@@ -5,7 +5,17 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "src/"
-        }
+            "App\\Controllers\\": "src/controllers/",
+            "App\\Entity\\": "src/Entity/",
+            "App\\Foundation\\": "src/Foundation/",
+            "App\\Services\\": "src/services/"
+        },
+        "files": [
+            "src/helpers/functions.php",
+            "src/middleware/auth.php",
+            "src/middleware/admin.php",
+            "src/middleware/business.php",
+            "src/middleware/guest.php"
+        ]
     }
 }
