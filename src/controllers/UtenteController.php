@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../Entity/EIndirizzo.php';
 require_once __DIR__ . '/../Entity/EUtenteRegistrato.php';
+require_once __DIR__ . '/../Foundation/SmartyView.php';
 require_once __DIR__ . '/../services/AuthService.php';
 require_once __DIR__ . '/../services/UserService.php';
 require_once __DIR__ . '/../services/AnnuncioService.php';
@@ -33,7 +34,7 @@ class UtenteController
 
     public function showLogin(): void
     {
-        require __DIR__ . '/../views/utenti/login.php';
+        $this->renderLogin();
     }
 
     public function login(array $data): void
@@ -57,8 +58,7 @@ class UtenteController
             }
             exit;
         } catch (Exception $e) {
-            $errore = $e->getMessage();
-            require __DIR__ . '/../views/utenti/login.php';
+            $this->renderLogin($e->getMessage());
         }
     }
 
@@ -428,5 +428,20 @@ class UtenteController
             $idUtente = $this->authService->getResetTokenUserId($token);
             require __DIR__ . '/../views/utenti/reset_password.php';
         }
+    }
+
+    private function renderLogin(string $errore = ''): void
+    {
+        $isEmailNonVerificata = str_starts_with($errore, 'EMAIL_NON_VERIFICATA:');
+        $emailNonVerificata = $isEmailNonVerificata
+            ? substr($errore, strlen('EMAIL_NON_VERIFICATA:'))
+            : '';
+
+        SmartyView::make()->render('utenti/login.tpl', [
+            'resetOk' => ($_GET['reset'] ?? '') === 'ok',
+            'errore' => $isEmailNonVerificata ? 'Email non verificata.' : $errore,
+            'isEmailNonVerificata' => $isEmailNonVerificata,
+            'emailNonVerificataUrl' => urlencode($emailNonVerificata),
+        ], 'Login');
     }
 }

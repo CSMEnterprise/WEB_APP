@@ -10,6 +10,8 @@ Il progetto usa una struttura MVC leggera senza framework esterni: `public/index
 - Apache
 - MySQL / MariaDB
 - PDO
+- Composer
+- Smarty
 - HTML, CSS e JavaScript
 - XAMPP per l'ambiente locale
 
@@ -26,10 +28,11 @@ WEB_APP/
 |   |   `-- db.php
 |   |-- controllers/
 |   |-- Entity/
+|   |-- Foundation/
 |   |-- helpers/
 |   |-- middleware/
-|   |-- models/
 |   |-- services/
+|   |-- templates/
 |   `-- views/
 |       |-- admin/
 |       |-- annunci/
@@ -64,9 +67,10 @@ WEB_APP/
 - `src/config/`: contiene la configurazione dell'applicazione, inclusa la connessione al database.
 - `src/controllers/`: riceve le richieste dal router e coordina servizi e viste.
 - `src/Entity/`: contiene le classi Entity con proprieta private, getter, setter e metodi di utilita.
+- `src/Foundation/`: contiene classi infrastrutturali, per esempio il renderer Smarty.
 - `src/services/`: contiene la logica applicativa e le query al database tramite PDO.
-- `src/models/`: contiene classi modello semplici.
-- `src/views/`: contiene le pagine PHP renderizzate dall'applicazione.
+- `src/templates/`: contiene i template Smarty introdotti gradualmente.
+- `src/views/`: contiene le pagine PHP ancora renderizzate direttamente dall'applicazione.
 - `src/middleware/`: contiene i controlli di accesso per utenti autenticati, admin, business e guest.
 - `src/helpers/`: contiene funzioni comuni, come l'escape HTML.
 - `database/`: contiene lo schema SQL completo per creare il database.
@@ -105,6 +109,12 @@ Entrare nella cartella del progetto:
 
 ```bash
 cd WEB_APP
+```
+
+Installare le dipendenze Composer:
+
+```bash
+composer install
 ```
 
 ### 2. Usare il branch di sviluppo
@@ -208,6 +218,16 @@ In alternativa, se non si configura un virtual host, e' possibile usare:
 ```text
 http://localhost/WEB_APP/public/
 ```
+
+## Smarty
+
+Smarty e' stato introdotto in modo graduale nella parte View:
+
+- `src/Foundation/SmartyView.php` configura Smarty;
+- `src/templates/` contiene i nuovi template `.tpl`;
+- `src/views/` resta disponibile per le pagine PHP non ancora convertite.
+
+La prima pagina convertita e' il login: `UtenteController` renderizza `src/templates/utenti/login.tpl` tramite `SmartyView`.
 
 ## Routing
 
