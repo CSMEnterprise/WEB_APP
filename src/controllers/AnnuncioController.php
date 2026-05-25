@@ -1,5 +1,6 @@
 <?php
 
+require_once __DIR__ . '/../Entity/EAnnuncio.php';
 require_once __DIR__ . '/../services/AnnuncioService.php';
 require_once __DIR__ . '/../services/CategoryService.php';
 require_once __DIR__ . '/../services/FeedbackService.php';
@@ -59,7 +60,8 @@ class AnnuncioController
             return;
         }
 
-        $idVenditore        = (int) ($annuncio['id_utente'] ?? 0);
+        $annuncioEntity     = EAnnuncio::fromArray($annuncio);
+        $idVenditore        = (int) ($annuncioEntity->getIdUtente() ?? 0);
         $feedbackVenditore  = $idVenditore > 0 ? $this->feedbackService->getByVenditoreId($idVenditore) : [];
         $mediaVenditore     = $idVenditore > 0 ? $this->feedbackService->getMediaVoto($idVenditore) : 0.0;
 
@@ -80,8 +82,9 @@ class AnnuncioController
     {
         try {
             $annuncio = $this->annuncioService->findById($idAnnuncio);
+            $annuncioEntity = $annuncio ? EAnnuncio::fromArray($annuncio) : null;
 
-            if (!$annuncio || (int)($annuncio['id_utente'] ?? 0) !== $idUtente || ($annuncio['stato'] ?? '') !== 'attivo') {
+            if (!$annuncioEntity || (int)($annuncioEntity->getIdUtente() ?? 0) !== $idUtente || !$annuncioEntity->isAttivo()) {
                 throw new ServiceException('Non puoi modificare questo annuncio.');
             }
 

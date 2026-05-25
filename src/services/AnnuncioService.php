@@ -1,9 +1,15 @@
 <?php
 
 require_once __DIR__ . '/BaseService.php';
+require_once __DIR__ . '/../Entity/EAnnuncio.php';
 
 class AnnuncioService extends BaseService
 {
+    public function getAnnunciAttiviEntity(int $idCategoria = 0): array
+    {
+        return $this->toAnnuncioEntities($this->getAnnunciAttivi($idCategoria));
+    }
+
     public function getAnnunciAttivi(int $idCategoria = 0): array
     {
         $whereCategoria = '';
@@ -39,6 +45,11 @@ class AnnuncioService extends BaseService
         $stmt->execute($params);
 
         return $stmt->fetchAll();
+    }
+
+    public function getAnnunciCasualiEntity(int $limit = 8, ?int $excludeUserId = null, array $excludeAnnuncioIds = []): array
+    {
+        return $this->toAnnuncioEntities($this->getAnnunciCasuali($limit, $excludeUserId, $excludeAnnuncioIds));
     }
 
     public function getAnnunciCasuali(int $limit = 8, ?int $excludeUserId = null, array $excludeAnnuncioIds = []): array
@@ -141,6 +152,13 @@ class AnnuncioService extends BaseService
         return array_merge($annunci, $fallback);
     }
 
+    public function findEntityById(int $idAnnuncio): ?EAnnuncio
+    {
+        $annuncio = $this->findById($idAnnuncio);
+
+        return $annuncio ? $this->toAnnuncioEntity($annuncio) : null;
+    }
+
     public function findById(int $idAnnuncio): ?array
     {
         $this->requirePositiveId($idAnnuncio, 'Annuncio');
@@ -169,12 +187,17 @@ class AnnuncioService extends BaseService
 
         $annuncio['immagini'] = $this->getImmaginiByAnnuncio($idAnnuncio);
 
-        return $annuncio;
+        return array_merge($annuncio, $this->toAnnuncioEntity($annuncio)->toArray());
     }
 
     public function getByUserId(int $idUtente): array
     {
         return $this->getByUserIdAndStato($idUtente, null);
+    }
+
+    public function getByUserIdEntity(int $idUtente): array
+    {
+        return $this->toAnnuncioEntities($this->getByUserId($idUtente));
     }
 
     public function getByUserIdAndStato(int $idUtente, ?string $stato = 'attivo'): array
@@ -214,6 +237,16 @@ class AnnuncioService extends BaseService
         $stmt->execute($params);
 
         return $stmt->fetchAll();
+    }
+
+    public function getByUserIdAndStatoEntity(int $idUtente, ?string $stato = 'attivo'): array
+    {
+        return $this->toAnnuncioEntities($this->getByUserIdAndStato($idUtente, $stato));
+    }
+
+    public function creaDaEntity(EAnnuncio $annuncio, int $idUtente, array $files = []): int
+    {
+        return $this->crea($annuncio->toArray(), $idUtente, $files);
     }
 
     public function crea(array $data, int $idUtente, array $files = []): int
@@ -284,12 +317,12 @@ class AnnuncioService extends BaseService
         $this->requirePositiveId($idAnnuncio, 'Annuncio');
         $this->requirePositiveId($idUtente, 'Utente');
 
-        $annuncio = $this->findById($idAnnuncio);
-        if (!$annuncio || (int)($annuncio['id_utente'] ?? 0) !== $idUtente) {
+        $annuncio = $this->findEntityById($idAnnuncio);
+        if (!$annuncio || (int)($annuncio->getIdUtente() ?? 0) !== $idUtente) {
             throw new ServiceException('Non puoi modificare questo annuncio.');
         }
 
-        if (($annuncio['stato'] ?? '') !== 'attivo') {
+        if (!$annuncio->isAttivo()) {
             throw new ServiceException('Puoi modificare solo annunci attivi.');
         }
 
@@ -347,6 +380,17 @@ class AnnuncioService extends BaseService
             }
             throw $e;
         }
+    }
+
+    public function aggiornaDaEntity(EAnnuncio $annuncio, int $idUtente, array $files = []): void
+    {
+        $idAnnuncio = $annuncio->getIdAnnuncio();
+
+        if ($idAnnuncio === null) {
+            throw new ServiceException('Annuncio non valido.');
+        }
+
+        $this->aggiorna($idAnnuncio, $idUtente, $annuncio->toArray(), $files);
     }
 
     public function elimina(int $idAnnuncio, int $idUtente): void
@@ -475,6 +519,29 @@ class AnnuncioService extends BaseService
         return $stmt->fetchAll();
     }
 
+    public function searchAnnunciEntity(
+        string $keywords,
+        int $idCategoria = 0,
+        ?float $prezzoMin = null,
+        ?float $prezzoMax = null,
+        string $ordinamento = 'data_desc',
+        ?int $limit = null,
+        int $offset = 0,
+        ?int $excludeUserId = null
+    ): array
+    {
+        return $this->toAnnuncioEntities($this->searchAnnunci(
+            $keywords,
+            $idCategoria,
+            $prezzoMin,
+            $prezzoMax,
+            $ordinamento,
+            $limit,
+            $offset,
+            $excludeUserId
+        ));
+    }
+
     public function countSearchAnnunci(string $keywords, int $idCategoria = 0, ?float $prezzoMin = null, ?float $prezzoMax = null, ?int $excludeUserId = null): int
     {
         [$whereSql, $params] = $this->buildSearchWhere($keywords, $idCategoria, $prezzoMin, $prezzoMax, $excludeUserId);
@@ -525,6 +592,16 @@ class AnnuncioService extends BaseService
         }
 
         return [implode(' AND ', $where), $params];
+    }
+
+    private function toAnnuncioEntity(array $annuncio): EAnnuncio
+    {
+        return EAnnuncio::fromArray($annuncio);
+    }
+
+    private function toAnnuncioEntities(array $annunci): array
+    {
+        return array_map(fn(array $annuncio) => $this->toAnnuncioEntity($annuncio), $annunci);
     }
 
     private function getCategorieInteresseUtente(int $idUtente): array

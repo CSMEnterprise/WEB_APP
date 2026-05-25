@@ -15,7 +15,13 @@ Ogni Entity segue lo stile del modello usato a lezione:
 - `jsonSerialize()`;
 - `__toString()`.
 
-Le Entity sono state introdotte senza rimuovere i vecchi `src/models`, cosi l'app continua a funzionare durante la migrazione progressiva da array PDO a oggetti.
+Le Entity sono introdotte gradualmente: i service possono ancora restituire array compatibili con le view esistenti, ma espongono anche metodi che restituiscono oggetti quando il controller o la logica applicativa sono pronti a usarli.
+
+Primo passo gia applicato:
+
+- `AnnuncioService` mantiene i metodi storici basati su array;
+- `AnnuncioService` espone metodi equivalenti che restituiscono `EAnnuncio`;
+- `AnnuncioController` usa `EAnnuncio` per leggere proprieta e stato dell'annuncio senza rompere le view.
 
 Mappatura principale:
 
