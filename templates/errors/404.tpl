@@ -1,0 +1,9 @@
+{include file="layouts/header.tpl"}
+
+<section class="card">
+    <h1>404 - Pagina non trovata</h1>
+    <p>La pagina richiesta non esiste o non e piu disponibile.</p>
+    <p><a class="btn" href="index.php?route=home">Torna alla home</a></p>
+</section>
+
+{include file="layouts/footer.tpl"}

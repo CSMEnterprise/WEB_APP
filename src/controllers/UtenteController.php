@@ -6,7 +6,6 @@ use App\Entity\EAccountBusiness;
 use App\Entity\EIndirizzo;
 use App\Foundation\FDataBase;
 use App\Foundation\FPersistentManager;
-use App\Foundation\SmartyView;
 use App\Services\MailService;
 use App\Services\ServiceException;
 use Exception;
@@ -60,12 +59,12 @@ class UtenteController extends BaseController
 
     public function showRegister(): void
     {
-        require __DIR__ . '/../views/utenti/registrazione.php';
+        $this->view('auth/register.tpl', [], 'Scegli registrazione');
     }
 
     public function showRegisterUser(): void
     {
-        require __DIR__ . '/../views/utenti/registrazione_utente.php';
+        $this->view('utenti/registrazione_utente.tpl', [], 'Registrazione utente');
     }
 
     public function register(array $data): void
@@ -89,14 +88,14 @@ class UtenteController extends BaseController
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
-            require __DIR__ . '/../views/utenti/registrazione_utente.php';
+            $this->view('utenti/registrazione_utente.tpl', compact('errore'), 'Registrazione utente');
         }
     }
 
 
     public function showRegisterBusiness(): void
     {
-        require __DIR__ . '/../views/utenti/registrazione_business.php';
+        $this->view('utenti/registrazione_business.tpl', [], 'Registrazione business');
     }
 
     public function registerBusiness(array $data): void
@@ -143,22 +142,19 @@ class UtenteController extends BaseController
             }
 
             $errore = $e->getMessage();
-            require __DIR__ . '/../views/utenti/registrazione_business.php';
+            $this->view('utenti/registrazione_business.tpl', compact('errore'), 'Registrazione business');
         }
     }
 
     public function profilo(int $idUtente, string $filtroAnnunci = 'attivo'): void
     {
-        extract($this->loadProfiloData($idUtente, $filtroAnnunci));
-
-        require __DIR__ . '/../views/utenti/profilo.php';
+        $this->renderProfilo($this->loadProfiloData($idUtente, $filtroAnnunci));
     }
 
     public function venditore(int $idVenditore): void
     {
         if ($idVenditore <= 0) {
-            http_response_code(404);
-            require __DIR__ . '/../views/errors/404.php';
+            $this->renderError('Venditore non trovato.', 404);
             return;
         }
 
@@ -166,8 +162,7 @@ class UtenteController extends BaseController
         $venditore = $this->entityToArray($venditoreEntity);
 
         if (!$venditoreEntity || $venditoreEntity->isBannato()) {
-            http_response_code(404);
-            require __DIR__ . '/../views/errors/404.php';
+            $this->renderError('Venditore non trovato.', 404);
             return;
         }
 
@@ -175,7 +170,7 @@ class UtenteController extends BaseController
         $feedbackVenditore = $this->entitiesToArrays(FPersistentManager::feedbackByVenditore($idVenditore));
         $mediaVenditore = FPersistentManager::mediaFeedbackVenditore($idVenditore);
 
-        require __DIR__ . '/../views/utenti/venditore.php';
+        $this->view('utenti/venditore.tpl', compact('venditore', 'annunciVenditore', 'feedbackVenditore', 'mediaVenditore'), 'Profilo venditore');
     }
 
     public function logout(): void
@@ -193,9 +188,9 @@ class UtenteController extends BaseController
             header('Location: index.php?route=profilo');
             exit;
         } catch (Exception $e) {
-            $errore          = $e->getMessage();
-            extract($this->loadProfiloData($idUtente));
-            require __DIR__ . '/../views/utenti/profilo.php';
+            $data = $this->loadProfiloData($idUtente);
+            $data['errore'] = $e->getMessage();
+            $this->renderProfilo($data);
         }
     }
 
@@ -206,10 +201,10 @@ class UtenteController extends BaseController
             header('Location: index.php?route=profilo&profilo_aggiornato=1');
             exit;
         } catch (Exception $e) {
-            $errore          = $e->getMessage();
-            extract($this->loadProfiloData($idUtente));
-            $openProfiloEdit = true;
-            require __DIR__ . '/../views/utenti/profilo.php';
+            $data = $this->loadProfiloData($idUtente);
+            $data['errore'] = $e->getMessage();
+            $data['openProfiloEdit'] = true;
+            $this->renderProfilo($data);
         }
     }
 
@@ -225,10 +220,10 @@ class UtenteController extends BaseController
             header('Location: index.php?route=profilo&password_aggiornata=1');
             exit;
         } catch (Exception $e) {
-            $errore          = $e->getMessage();
-            extract($this->loadProfiloData($idUtente));
-            $openPasswordEdit = true;
-            require __DIR__ . '/../views/utenti/profilo.php';
+            $data = $this->loadProfiloData($idUtente);
+            $data['errore'] = $e->getMessage();
+            $data['openPasswordEdit'] = true;
+            $this->renderProfilo($data);
         }
     }
 
@@ -240,10 +235,9 @@ class UtenteController extends BaseController
             header('Location: index.php?route=profilo');
             exit;
         } catch (Exception $e) {
-            $errore = $e->getMessage();
-            extract($this->loadProfiloData($idUtente));
-
-            require __DIR__ . '/../views/utenti/profilo.php';
+            $data = $this->loadProfiloData($idUtente);
+            $data['errore'] = $e->getMessage();
+            $this->renderProfilo($data);
         }
     }
 
@@ -257,9 +251,9 @@ class UtenteController extends BaseController
             exit;
         }
 
-        extract($this->loadProfiloData($idUtente));
-
-        require __DIR__ . '/../views/utenti/profilo.php';
+        $data = $this->loadProfiloData($idUtente);
+        $data['editingIndirizzo'] = $editingIndirizzo;
+        $this->renderProfilo($data);
     }
 
     public function aggiornaIndirizzo(array $data, int $idUtente): void
@@ -270,10 +264,10 @@ class UtenteController extends BaseController
             header('Location: index.php?route=profilo');
             exit;
         } catch (Exception $e) {
-            $errore          = $e->getMessage();
-            $editingIndirizzo = $this->entityToArray(FPersistentManager::indirizzoForUser($idIndirizzo, $idUtente));
-            extract($this->loadProfiloData($idUtente));
-            require __DIR__ . '/../views/utenti/profilo.php';
+            $data = $this->loadProfiloData($idUtente);
+            $data['errore'] = $e->getMessage();
+            $data['editingIndirizzo'] = $this->entityToArray(FPersistentManager::indirizzoForUser($idIndirizzo, $idUtente));
+            $this->renderProfilo($data);
         }
     }
 
@@ -295,9 +289,9 @@ class UtenteController extends BaseController
             header('Location: index.php?route=profilo');
             exit;
         } catch (Exception $e) {
-            $errore = $e->getMessage();
-            extract($this->loadProfiloData($idUtente));
-            require __DIR__ . '/../views/utenti/profilo.php';
+            $data = $this->loadProfiloData($idUtente);
+            $data['errore'] = $e->getMessage();
+            $this->renderProfilo($data);
         }
     }
 
@@ -308,22 +302,29 @@ class UtenteController extends BaseController
     public function verificaEmailAttesa(): void
     {
         $email = $_GET['email'] ?? '';
-        require __DIR__ . '/../views/utenti/verifica_email_attesa.php';
+        $debugLink = $this->consumeDebugMailLink('verifica');
+        $this->view('utenti/verifica_email_attesa.tpl', compact('email', 'debugLink'), 'Verifica email');
     }
 
     public function verificaEmail(string $token): void
     {
+        $successo = '';
+        $errore = '';
+
         try {
             $this->verifyEmail($token);
             $successo = 'Email verificata con successo! Ora puoi accedere.';
         } catch (Exception $e) {
             $errore = $e->getMessage();
         }
-        require __DIR__ . '/../views/utenti/verifica_email.php';
+        $this->view('utenti/verifica_email.tpl', compact('successo', 'errore'), 'Verifica email');
     }
 
     public function reinviaVerifica(array $data): void
     {
+        $successo = '';
+        $errore = '';
+
         try {
             $mail = new MailService();
             $this->resendVerification($data['email'] ?? '', $mail);
@@ -331,7 +332,9 @@ class UtenteController extends BaseController
         } catch (Exception $e) {
             $errore = $e->getMessage();
         }
-        require __DIR__ . '/../views/utenti/verifica_email_attesa.php';
+        $email = $data['email'] ?? '';
+        $debugLink = $this->consumeDebugMailLink('verifica');
+        $this->view('utenti/verifica_email_attesa.tpl', compact('email', 'successo', 'errore', 'debugLink'), 'Verifica email');
     }
 
     // ----------------------------------------------------------------
@@ -340,7 +343,7 @@ class UtenteController extends BaseController
 
     public function showRecuperoPassword(): void
     {
-        require __DIR__ . '/../views/utenti/recupero_password.php';
+        $this->view('utenti/recupero_password.tpl', [], 'Recupero password');
     }
 
     public function inviaResetPassword(array $data): void
@@ -353,16 +356,18 @@ class UtenteController extends BaseController
         }
         // Mostriamo sempre lo stesso messaggio di conferma
         $successo = 'Se l\'indirizzo è associato a un account, riceverai un\'email con le istruzioni.';
-        require __DIR__ . '/../views/utenti/recupero_password.php';
+        $debugLink = $this->consumeDebugMailLink('reset');
+        $this->view('utenti/recupero_password.tpl', compact('successo', 'debugLink'), 'Recupero password');
     }
 
     public function showResetPassword(string $token): void
     {
+        $errore = '';
         $idUtente = $this->getResetTokenUserId($token);
         if ($idUtente === 0) {
             $errore = 'Il link non è valido o è scaduto.';
         }
-        require __DIR__ . '/../views/utenti/reset_password.php';
+        $this->view('utenti/reset_password.tpl', compact('token', 'idUtente', 'errore'), 'Reset password');
     }
 
     public function resetPassword(array $data): void
@@ -375,7 +380,7 @@ class UtenteController extends BaseController
         } catch (Exception $e) {
             $errore = $e->getMessage();
             $idUtente = $this->getResetTokenUserId($token);
-            require __DIR__ . '/../views/utenti/reset_password.php';
+            $this->view('utenti/reset_password.tpl', compact('token', 'idUtente', 'errore'), 'Reset password');
         }
     }
 
@@ -938,6 +943,25 @@ class UtenteController extends BaseController
         ];
     }
 
+    private function renderProfilo(array $data): void
+    {
+        $this->view('utenti/profilo.tpl', $data, 'Profilo');
+    }
+
+    private function consumeDebugMailLink(string $tipo): string
+    {
+        $debugMail = $_SESSION['debug_mail'] ?? null;
+
+        if (!is_array($debugMail) || ($debugMail['tipo'] ?? '') !== $tipo) {
+            return '';
+        }
+
+        $link = (string) ($debugMail['link'] ?? '');
+        unset($_SESSION['debug_mail']);
+
+        return $link;
+    }
+
     private function renderLogin(string $errore = ''): void
     {
         $isEmailNonVerificata = str_starts_with($errore, 'EMAIL_NON_VERIFICATA:');
@@ -945,7 +969,7 @@ class UtenteController extends BaseController
             ? substr($errore, strlen('EMAIL_NON_VERIFICATA:'))
             : '';
 
-        SmartyView::make()->render('utenti/login.tpl', [
+        $this->view('auth/login.tpl', [
             'resetOk' => ($_GET['reset'] ?? '') === 'ok',
             'errore' => $isEmailNonVerificata ? 'Email non verificata.' : $errore,
             'isEmailNonVerificata' => $isEmailNonVerificata,

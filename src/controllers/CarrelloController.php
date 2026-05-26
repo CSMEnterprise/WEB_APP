@@ -31,21 +31,21 @@ class CarrelloController extends BaseController
             }
 
             $carrello = $this->entitiesToArrays(FPersistentManager::elementiCarrelloAcquistabili($idCarrello));
+            $purchasableItems = [];
             $totale = 0.0;
 
             foreach ($carrello as $item) {
                 $isOwner = (int)($item['id_utente'] ?? 0) === $idUtente;
 
                 if (!$isOwner && ($item['stato'] ?? '') === 'attivo') {
+                    $purchasableItems[] = $item;
                     $totale += (float)($item['prezzo'] ?? 0);
                 }
             }
 
-            require __DIR__ . '/../views/carrello/lista.php';
+            $this->view('carrello/lista.tpl', compact('annunciRimossi', 'carrello', 'purchasableItems', 'totale'), 'Carrello');
         } catch (Exception $e) {
-            http_response_code(400);
-            $errore = $e->getMessage();
-            require __DIR__ . '/../views/errors/400.php';
+            $this->renderError($e->getMessage(), 400);
         }
     }
 
@@ -58,9 +58,7 @@ class CarrelloController extends BaseController
             header('Location: ' . $back);
             exit;
         } catch (Exception $e) {
-            http_response_code(400);
-            $errore = $e->getMessage();
-            require __DIR__ . '/../views/errors/400.php';
+            $this->renderError($e->getMessage(), 400);
         }
     }
 
@@ -77,9 +75,7 @@ class CarrelloController extends BaseController
             header('Location: index.php?route=carrello');
             exit;
         } catch (Exception $e) {
-            http_response_code(400);
-            $errore = $e->getMessage();
-            require __DIR__ . '/../views/errors/400.php';
+            $this->renderError($e->getMessage(), 400);
         }
     }
 
@@ -95,9 +91,7 @@ class CarrelloController extends BaseController
             header('Location: index.php?route=carrello');
             exit;
         } catch (Exception $e) {
-            http_response_code(400);
-            $errore = $e->getMessage();
-            require __DIR__ . '/../views/errors/400.php';
+            $this->renderError($e->getMessage(), 400);
         }
     }
 

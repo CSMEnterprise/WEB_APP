@@ -31,6 +31,22 @@ class SmartyView
         $this->smarty->registerPlugin('modifier', 'ucfirst', 'ucfirst');
         $this->smarty->registerPlugin('modifier', 'urlencode', 'urlencode');
         $this->smarty->registerPlugin('modifier', 'strtolower', 'strtolower');
+        $this->smarty->registerPlugin('modifier', 'strtoupper', 'strtoupper');
+        $this->smarty->registerPlugin('modifier', 'substr',
+            static fn($value, int $start, ?int $length = null): string => $length === null
+                ? substr((string) $value, $start)
+                : substr((string) $value, $start, $length)
+        );
+        $this->smarty->registerPlugin('modifier', 'round', 'round');
+        $this->smarty->registerPlugin('modifier', 'count_items',
+            static fn($value): int => is_countable($value) ? count($value) : 0
+        );
+        $this->smarty->registerPlugin('modifier', 'in_array',
+            static fn($needle, $haystack): bool => in_array((int) $needle, array_map('intval', (array) $haystack), true)
+        );
+        $this->smarty->registerPlugin('modifier', 'date_it',
+            static fn($value): string => $value ? date('d/m/Y', strtotime((string) $value)) : ''
+        );
         $this->smarty->registerPlugin('modifier', 'preg_replace_slug',
             fn($s) => strtolower(preg_replace('/[^a-z0-9]+/i', '-', (string)$s))
         );
@@ -61,8 +77,10 @@ class SmartyView
         // ── Dati sempre disponibili ───────────────────────────────────────
         $this->smarty->assign('pageTitle',  $pageTitle);
         $this->smarty->assign('year',       (int) date('Y'));
+        $this->smarty->assign('today',      date('d/m/Y'));
         $this->smarty->assign('get',        $_GET  ?? []);
         $this->smarty->assign('post',       $_POST ?? []);
+        $this->smarty->assign('session',    $_SESSION ?? []);
 
         // ── Sessione ──────────────────────────────────────────────────────
         $isLogged    = !empty($_SESSION['user_id']);

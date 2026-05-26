@@ -22,8 +22,7 @@ class FeedbackController extends BaseController
         $pagamento = $this->entityToArray($pagamentoEntity);
 
         if (!$pagamentoEntity || $pagamentoEntity->getIdAcquirente() !== $idAutore) {
-            http_response_code(403);
-            require __DIR__ . '/../views/errors/400.php';
+            $this->renderError('Non puoi lasciare un feedback per questo pagamento.', 403);
             return;
         }
 
@@ -32,7 +31,7 @@ class FeedbackController extends BaseController
             exit;
         }
 
-        require __DIR__ . '/../views/feedback/form.php';
+        $this->view('feedback/form.tpl', compact('idPagamento', 'pagamento'), 'Lascia feedback');
     }
 
     public function crea(array $data, int $idAutore): void
@@ -47,7 +46,7 @@ class FeedbackController extends BaseController
             $idPagamento = (int) ($data['id_pagamento'] ?? 0);
             $pagamento = $this->entityToArray(FPersistentManager::pagamentoById($idPagamento));
 
-            require __DIR__ . '/../views/feedback/form.php';
+            $this->view('feedback/form.tpl', compact('errore', 'idPagamento', 'pagamento'), 'Lascia feedback');
         }
     }
 
@@ -57,7 +56,7 @@ class FeedbackController extends BaseController
 
         $feedback = $this->entitiesToArrays(FPersistentManager::feedbackByUser($idUtente));
 
-        require __DIR__ . '/../views/feedback/lista.php';
+        $this->view('feedback/lista.tpl', compact('feedback'), 'I miei feedback');
     }
 
     public function listaVenditore(int $idVenditore): void
@@ -67,7 +66,7 @@ class FeedbackController extends BaseController
         $feedback = $this->entitiesToArrays(FPersistentManager::feedbackByVenditore($idVenditore));
         $media = FPersistentManager::mediaFeedbackVenditore($idVenditore);
 
-        require __DIR__ . '/../views/feedback/lista_venditore.php';
+        $this->view('feedback/lista_venditore.tpl', compact('feedback', 'media'), 'Feedback venditore');
     }
 
     private function createFeedback(array $data, int $idAutore): int

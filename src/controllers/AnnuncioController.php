@@ -36,8 +36,9 @@ class AnnuncioController extends BaseController
 
         $isRegularUser = !empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business']);
         $wishlistIds = $isRegularUser ? FPersistentManager::wishlistIdsByUser((int) $_SESSION['user_id']) : [];
+        $carrelloIds = $isRegularUser ? FPersistentManager::carrelloAnnuncioIdsByUser((int) $_SESSION['user_id']) : [];
 
-        require __DIR__ . '/../views/annunci/lista.php';
+        $this->view('annunci/lista.tpl', compact('q', 'idCategoria', 'categorie', 'annunci', 'utenti', 'wishlistIds', 'carrelloIds'), 'Annunci');
     }
 
     public function dettaglio(int $idAnnuncio): void
@@ -45,8 +46,7 @@ class AnnuncioController extends BaseController
         $annuncioEntity = FPersistentManager::annuncioById($idAnnuncio);
 
         if (!$annuncioEntity) {
-            http_response_code(404);
-            require __DIR__ . '/../views/errors/404.php';
+            $this->renderError('Annuncio non trovato.', 404);
             return;
         }
 
@@ -61,14 +61,14 @@ class AnnuncioController extends BaseController
         $wishlistIds = $isRegularUser ? FPersistentManager::wishlistIdsByUser((int) $_SESSION['user_id']) : [];
         $carrelloIds = $isRegularUser ? FPersistentManager::carrelloAnnuncioIdsByUser((int) $_SESSION['user_id']) : [];
 
-        require __DIR__ . '/../views/annunci/dettaglio.php';
+        $this->view('annunci/dettaglio.tpl', compact('annuncio', 'feedbackVenditore', 'mediaVenditore', 'wishlistIds', 'carrelloIds'), $annuncio['titolo'] ?? 'Annuncio');
     }
 
     public function formCreazione(): void
     {
         $categorie = $this->entitiesToArrays(FPersistentManager::categorie());
 
-        require __DIR__ . '/../views/annunci/form.php';
+        $this->view('annunci/form.tpl', compact('categorie'), 'Nuovo annuncio');
     }
 
     public function formModifica(int $idAnnuncio, int $idUtente): void
@@ -84,11 +84,9 @@ class AnnuncioController extends BaseController
             $categorie = $this->entitiesToArrays(FPersistentManager::categorie());
             $isEdit = true;
 
-            require __DIR__ . '/../views/annunci/form.php';
+            $this->view('annunci/form.tpl', compact('categorie', 'annuncio', 'isEdit'), 'Modifica annuncio');
         } catch (Exception $e) {
-            http_response_code(403);
-            $errore = $e->getMessage();
-            require __DIR__ . '/../views/errors/400.php';
+            $this->renderError($e->getMessage(), 403);
         }
     }
 
@@ -103,7 +101,7 @@ class AnnuncioController extends BaseController
             $errore = $e->getMessage();
             $categorie = $this->entitiesToArrays(FPersistentManager::categorie());
 
-            require __DIR__ . '/../views/annunci/form.php';
+            $this->view('annunci/form.tpl', compact('errore', 'categorie'), 'Nuovo annuncio');
         }
     }
 
@@ -123,7 +121,7 @@ class AnnuncioController extends BaseController
             $annuncio = $annuncioEntity ? $annuncioEntity->toArray() : $data;
             $isEdit = true;
 
-            require __DIR__ . '/../views/annunci/form.php';
+            $this->view('annunci/form.tpl', compact('errore', 'categorie', 'annuncio', 'isEdit'), 'Modifica annuncio');
         }
     }
 
@@ -135,9 +133,7 @@ class AnnuncioController extends BaseController
             header('Location: index.php?route=annuncio-edit&id=' . $idAnnuncio);
             exit;
         } catch (Exception $e) {
-            http_response_code(403);
-            $errore = $e->getMessage();
-            require __DIR__ . '/../views/errors/400.php';
+            $this->renderError($e->getMessage(), 403);
         }
     }
 
@@ -154,9 +150,7 @@ class AnnuncioController extends BaseController
             header('Location: index.php?route=annunci');
             exit;
         } catch (Exception $e) {
-            http_response_code(403);
-            $errore = $e->getMessage();
-            require __DIR__ . '/../views/errors/400.php';
+            $this->renderError($e->getMessage(), 403);
         }
     }
 

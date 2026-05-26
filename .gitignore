@@ -1,5 +1,7 @@
 vendor/
 var/cache/
+cache/
+templates_c/
 src/config/mail.php
 public/uploads/
 *.sql

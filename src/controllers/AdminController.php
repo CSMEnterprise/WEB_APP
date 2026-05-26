@@ -21,7 +21,7 @@ class AdminController extends BaseController
         $stats = FPersistentManager::dashboardStats();
         $azioniModera = $this->entitiesToArrays(FPersistentManager::moderaByAdmin($idAdmin));
 
-        require __DIR__ . '/../views/admin/dashboard.php';
+        $this->view('admin/dashboard.tpl', compact('stats', 'azioniModera'), 'Dashboard admin');
     }
 
     public function dashboardModerazione(array $filters): void
@@ -31,7 +31,7 @@ class AdminController extends BaseController
             'admin' => trim((string) ($filters['admin'] ?? '')),
         ];
 
-        require __DIR__ . '/../views/admin/dashboard_moderazione.php';
+        $this->view('admin/dashboard_moderazione.tpl', compact('azioniModerazione', 'filters'), 'Moderazione');
     }
 
     public function utenti(array $filters = []): void
@@ -43,7 +43,7 @@ class AdminController extends BaseController
             : [];
         $filters = ['q_utente' => $searchUtente];
 
-        require __DIR__ . '/../views/admin/utenti.php';
+        $this->view('admin/utenti.tpl', compact('utenti', 'admins', 'filters'), 'Gestione utenti');
     }
 
     public function bannaUtente(int $idUtente, int $idAdmin): void
@@ -85,8 +85,7 @@ class AdminController extends BaseController
             exit;
         } catch (Exception $e) {
             http_response_code(403);
-            $errore = $e->getMessage();
-            require __DIR__ . '/../views/errors/400.php';
+            $this->renderError($e->getMessage(), 403);
         }
     }
 
@@ -105,8 +104,7 @@ class AdminController extends BaseController
             exit;
         } catch (Exception $e) {
             http_response_code(403);
-            $errore = $e->getMessage();
-            require __DIR__ . '/../views/errors/400.php';
+            $this->renderError($e->getMessage(), 403);
         }
     }
 
@@ -118,7 +116,7 @@ class AdminController extends BaseController
             'tipologia' => trim((string) ($filters['tipologia'] ?? '')),
         ];
 
-        require __DIR__ . '/../views/admin/segnalazioni.php';
+        $this->view('admin/segnalazioni.tpl', compact('segnalazioni', 'filters'), 'Segnalazioni');
     }
 
     public function eliminaAnnuncio(int $idAnnuncio, int $idAdmin): void

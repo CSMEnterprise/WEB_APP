@@ -18,12 +18,10 @@ use function App\Middleware\requireGuest;
 class FrontController extends BaseController
 {
     private PDO $pdo;
-    private string $viewsPath;
 
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
-        $this->viewsPath = dirname(__DIR__) . '/views';
         $GLOBALS['pdo'] = $pdo;
         FDataBase::init($pdo);
     }
@@ -169,7 +167,7 @@ class FrontController extends BaseController
                         }
                         $homeAnnunci       = $this->entitiesToArrays(FPersistentManager::searchAnnunci($q, $idCategoria, $prezzoMin, $prezzoMax, $ordinamento, $annunciPerPagina, $offsetAnnunci, $excludeHomeUserId));
                         $utenti            = $q !== '' ? $this->entitiesToArrays(FPersistentManager::searchUtenti($q)) : [];
-                        $homeTitoloAnnunci = $q !== '' ? 'Risultati per "' . htmlspecialchars($q, ENT_QUOTES, 'UTF-8') . '"' : 'Risultati ricerca';
+                        $homeTitoloAnnunci = $q !== '' ? 'Risultati per "' . $q . '"' : 'Risultati ricerca';
                     } else {
                         $totaleAnnunci     = FPersistentManager::countSearchAnnunci('', 0, null, null, $excludeHomeUserId);
                         $totalePagine      = max(1, (int) ceil($totaleAnnunci / $annunciPerPagina));
@@ -186,7 +184,32 @@ class FrontController extends BaseController
                         $carrelloIds = FPersistentManager::carrelloAnnuncioIdsByUser(currentUserId());
                     }
 
-                    require $this->viewsPath . '/home.php';
+                    $prezzoMinValue = $prezzoMin !== null ? (string) $prezzoMin : '';
+                    $prezzoMaxValue = $prezzoMax !== null ? (string) $prezzoMax : '';
+                    $isRicerca = $q !== '' || $idCategoria > 0 || $hasFiltriAvanzati;
+                    $pagination = $this->buildHomePagination($paginaCorrente, $totalePagine);
+                    $resetFiltersUrl = $this->buildHomeResetUrl($q, $idCategoria);
+
+                    $this->view('home.tpl', compact(
+                        'q',
+                        'idCategoria',
+                        'prezzoMinValue',
+                        'prezzoMaxValue',
+                        'ordinamento',
+                        'hasFiltriAvanzati',
+                        'isRicerca',
+                        'homeAnnunci',
+                        'utenti',
+                        'categorie',
+                        'wishlistIds',
+                        'carrelloIds',
+                        'paginaCorrente',
+                        'totalePagine',
+                        'totaleAnnunci',
+                        'homeTitoloAnnunci',
+                        'pagination',
+                        'resetFiltersUrl'
+                    ), 'Home');
                     break;
 
                 case 'annunci':
@@ -699,15 +722,15 @@ class FrontController extends BaseController
                 */
 
                 case 'privacy':
-                    require $this->viewsPath . '/legale/privacy.php';
+                    $this->view('legale/privacy.tpl', [], 'Privacy Policy');
                     break;
 
                 case 'termini':
-                    require $this->viewsPath . '/legale/termini.php';
+                    $this->view('legale/termini.tpl', [], 'Termini di servizio');
                     break;
 
                 case 'cookie':
-                    require $this->viewsPath . '/legale/cookie.php';
+                    $this->view('legale/cookie.tpl', [], 'Cookie');
                     break;
 
                 /*
@@ -717,8 +740,7 @@ class FrontController extends BaseController
                 */
 
                 default:
-                    http_response_code(404);
-                    require $this->viewsPath . '/errors/404.php';
+                    $this->renderError('La pagina richiesta non esiste.', 404);
                     break;
             }
         } catch (Throwable $e) {
@@ -734,8 +756,73 @@ class FrontController extends BaseController
                 $errore = $e->getMessage();
             }
 
-            require $this->viewsPath . '/errors/400.php';
+            $this->renderError($errore, 500);
         }
 
+    }
+
+    private function buildHomePagination(int $paginaCorrente, int $totalePagine): array
+    {
+        $buildPageUrl = static function (int $page): string {
+            $params = $_GET;
+            $params['route'] = 'home';
+            $params['page'] = $page;
+
+            foreach ($params as $key => $value) {
+                if ($value === '' || $value === null) {
+                    unset($params[$key]);
+                }
+            }
+
+            return 'index.php?' . http_build_query($params);
+        };
+
+        $paginaDa = max(1, $paginaCorrente - 2);
+        $paginaA = min($totalePagine, $paginaCorrente + 2);
+        $pages = [];
+
+        if ($paginaDa > 1) {
+            $pages[] = ['number' => 1, 'url' => $buildPageUrl(1), 'active' => false];
+            if ($paginaDa > 2) {
+                $pages[] = ['ellipsis' => true];
+            }
+        }
+
+        for ($pagina = $paginaDa; $pagina <= $paginaA; $pagina++) {
+            $pages[] = [
+                'number' => $pagina,
+                'url' => $buildPageUrl($pagina),
+                'active' => $pagina === $paginaCorrente,
+            ];
+        }
+
+        if ($paginaA < $totalePagine) {
+            if ($paginaA < $totalePagine - 1) {
+                $pages[] = ['ellipsis' => true];
+            }
+            $pages[] = ['number' => $totalePagine, 'url' => $buildPageUrl($totalePagine), 'active' => false];
+        }
+
+        return [
+            'show' => $totalePagine > 1,
+            'prev' => $paginaCorrente > 1 ? $buildPageUrl($paginaCorrente - 1) : '',
+            'next' => $paginaCorrente < $totalePagine ? $buildPageUrl($paginaCorrente + 1) : '',
+            'pages' => $pages,
+        ];
+    }
+
+    private function buildHomeResetUrl(string $q, int $idCategoria): string
+    {
+        $params = ['route' => 'home'];
+
+        if ($q !== '') {
+            $params['q'] = $q;
+        }
+
+        if ($idCategoria > 0) {
+            $params['id_categoria'] = $idCategoria;
+        }
+
+        return 'index.php?' . http_build_query($params);
     }
 }

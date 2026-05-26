@@ -25,12 +25,12 @@ class BusinessController extends BaseController
         $business = $this->entityToArray(FPersistentManager::businessByUser($idUtente));
         $annunci = $this->entitiesToArrays(FPersistentManager::annunciByUserIdAndStato($idUtente, null));
 
-        require __DIR__ . '/../views/business/profilo.php';
+        $this->view('business/profilo.tpl', compact('business', 'annunci'), 'Area business');
     }
 
     public function formCreazione(): void
     {
-        require __DIR__ . '/../views/business/form.php';
+        $this->view('business/form.tpl', [], 'Crea account business');
     }
 
     public function creaAccount(array $data, int $idUtente): void
@@ -42,7 +42,7 @@ class BusinessController extends BaseController
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
-            require __DIR__ . '/../views/business/form.php';
+            $this->view('business/form.tpl', compact('errore'), 'Crea account business');
         }
     }
 
@@ -65,7 +65,7 @@ class BusinessController extends BaseController
             $business = $this->entityToArray($businessEntity);
             $annunci = $this->entitiesToArrays(FPersistentManager::annunciByUserIdAndStato($idUtente, null));
 
-            require __DIR__ . '/../views/business/profilo.php';
+            $this->view('business/profilo.tpl', compact('errore', 'business', 'annunci'), 'Area business');
         }
     }
 
@@ -75,7 +75,7 @@ class BusinessController extends BaseController
 
         $ordini = $this->entitiesToArrays(FPersistentManager::ordiniRicevutiBySellerUser($idUtente));
 
-        require __DIR__ . '/../views/business/ordini.php';
+        $this->view('business/ordini.tpl', compact('ordini'), 'Ordini ricevuti');
     }
 
     private function createBusinessAccount(array $data, int $idUtente): int

@@ -29,10 +29,9 @@ class PagamentoController extends BaseController
             $totale = $pagamento['totale'];
             $indirizziUtente = $this->entitiesToArrays(FPersistentManager::indirizziByUser($idUtente));
 
-            require __DIR__ . '/../views/pagamenti/checkout.php';
+            $this->view('pagamenti/checkout.tpl', compact('annuncio', 'totale', 'indirizziUtente'), 'Checkout');
         } catch (Exception $e) {
-            $errore = $e->getMessage();
-            require __DIR__ . '/../views/errors/400.php';
+            $this->renderError($e->getMessage(), 400);
         }
     }
 
@@ -51,10 +50,9 @@ class PagamentoController extends BaseController
 
             $paypalTransactionId = 'PAYPAL-SIM-' . date('YmdHis') . '-' . random_int(1000, 9999);
 
-            require __DIR__ . '/../views/pagamenti/paypal_placeholder.php';
+            $this->view('pagamenti/paypal_placeholder.tpl', compact('annuncio', 'totale', 'indirizzoSpedizione', 'paypalTransactionId'), 'Pagamento PayPal');
         } catch (Exception $e) {
-            $errore = $e->getMessage();
-            require __DIR__ . '/../views/errors/400.php';
+            $this->renderError($e->getMessage(), 400);
         }
     }
 
@@ -84,10 +82,9 @@ class PagamentoController extends BaseController
             $totale = array_sum(array_column($items, 'prezzo'));
             $indirizziUtente = $this->entitiesToArrays(FPersistentManager::indirizziByUser($idUtente));
 
-            require __DIR__ . '/../views/pagamenti/checkout_carrello.php';
+            $this->view('pagamenti/checkout_carrello.tpl', compact('items', 'totale', 'indirizziUtente'), 'Checkout carrello');
         } catch (Exception $e) {
-            $errore = $e->getMessage();
-            require __DIR__ . '/../views/errors/400.php';
+            $this->renderError($e->getMessage(), 400);
         }
     }
 
@@ -111,10 +108,9 @@ class PagamentoController extends BaseController
             $totale = array_sum(array_column($items, 'prezzo'));
             $paypalTransactionId = 'PAYPAL-SIM-' . date('YmdHis') . '-' . random_int(1000, 9999);
 
-            require __DIR__ . '/../views/pagamenti/paypal_placeholder_carrello.php';
+            $this->view('pagamenti/paypal_placeholder_carrello.tpl', compact('items', 'totale', 'indirizzoSpedizione', 'paypalTransactionId'), 'Pagamento PayPal');
         } catch (Exception $e) {
-            $errore = $e->getMessage();
-            require __DIR__ . '/../views/errors/400.php';
+            $this->renderError($e->getMessage(), 400);
         }
     }
 
@@ -141,8 +137,9 @@ class PagamentoController extends BaseController
     {
         $status = $_GET['status'] ?? 'errore';
         $idPagamento = (int) ($_GET['id'] ?? 0);
+        $numeroPagamenti = (int) ($_GET['n'] ?? 0);
 
-        require __DIR__ . '/../views/pagamenti/esito.php';
+        $this->view('pagamenti/esito.tpl', compact('status', 'idPagamento', 'numeroPagamenti'), 'Esito pagamento');
     }
 
     private function preparePayment(int $idUtente, int $idAnnuncio): array

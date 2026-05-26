@@ -25,12 +25,14 @@ class WishlistController extends BaseController
 
             FPersistentManager::removeUnavailablePreferitiForUser($idUtente);
             $wishlist = $this->entitiesToArrays(FPersistentManager::wishlistAnnunciByUser($idUtente));
+            $wishlistIds = array_map(
+                static fn(array $annuncio): int => (int) ($annuncio['id_annuncio'] ?? 0),
+                $wishlist
+            );
 
-            require __DIR__ . '/../views/wishlist/lista.php';
+            $this->view('wishlist/lista.tpl', compact('wishlist', 'wishlistIds'), 'Wishlist');
         } catch (Exception $e) {
-            http_response_code(400);
-            $errore = $e->getMessage();
-            require __DIR__ . '/../views/errors/400.php';
+            $this->renderError($e->getMessage(), 400);
         }
     }
 
@@ -42,9 +44,7 @@ class WishlistController extends BaseController
             header('Location: index.php?route=wishlist');
             exit;
         } catch (Exception $e) {
-            http_response_code(400);
-            $errore = $e->getMessage();
-            require __DIR__ . '/../views/errors/400.php';
+            $this->renderError($e->getMessage(), 400);
         }
     }
 
@@ -60,9 +60,7 @@ class WishlistController extends BaseController
             header('Location: index.php?route=wishlist');
             exit;
         } catch (Exception $e) {
-            http_response_code(400);
-            $errore = $e->getMessage();
-            require __DIR__ . '/../views/errors/400.php';
+            $this->renderError($e->getMessage(), 400);
         }
     }
 
@@ -83,9 +81,7 @@ class WishlistController extends BaseController
             header('Location: ' . $redirect);
             exit;
         } catch (Exception $e) {
-            http_response_code(400);
-            $errore = $e->getMessage();
-            require __DIR__ . '/../views/errors/400.php';
+            $this->renderError($e->getMessage(), 400);
         }
     }
 
@@ -100,9 +96,7 @@ class WishlistController extends BaseController
             header('Location: index.php?route=wishlist');
             exit;
         } catch (Exception $e) {
-            http_response_code(400);
-            $errore = $e->getMessage();
-            require __DIR__ . '/../views/errors/400.php';
+            $this->renderError($e->getMessage(), 400);
         }
     }
 

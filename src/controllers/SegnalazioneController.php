@@ -18,7 +18,7 @@ class SegnalazioneController extends BaseController
 
     public function form(): void
     {
-        require __DIR__ . '/../views/segnalazioni/form.php';
+        $this->view('segnalazioni/form.tpl', [], 'Nuova segnalazione');
     }
 
     public function crea(array $data, int $idSegnalante): void
@@ -30,7 +30,7 @@ class SegnalazioneController extends BaseController
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
-            require __DIR__ . '/../views/segnalazioni/form.php';
+            $this->view('segnalazioni/form.tpl', compact('errore'), 'Nuova segnalazione');
         }
     }
 
@@ -38,7 +38,7 @@ class SegnalazioneController extends BaseController
     {
         $segnalazioni = $this->entitiesToArrays(FPersistentManager::segnalazioni());
 
-        require __DIR__ . '/../views/segnalazioni/lista.php';
+        $this->view('segnalazioni/lista.tpl', compact('segnalazioni'), 'Segnalazioni');
     }
 
     public function chiudi(int $idSegnalazione, int $idAdmin): void

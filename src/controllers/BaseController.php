@@ -49,6 +49,16 @@ abstract class BaseController
         SmartyView::make()->render($template, $data, $pageTitle);
     }
 
+    protected function renderError(string $message = 'Richiesta non valida.', int $statusCode = 400): void
+    {
+        http_response_code($statusCode);
+
+        $template = $statusCode === 404 ? 'errors/404.tpl' : 'errors/400.tpl';
+        $title = $statusCode === 404 ? 'Pagina non trovata' : 'Errore';
+
+        $this->view($template, ['errore' => $message], $title);
+    }
+
     protected function clean(?string $value): string
     {
         return trim((string) $value);
