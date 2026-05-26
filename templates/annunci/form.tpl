@@ -77,15 +77,17 @@
                 id="immagini"
                 name="immagini[]"
                 data-preview="photo-preview"
+                data-existing-count="{if $isEdit && !empty($annuncio.immagini)}{$annuncio.immagini|count_items}{else}0{/if}"
+                data-max-files="5"
                 accept="image/jpeg,image/png,image/webp"
                 multiple
                 hidden>
 
-            <label class="btn btn-secondary photo-upload-btn" for="immagini">Scegli foto</label>
+            <button class="btn btn-secondary photo-upload-btn" type="button" data-photo-start>Scegli foto</button>
             <span class="muted">{if $isEdit}Puoi aggiungere nuove foto. Massimo 5 foto totali salvate per invio.{else}Massimo 5 foto, formato JPG, PNG o WEBP.{/if}</span>
         </div>
 
-        <div id="photo-preview" class="photo-preview"></div>
+        <div id="photo-preview" class="photo-preview photo-preview-progressive"></div>
 
         <button class="btn" type="submit">{$submitLabel}</button>
     </form>
@@ -108,27 +110,97 @@
 document.addEventListener('DOMContentLoaded', function () {
     const input = document.getElementById('immagini');
     const preview = document.getElementById('photo-preview');
-    const maxFiles = 5;
+    const form = input ? input.closest('form') : null;
+    const startButton = document.querySelector('[data-photo-start]');
 
-    if (!input || !preview) return;
+    if (!input || !preview || !form || !startButton) return;
+
+    const maxFiles = parseInt(input.dataset.maxFiles || '5', 10);
+    const existingCount = parseInt(input.dataset.existingCount || '0', 10);
+    const maxSelectable = Math.max(maxFiles - existingCount, 0);
+    const selectedFiles = [];
+    const addButton = document.createElement('button');
+
+    addButton.className = 'photo-add-more';
+    addButton.type = 'button';
+    addButton.textContent = '+';
+    addButton.title = 'Aggiungi un\'altra foto';
+    addButton.setAttribute('aria-label', 'Aggiungi un\'altra foto');
+
+    function openFilePicker() {
+        if (selectedFiles.length >= maxSelectable) return;
+        input.value = '';
+        input.click();
+    }
+
+    function syncInputFiles() {
+        const transfer = new DataTransfer();
+        selectedFiles.forEach(function (file) {
+            transfer.items.add(file);
+        });
+        input.files = transfer.files;
+    }
+
+    function renderPreview() {
+        preview.innerHTML = '';
+
+        selectedFiles.forEach(function (file, index) {
+            const item = document.createElement('div');
+            item.className = 'photo-preview-item';
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.alt = file.name;
+            img.onload = function () {
+                URL.revokeObjectURL(img.src);
+            };
+            const removeButton = document.createElement('button');
+            removeButton.className = 'photo-preview-delete';
+            removeButton.type = 'button';
+            removeButton.innerHTML = '&times;';
+            removeButton.title = 'Rimuovi foto';
+            removeButton.setAttribute('aria-label', 'Rimuovi foto');
+            removeButton.addEventListener('click', function () {
+                selectedFiles.splice(index, 1);
+                syncInputFiles();
+                renderPreview();
+            });
+
+            item.appendChild(img);
+            item.appendChild(removeButton);
+            preview.appendChild(item);
+        });
+
+        startButton.hidden = selectedFiles.length > 0 || maxSelectable <= 0;
+        addButton.hidden = selectedFiles.length === 0 || selectedFiles.length >= maxSelectable;
+
+        if (!addButton.hidden) {
+            preview.appendChild(addButton);
+        }
+    }
+
+    startButton.addEventListener('click', openFilePicker);
+    addButton.addEventListener('click', openFilePicker);
 
     input.addEventListener('change', function () {
-        preview.innerHTML = '';
-        Array.from(input.files).slice(0, maxFiles).forEach(function (file) {
-            if (!file.type.startsWith('image/')) return;
-            const reader = new FileReader();
-            reader.onload = function (event) {
-                const item = document.createElement('div');
-                item.className = 'photo-preview-item';
-                const img = document.createElement('img');
-                img.src = event.target.result;
-                img.alt = file.name;
-                item.appendChild(img);
-                preview.appendChild(item);
-            };
-            reader.readAsDataURL(file);
+        const remainingSlots = maxSelectable - selectedFiles.length;
+        if (remainingSlots <= 0) {
+            syncInputFiles();
+            renderPreview();
+            return;
+        }
+
+        Array.from(input.files).slice(0, remainingSlots).forEach(function (file) {
+            if (file.type.startsWith('image/')) {
+                selectedFiles.push(file);
+            }
         });
+
+        syncInputFiles();
+        renderPreview();
     });
+
+    form.addEventListener('submit', syncInputFiles);
+    renderPreview();
 });
 </script>
 
