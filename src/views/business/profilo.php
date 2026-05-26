@@ -87,6 +87,7 @@ require __DIR__ . '/../layout/header.php';
                     <th>Titolo</th>
                     <th>Prezzo</th>
                     <th>Stato</th>
+                    <th>Azioni</th>
                 </tr>
             </thead>
             <tbody>
@@ -95,6 +96,12 @@ require __DIR__ . '/../layout/header.php';
                         <td><?= e($annuncio['titolo'] ?? '') ?></td>
                         <td>€ <?= number_format((float)($annuncio['prezzo'] ?? 0), 2, ',', '.') ?></td>
                         <td><?= e($annuncio['stato'] ?? '') ?></td>
+                        <td>
+                            <?php if (($annuncio['stato'] ?? '') === 'attivo'): ?>
+                                <a class="btn btn-secondary" href="index.php?route=annuncio-edit&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Modifica</a>
+                            <?php endif; ?>
+                            <a class="btn" href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Dettagli</a>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

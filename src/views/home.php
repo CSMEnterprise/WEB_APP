@@ -180,13 +180,18 @@ $buildPageUrl = static function (int $page): string {
 
                     <a class="btn" href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Dettagli</a>
 
-                    <?php if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business'])): ?>
+                    <?php if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin'])): ?>
                         <?php if ((int)($annuncio['id_utente'] ?? 0) === (int)($_SESSION['user_id'] ?? 0)): ?>
                             <p class="muted u-style-024">È un tuo annuncio.</p>
-                        <?php elseif (in_array((int)($annuncio['id_annuncio'] ?? 0), $carrelloIds ?? [], true)): ?>
-                            <span class="btn btn-secondary u-style-006">✓ Nel carrello</span>
-                        <?php else: ?>
-                            <a class="btn btn-secondary" href="index.php?route=carrello-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Aggiungi al carrello</a>
+                            <?php if (($annuncio['stato'] ?? '') === 'attivo'): ?>
+                                <a class="btn btn-secondary" href="index.php?route=annuncio-edit&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Modifica</a>
+                            <?php endif; ?>
+                        <?php elseif (empty($_SESSION['is_business'])): ?>
+                            <?php if (in_array((int)($annuncio['id_annuncio'] ?? 0), $carrelloIds ?? [], true)): ?>
+                                <span class="btn btn-secondary u-style-006">✓ Nel carrello</span>
+                            <?php else: ?>
+                                <a class="btn btn-secondary" href="index.php?route=carrello-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Aggiungi al carrello</a>
+                            <?php endif; ?>
                         <?php endif; ?>
                     <?php endif; ?>
                 </article>

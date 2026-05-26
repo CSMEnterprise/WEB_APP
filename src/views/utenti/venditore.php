@@ -65,6 +65,11 @@ require __DIR__ . '/../layout/header.php';
                 </div>
             </div>
 
+            <?php
+                $isOwnProfile = !empty($_SESSION['user_id']) && empty($_SESSION['is_admin'])
+                    && (int)($_SESSION['user_id'] ?? 0) === (int)($venditore['id_utente'] ?? 0);
+            ?>
+
             <?php if (!empty($annunciVenditore)): ?>
                 <div class="grid profile-grid">
                     <?php foreach ($annunciVenditore as $annuncio): ?>
@@ -85,6 +90,12 @@ require __DIR__ . '/../layout/header.php';
 
                             <div class="profile-card-actions">
                                 <a class="btn" href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Dettagli</a>
+
+                                <?php if ($isOwnProfile && ($annuncio['stato'] ?? '') === 'attivo'): ?>
+                                    <a class="btn btn-secondary" href="index.php?route=annuncio-edit&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Modifica</a>
+                                    <a class="btn btn-danger" href="index.php?route=annuncio-delete&id=<?= e($annuncio['id_annuncio'] ?? '') ?>"
+                                       onclick="return confirm('Eliminare questo annuncio?')">Elimina</a>
+                                <?php endif; ?>
                             </div>
                         </article>
                     <?php endforeach; ?>

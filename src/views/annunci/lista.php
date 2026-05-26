@@ -114,6 +114,12 @@ $idCategoria = (int)($_GET['id_categoria'] ?? 0);
 
                     <a class="btn" href="index.php?route=annuncio&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Dettagli</a>
 
+                    <?php if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && (int)($annuncio['id_utente'] ?? 0) === (int)($_SESSION['user_id'] ?? 0)): ?>
+                        <?php if (($annuncio['stato'] ?? '') === 'attivo'): ?>
+                            <a class="btn btn-secondary" href="index.php?route=annuncio-edit&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Modifica</a>
+                        <?php endif; ?>
+                    <?php endif; ?>
+
                 </article>
             <?php endforeach; ?>
         </div>
