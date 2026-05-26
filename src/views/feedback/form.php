@@ -19,12 +19,12 @@ require __DIR__ . '/../partials/flash.php';
         <input type="hidden" name="id_pagamento" value="<?= e($idPagamento ?? '') ?>">
 
         <label>Valutazione</label>
-        <div style="display:flex; gap:12px; margin:6px 0 14px; font-size:26px;">
+        <div class="u-style-014">
             <?php for ($i = 1; $i <= 5; $i++): ?>
-                <label style="cursor:pointer;">
-                    <input type="radio" name="valutazione" value="<?= $i ?>"
+                <label class="u-style-015">
+                    <input class="u-style-013" type="radio" name="valutazione" value="<?= $i ?>"
                         <?= (int)($_POST['valutazione'] ?? 0) === $i ? 'checked' : '' ?>
-                        required style="display:none;">
+                        required>
                     <span class="star" data-val="<?= $i ?>">★</span>
                 </label>
             <?php endfor; ?>

@@ -26,7 +26,7 @@ $adminFilter = $filters['admin'] ?? '';
     </form>
 </section>
 
-<section style="margin-top: 28px;">
+<section class="u-style-001">
     <h2>Azioni di moderazione</h2>
 
     <?php if (!empty($azioniModerazione)): ?>

@@ -6,8 +6,8 @@ $q = trim($_GET['q'] ?? '');
 $idCategoria = (int)($_GET['id_categoria'] ?? 0);
 ?>
 
-<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
-    <h1 style="margin: 0;"><?= ($q !== '' || $idCategoria > 0) ? 'Risultati ricerca' : 'Annunci disponibili' ?></h1>
+<div class="u-style-007">
+    <h1 class="u-style-008"><?= ($q !== '' || $idCategoria > 0) ? 'Risultati ricerca' : 'Annunci disponibili' ?></h1>
 
     <?php if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin'])): ?>
         <a class="btn" href="index.php?route=annuncio-create">Crea annuncio</a>
@@ -35,30 +35,28 @@ $idCategoria = (int)($_GET['id_categoria'] ?? 0);
 <?php endif; ?>
 
 <?php if ($q !== '' && !empty($utenti)): ?>
-    <section style="margin-bottom: 32px;">
+    <section class="u-style-002">
         <h2>Utenti trovati</h2>
         <div class="grid">
             <?php foreach ($utenti as $u): ?>
                 <div
-                    class="card clickable-card"
+                    class="card clickable-card u-user-result-card"
                     data-href="index.php?route=venditore&id=<?= e($u['id_utente']) ?>"
                     role="link"
-                    tabindex="0"
-                    style="display:flex; align-items:center; gap:14px;">
-                    <div style="width:54px;height:54px;border-radius:50%;overflow:hidden;background:var(--bg-input);display:flex;align-items:center;justify-content:center;border:1px solid var(--border);flex:0 0 54px;">
+                    tabindex="0">
+                    <div class="u-style-009">
                         <?php if (!empty($u['propic'])): ?>
-                            <img src="<?= e($u['propic']) ?>" alt="Foto profilo" style="width:100%;height:100%;object-fit:cover;">
+                            <img class="u-fill-image" src="<?= e($u['propic']) ?>" alt="Foto profilo">
                         <?php else: ?>
-                            <span style="font-size:26px;">&#128100;</span>
+                            <span class="u-style-010">&#128100;</span>
                         <?php endif; ?>
                     </div>
                     <div>
                         <strong><?= e($u['username'] ?? '') ?></strong>
                         <?php if (!empty($u['nome'])): ?>
-                            <p class="muted" style="margin:2px 0;"><?= e($u['nome']) ?></p>
+                            <p class="muted u-style-011"><?= e($u['nome']) ?></p>
                         <?php endif; ?>
-                        <a class="btn btn-secondary"
-                           style="font-size:12px;padding:5px 10px;margin-top:6px;display:inline-block;"
+                        <a class="btn btn-secondary u-small-profile-link"
                            href="index.php?route=venditore&id=<?= e($u['id_utente']) ?>">
                             Vedi profilo
                         </a>

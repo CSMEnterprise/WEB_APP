@@ -8,7 +8,7 @@ $searchUtente = $filters['q_utente'] ?? '';
 <h1>Gestione utenti</h1>
 
 <?php if ((int)($_SESSION['livello_sicurezza'] ?? 1) === 2): ?>
-    <section style="margin-bottom: 32px;">
+    <section class="u-style-002">
         <h2>Gestione admin</h2>
 
         <?php if (!empty($admins)): ?>

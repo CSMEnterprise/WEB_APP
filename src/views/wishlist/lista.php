@@ -3,7 +3,7 @@ $pageTitle = 'Wishlist';
 require __DIR__ . '/../layout/header.php';
 ?>
 
-<div class="nav" style="align-items:flex-start;">
+<div class="nav u-style-023">
     <h1>Wishlist</h1>
 
     <?php if (!empty($wishlist)): ?>

@@ -30,7 +30,7 @@ require __DIR__ . '/../layout/header.php';
         </button>
     </p>
 
-    <div id="indirizzoForm" class="card" style="display: none;">
+    <div id="indirizzoForm" class="card u-style-013">
         <h2>Indirizzo sede</h2>
 
         <form method="post" action="index.php">

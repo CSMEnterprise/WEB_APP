@@ -43,30 +43,26 @@ $buildPageUrl = static function (int $page): string {
 <?php endif; ?>
 
 <?php if ($q !== '' && !empty($utenti)): ?>
-<section style="margin-bottom: 32px;">
+<section class="u-style-002">
     <h2>Utenti trovati</h2>
     <div class="grid">
         <?php foreach ($utenti as $u): ?>
-            <div class="card clickable-card"
+            <div class="card clickable-card u-user-result-card"
                  data-href="index.php?route=venditore&id=<?= e($u['id_utente']) ?>"
-                 role="link" tabindex="0"
-                 style="display:flex;align-items:center;gap:14px;">
-                <div style="width:54px;height:54px;border-radius:50%;overflow:hidden;background:var(--bg-input);
-                            display:flex;align-items:center;justify-content:center;
-                            border:1px solid var(--border);flex:0 0 54px;">
+                 role="link" tabindex="0">
+                <div class="u-style-009">
                     <?php if (!empty($u['propic'])): ?>
-                        <img src="<?= e($u['propic']) ?>" alt="Foto profilo" style="width:100%;height:100%;object-fit:cover;">
+                        <img class="u-fill-image" src="<?= e($u['propic']) ?>" alt="Foto profilo">
                     <?php else: ?>
-                        <span style="font-size:26px;">&#128100;</span>
+                        <span class="u-style-010">&#128100;</span>
                     <?php endif; ?>
                 </div>
                 <div>
                     <strong><?= e($u['username'] ?? '') ?></strong>
                     <?php if (!empty($u['nome'])): ?>
-                        <p class="muted" style="margin:2px 0;"><?= e($u['nome']) ?></p>
+                        <p class="muted u-style-011"><?= e($u['nome']) ?></p>
                     <?php endif; ?>
-                    <a class="btn btn-secondary"
-                       style="font-size:12px;padding:5px 10px;margin-top:6px;display:inline-block;"
+                    <a class="btn btn-secondary u-small-profile-link"
                        href="index.php?route=venditore&id=<?= e($u['id_utente']) ?>">
                         Vedi profilo
                     </a>
@@ -77,95 +73,8 @@ $buildPageUrl = static function (int $page): string {
 </section>
 <?php endif; ?>
 
-<style>
-    .home-filter-toggle {
-        width: 44px;
-        height: 44px;
-        padding: 0;
-        border-radius: 14px;
-        flex: 0 0 44px;
-    }
-
-    .home-filter-toggle svg {
-        width: 21px;
-        height: 21px;
-        stroke: currentColor;
-    }
-
-    .home-filter-panel[hidden] {
-        display: none;
-    }
-
-    .home-filter-form {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
-        gap: 14px;
-        align-items: end;
-    }
-
-    .home-filter-field input,
-    .home-filter-field select {
-        max-width: none;
-        margin-bottom: 0;
-    }
-
-    .home-filter-actions {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-    }
-
-    .home-pagination {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        margin: 26px 0 4px;
-    }
-
-    .home-pagination .btn {
-        min-width: 42px;
-        padding: 11px 14px;
-    }
-
-    .home-pagination-current {
-        background: var(--accent);
-        border-color: var(--accent);
-        color: #fff;
-        pointer-events: none;
-    }
-
-    .home-pagination-summary {
-        width: 100%;
-        text-align: center;
-        margin: 0 0 4px;
-    }
-
-    @media (max-width: 900px) {
-        .home-filter-form {
-            grid-template-columns: 1fr 1fr;
-        }
-
-        .home-filter-actions {
-            grid-column: 1 / -1;
-        }
-    }
-
-    @media (max-width: 560px) {
-        .home-filter-form {
-            grid-template-columns: 1fr;
-        }
-
-        .home-filter-actions {
-            flex-direction: column;
-            align-items: stretch;
-        }
-    }
-</style>
-
-<section style="margin-top: 28px;">
-    <div class="nav" style="align-items:flex-start;">
+<section class="u-style-001">
+    <div class="nav u-style-023">
         <h2><?= e($homeTitoloAnnunci ?? 'Annunci in evidenza') ?></h2>
         <button
             class="btn btn-secondary home-filter-toggle"
@@ -273,9 +182,9 @@ $buildPageUrl = static function (int $page): string {
 
                     <?php if (!empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business'])): ?>
                         <?php if ((int)($annuncio['id_utente'] ?? 0) === (int)($_SESSION['user_id'] ?? 0)): ?>
-                            <p class="muted" style="margin:4px 0 0;">È un tuo annuncio.</p>
+                            <p class="muted u-style-024">È un tuo annuncio.</p>
                         <?php elseif (in_array((int)($annuncio['id_annuncio'] ?? 0), $carrelloIds ?? [], true)): ?>
-                            <span class="btn btn-secondary" style="opacity:.55;cursor:default;pointer-events:none;">✓ Nel carrello</span>
+                            <span class="btn btn-secondary u-style-006">✓ Nel carrello</span>
                         <?php else: ?>
                             <a class="btn btn-secondary" href="index.php?route=carrello-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Aggiungi al carrello</a>
                         <?php endif; ?>

@@ -32,7 +32,7 @@ require __DIR__ . '/../layout/header.php';
     <a class="btn btn-secondary" href="index.php?route=admin-segnalazioni">Gestisci segnalazioni</a>
 </p>
 
-<section style="margin-top: 28px;">
+<section class="u-style-001">
     <h2>Azioni eseguite da te</h2>
 
     <?php if (!empty($azioniModera)): ?>

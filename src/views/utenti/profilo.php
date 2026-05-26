@@ -3,422 +3,6 @@ $pageTitle = 'Profilo';
 require __DIR__ . '/../layout/header.php';
 ?>
 
-<style>
-    .profile-page {
-        display: grid;
-        gap: 22px;
-        min-width: 0;
-    }
-
-    .profile-page > * {
-        min-width: 0;
-    }
-
-    .profile-hero {
-        position: relative;
-        overflow: hidden;
-        display: grid;
-        grid-template-columns: auto minmax(0, 1fr) minmax(230px, .32fr);
-        gap: 26px;
-        align-items: stretch;
-        padding: clamp(22px, 4vw, 34px);
-        border: 1px solid rgba(167, 139, 250, .34);
-        border-radius: 24px;
-        background:
-            linear-gradient(135deg, rgba(124, 58, 237, .22), rgba(17, 17, 31, .92) 44%, rgba(245, 158, 11, .12)),
-            var(--bg-card);
-        box-shadow: 0 28px 80px rgba(0, 0, 0, .36), inset 0 1px 0 rgba(255, 255, 255, .05);
-    }
-
-    .profile-hero::before {
-        content: "";
-        position: absolute;
-        inset: -90px -100px auto auto;
-        width: 360px;
-        height: 360px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(245, 158, 11, .25), transparent 68%);
-        pointer-events: none;
-    }
-
-    .profile-hero::after {
-        content: "NERDVAULT";
-        position: absolute;
-        right: 20px;
-        bottom: -16px;
-        color: rgba(255, 255, 255, .035);
-        font-size: clamp(60px, 12vw, 150px);
-        font-weight: 800;
-        line-height: .8;
-        letter-spacing: -.08em;
-        pointer-events: none;
-    }
-
-    .profile-avatar-form {
-        position: relative;
-        z-index: 1;
-        display: grid;
-        align-content: center;
-        justify-items: center;
-        gap: 10px;
-    }
-
-    .profile-avatar-button {
-        position: relative;
-        width: clamp(118px, 14vw, 154px);
-        aspect-ratio: 1;
-        padding: 0;
-        border: 3px solid rgba(255, 255, 255, .88);
-        border-radius: 50%;
-        overflow: hidden;
-        cursor: pointer;
-        background:
-            radial-gradient(circle at 34% 22%, rgba(255, 255, 255, .32), transparent 25%),
-            linear-gradient(135deg, var(--accent), var(--gold));
-        box-shadow: 0 20px 45px rgba(0, 0, 0, .36), 0 0 0 8px rgba(124, 58, 237, .16);
-        transition: transform .2s ease, box-shadow .2s ease;
-    }
-
-    .profile-avatar-button:hover {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow: 0 24px 60px rgba(0, 0, 0, .44), 0 0 0 10px rgba(245, 158, 11, .13);
-    }
-
-    .profile-avatar-button img {
-        width: 100%;
-        height: 100%;
-        display: block;
-        object-fit: cover;
-    }
-
-    .profile-avatar-initial {
-        display: grid;
-        place-items: center;
-        width: 100%;
-        height: 100%;
-        color: #fff;
-        font-size: clamp(48px, 8vw, 72px);
-        font-weight: 800;
-        text-transform: uppercase;
-    }
-
-    .profile-avatar-hint {
-        margin: 0;
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 700;
-        text-align: center;
-    }
-
-    .profile-summary,
-    .profile-stats {
-        position: relative;
-        z-index: 1;
-        min-width: 0;
-    }
-
-    .profile-kicker {
-        display: inline-flex;
-        width: fit-content;
-        padding: 6px 10px;
-        border: 1px solid rgba(245, 158, 11, .34);
-        border-radius: 999px;
-        background: rgba(245, 158, 11, .10);
-        color: #fbbf24;
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: .08em;
-        text-transform: uppercase;
-    }
-
-    .profile-summary h1 {
-        margin: 12px 0 10px;
-        font-size: clamp(38px, 6vw, 78px);
-        line-height: .92;
-        letter-spacing: -.06em;
-    }
-
-    .profile-summary-copy {
-        max-width: 650px;
-        margin: 0 0 18px;
-        color: #c7c7dc;
-        font-size: 15px;
-    }
-
-    .profile-info-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-    }
-
-    .profile-info-item {
-        min-width: 0;
-        padding: 13px 14px;
-        border: 1px solid rgba(255, 255, 255, .08);
-        border-radius: 14px;
-        background: rgba(255, 255, 255, .045);
-    }
-
-    .profile-info-item span {
-        display: block;
-        margin-bottom: 4px;
-        color: var(--muted);
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: .07em;
-        text-transform: uppercase;
-    }
-
-    .profile-info-item strong {
-        display: block;
-        overflow-wrap: anywhere;
-        color: var(--text);
-        font-size: 14px;
-    }
-
-    .profile-stats {
-        display: grid;
-        align-content: center;
-        gap: 12px;
-        min-width: 0;
-    }
-
-    .profile-stat {
-        padding: 16px;
-        border: 1px solid rgba(255, 255, 255, .10);
-        border-radius: 16px;
-        background: rgba(255, 255, 255, .055);
-    }
-
-    .profile-stat-value {
-        display: block;
-        color: #fff;
-        font-size: 34px;
-        font-weight: 800;
-        line-height: 1;
-    }
-
-    .profile-stat-label {
-        display: block;
-        margin-top: 5px;
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 700;
-    }
-
-    .profile-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
-        margin: 2px 0 4px;
-    }
-
-    .profile-actions .btn {
-        min-height: 44px;
-        border-radius: 12px;
-    }
-
-    .profile-section-header {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: 18px;
-        margin: 8px 0 14px;
-    }
-
-    .profile-section-header h2 {
-        margin: 0;
-        font-size: clamp(28px, 4vw, 44px);
-        letter-spacing: -.05em;
-    }
-
-    .profile-section-header p {
-        margin: 6px 0 0;
-        color: var(--muted);
-        font-size: 14px;
-    }
-
-    .profile-filter-card {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        flex-wrap: wrap;
-        padding: 14px;
-    }
-
-    .profile-filter-label {
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 800;
-        letter-spacing: .08em;
-        text-transform: uppercase;
-    }
-
-    .profile-filter-actions {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-
-    .profile-filter-actions .btn {
-        min-height: 38px;
-        padding: 9px 13px;
-        border-radius: 10px;
-    }
-
-    .profile-grid .card {
-        border-radius: 18px;
-        background:
-            linear-gradient(180deg, rgba(255, 255, 255, .035), transparent 70%),
-            var(--bg-card);
-    }
-
-    .profile-grid .annuncio-card-img {
-        height: 210px;
-        border-radius: 14px;
-        border: 1px solid rgba(255, 255, 255, .08);
-    }
-
-    .profile-card-actions {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-        margin-top: auto;
-        padding-top: 16px;
-    }
-
-    .profile-card-actions .btn {
-        width: 100%;
-        max-width: 200px;
-        border-radius: 14px;
-    }
-
-    .profile-empty {
-        padding: 26px;
-        border-style: dashed;
-        text-align: center;
-    }
-
-    .profile-address-form {
-        border-radius: 18px;
-    }
-
-    .profile-address-form.is-hidden {
-        display: none;
-    }
-
-    .profile-address-form h2 {
-        margin-bottom: 18px;
-        font-size: 30px;
-    }
-
-    .profile-form-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0 16px;
-        max-width: 760px;
-    }
-
-    .profile-form-grid .profile-form-wide {
-        grid-column: 1 / -1;
-    }
-
-    .profile-table-wrap {
-        max-width: 100%;
-        overflow-x: auto;
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        background: var(--bg-card);
-    }
-
-    .profile-table-wrap table {
-        min-width: 780px;
-    }
-
-    .profile-status-pill {
-        display: inline-flex;
-        align-items: center;
-        min-height: 28px;
-        padding: 5px 10px;
-        border-radius: 999px;
-        background: rgba(124, 58, 237, .16);
-        color: #ddd6fe;
-        font-size: 12px;
-        font-weight: 800;
-    }
-
-    .profile-status-completato {
-        background: rgba(34, 197, 94, .14);
-        color: #86efac;
-    }
-
-    .profile-table-actions {
-        display: flex;
-        gap: 6px;
-        flex-wrap: wrap;
-    }
-
-    .profile-table-actions .btn,
-    .profile-feedback-done {
-        min-height: 32px;
-        padding: 6px 10px;
-        border-radius: 9px;
-        font-size: 12px;
-    }
-
-    .profile-feedback-done {
-        display: inline-flex;
-        align-items: center;
-        color: #86efac;
-        font-weight: 800;
-    }
-
-    @media (max-width: 980px) {
-        .profile-hero {
-            grid-template-columns: auto minmax(0, 1fr);
-        }
-
-        .profile-stats {
-            grid-column: 1 / -1;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-    }
-
-    @media (max-width: 680px) {
-        .profile-hero,
-        .profile-info-grid,
-        .profile-stats,
-        .profile-form-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .profile-hero {
-            text-align: center;
-        }
-
-        .profile-kicker,
-        .profile-actions {
-            margin-left: auto;
-            margin-right: auto;
-            justify-content: center;
-        }
-
-        .profile-section-header {
-            align-items: flex-start;
-            flex-direction: column;
-        }
-
-        .profile-actions .btn,
-        .profile-filter-actions,
-        .profile-filter-actions .btn {
-            width: 100%;
-        }
-    }
-</style>
-
 <?php if (!empty($errore)): ?>
     <div class="alert alert-error"><?= e($errore) ?></div>
 <?php endif; ?>
@@ -490,13 +74,13 @@ require __DIR__ . '/../layout/header.php';
                     <?php endif; ?>
                 </div>
 
-                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
-                    <button type="button" class="btn btn-secondary" onclick="toggleForm('editProfiloForm')"
-                            style="min-height:38px;padding:9px 14px;font-size:13px;border-radius:11px;">
+                <div class="u-style-073">
+                    <button type="button" class="btn btn-secondary u-style-074" onclick="toggleForm('editProfiloForm')"
+                           >
                         ✏️ Modifica dati
                     </button>
-                    <button type="button" class="btn btn-secondary" onclick="toggleForm('editPasswordForm')"
-                            style="min-height:38px;padding:9px 14px;font-size:13px;border-radius:11px;">
+                    <button type="button" class="btn btn-secondary u-style-074" onclick="toggleForm('editPasswordForm')"
+                           >
                         🔑 Cambia password
                     </button>
                 </div>
@@ -557,7 +141,7 @@ require __DIR__ . '/../layout/header.php';
                                placeholder="+39 333 1234567">
                     </div>
                 </div>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
+                <div class="u-style-075">
                     <button type="submit" class="btn">Salva modifiche</button>
                     <button type="button" class="btn btn-secondary" onclick="toggleForm('editProfiloForm')">Annulla</button>
                 </div>
@@ -599,10 +183,10 @@ require __DIR__ . '/../layout/header.php';
                         </div>
                     </div>
                 </div>
-                <p class="muted" style="font-size:13px;margin-bottom:16px;">
+                <p class="muted u-style-076">
                     Almeno 10 caratteri, una lettera maiuscola e un carattere speciale.
                 </p>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <div class="u-style-077">
                     <button type="submit" class="btn">Aggiorna password</button>
                     <button type="button" class="btn btn-secondary" onclick="toggleForm('editPasswordForm')">Annulla</button>
                 </div>
@@ -686,7 +270,7 @@ require __DIR__ . '/../layout/header.php';
                                value="<?= e($editingIndirizzo['provincia'] ?? '') ?>">
                     </div>
                 </div>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
+                <div class="u-style-075">
                     <button type="submit" class="btn">Salva modifiche</button>
                     <a href="index.php?route=profilo" class="btn btn-secondary">Annulla</a>
                 </div>
@@ -714,25 +298,25 @@ require __DIR__ . '/../layout/header.php';
                             }
                             $isEditing = $editingIndirizzo && (int)$editingIndirizzo['id_indirizzo'] === $idInd;
                         ?>
-                        <article class="card" style="<?= $isEditing ? 'border-color:var(--accent);' : '' ?>">
-                            <h3 style="margin-bottom:10px;">
+                        <article class="card <?= $isEditing ? 'u-card-editing' : '' ?>">
+                            <h3 class="u-style-078">
                                 Indirizzo <?= !empty($indirizzo['predefinito']) ? '<span class="seller-pro-badge">Predefinito</span>' : '' ?>
-                                <?= $isEditing ? '<span class="seller-pro-badge" style="background:rgba(124,58,237,.2);color:#a78bfa;">In modifica</span>' : '' ?>
+                                <?= $isEditing ? '<span class="seller-pro-badge seller-pro-badge-editing">In modifica</span>' : '' ?>
                             </h3>
                             <p><?= e(implode(', ', array_filter([$viaIndirizzo, $localitaIndirizzo]))) ?></p>
                             <p class="muted"><?= e($indirizzo['paese'] ?? 'Italia') ?></p>
-                            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
+                            <div class="u-style-079">
                                 <?php if (empty($indirizzo['predefinito'])): ?>
-                                    <a class="btn btn-secondary" style="min-height:34px;padding:7px 12px;font-size:13px;border-radius:10px;"
+                                    <a class="btn btn-secondary u-address-action"
                                        href="index.php?route=profilo-indirizzo-default&id=<?= $idInd ?>">
                                         Predefinito
                                     </a>
                                 <?php endif; ?>
-                                <a class="btn btn-secondary" style="min-height:34px;padding:7px 12px;font-size:13px;border-radius:10px;"
+                                <a class="btn btn-secondary u-address-action"
                                    href="index.php?route=profilo-indirizzo-edit&id=<?= $idInd ?>">
                                     Modifica
                                 </a>
-                                <a class="btn btn-danger" style="min-height:34px;padding:7px 12px;font-size:13px;border-radius:10px;"
+                                <a class="btn btn-danger u-address-action"
                                    href="index.php?route=profilo-indirizzo-delete&id=<?= $idInd ?>"
                                    onclick="return confirm('Eliminare questo indirizzo?')">
                                     Elimina

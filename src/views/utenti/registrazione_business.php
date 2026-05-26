@@ -4,11 +4,11 @@ require __DIR__ . '/../layout/header.php';
 require __DIR__ . '/../partials/flash.php';
 ?>
 
-<div class="card" style="max-width: 960px; margin: 0 auto; border-top: 4px solid var(--gold); padding: 40px;">
-    <div style="text-align: center; margin-bottom: 36px;">
-        <div style="display: inline-block; padding: 6px 16px; background: rgba(250,204,21,.1); color: var(--gold); border-radius: 20px; font-weight: 800; font-size: 12px; letter-spacing: 0.05em; margin-bottom: 16px;">ACCOUNT PROFESSIONALE</div>
-        <h1 style="margin-bottom: 12px; font-size: 32px;">Registrazione Business</h1>
-        <p class="muted" style="font-size: 16px;">Apri il tuo negozio su NerdVault e raggiungi migliaia di appassionati.</p>
+<div class="card u-style-110">
+    <div class="u-style-111">
+        <div class="u-style-112">ACCOUNT PROFESSIONALE</div>
+        <h1 class="u-style-113">Registrazione Business</h1>
+        <p class="muted u-style-094">Apri il tuo negozio su NerdVault e raggiungi migliaia di appassionati.</p>
     </div>
 
     <?php if (!empty($errore)): ?>
@@ -19,10 +19,10 @@ require __DIR__ . '/../partials/flash.php';
         <input type="hidden" name="route" value="register-business-post">
         <input type="hidden" name="_business_registration" value="1">
 
-        <div class="grid-2" style="gap: 40px; margin-bottom: 30px;">
+        <div class="grid-2 u-style-114">
             <!-- Profilo business -->
-            <div style="background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border);">
-                <h3 style="color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+            <div class="u-style-115">
+                <h3 class="u-style-116">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><path d="M9 9h1"></path><path d="M9 13h1"></path><path d="M9 17h1"></path></svg>
                     Profilo business
                 </h3>
@@ -38,8 +38,8 @@ require __DIR__ . '/../partials/flash.php';
             </div>
 
             <!-- Dati accesso -->
-            <div style="background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border);">
-                <h3 style="color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+            <div class="u-style-115">
+                <h3 class="u-style-116">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                     Sicurezza e accesso
                 </h3>
@@ -48,26 +48,26 @@ require __DIR__ . '/../partials/flash.php';
                 <input type="email" id="email_aziendale" name="email_aziendale" value="<?= e($_POST['email_aziendale'] ?? '') ?>" required>
 
                 <label for="businessPassword">Password</label>
-                <div class="password-wrapper" style="max-width: none;">
+                <div class="password-wrapper u-style-117">
                     <input type="password" id="businessPassword" name="password" pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}" autocomplete="new-password" title="La password deve contenere almeno 10 caratteri, una lettera maiuscola e un carattere speciale." required>
                     <button class="btn btn-secondary btn-password-toggle" type="button" onclick="togglePasswordVisibility('businessPassword', this)">Mostra</button>
                 </div>
 
                 <label for="businessPasswordConfirm">Conferma password</label>
-                <div class="password-wrapper" style="max-width: none;">
+                <div class="password-wrapper u-style-117">
                     <input type="password" id="businessPasswordConfirm" name="password_confirm" pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}" autocomplete="new-password" title="Ripeti la stessa password scelta sopra." required>
                     <button class="btn btn-secondary btn-password-toggle" type="button" onclick="togglePasswordVisibility('businessPasswordConfirm', this)">Mostra</button>
                 </div>
             </div>
         </div>
 
-        <div style="background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 30px;">
-            <h3 style="color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+        <div class="u-style-118">
+            <h3 class="u-style-116">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                 Indirizzo sede
             </h3>
 
-            <div class="grid-2" style="gap: 24px;">
+            <div class="grid-2 u-style-119">
                 <div>
                     <label for="via">Via / Corso / Piazza</label>
                     <input type="text" id="via" name="via" value="<?= e($_POST['via'] ?? '') ?>">
@@ -95,12 +95,12 @@ require __DIR__ . '/../partials/flash.php';
             </div>
         </div>
 
-        <div style="text-align: center;">
-            <button class="btn" type="submit" style="font-size: 16px; padding: 14px 40px;">Crea account business</button>
+        <div class="u-style-120">
+            <button class="btn u-style-121" type="submit">Crea account business</button>
 
-            <p style="margin-top: 24px; color: var(--muted);">
-                Vuoi scegliere un altro tipo di account? <a href="index.php?route=register" style="color: var(--gold);">Scelta registrazione</a><br>
-                Hai gia un account? <a href="index.php?route=login" style="color: var(--gold);">Accedi qui</a>
+            <p class="u-style-122">
+                Vuoi scegliere un altro tipo di account? <a class="u-style-107" href="index.php?route=register">Scelta registrazione</a><br>
+                Hai gia un account? <a class="u-style-107" href="index.php?route=login">Accedi qui</a>
             </p>
         </div>
     </form>

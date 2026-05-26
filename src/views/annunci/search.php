@@ -41,7 +41,7 @@ require_once __DIR__ . '/../layout/footer.php';
             <?php endforeach; ?>
         </div>
 
-        <div style="margin-top: 20px;">
+        <div class="u-style-012">
             <a href="index.php?route=annunci" class="btn btn-danger">Torna a tutti gli annunci</a>
         </div>
     <?php endif; ?>

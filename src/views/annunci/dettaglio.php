@@ -83,18 +83,17 @@ require __DIR__ . '/../layout/header.php';
                 </span>
             </a>
             <?php if ($numeroFeedbackVenditore > 0): ?>
-                <span style="display:inline-flex;align-items:center;gap:4px;margin-left:8px;color:#f59e0b;" title="<?= e(number_format((float)$mediaVenditore, 1)) ?> su 5">
+                <span class="u-rating-inline" title="<?= e(number_format((float)$mediaVenditore, 1)) ?> su 5">
                     <?php for ($i = 1; $i <= 5; $i++): ?>
                         <span><?= $i <= $stelleVenditore ? '&#9733;' : '&#9734;' ?></span>
                     <?php endfor; ?>
-                    <strong style="color:var(--text);font-size:13px;"><?= e(number_format((float)$mediaVenditore, 1)) ?></strong>
-                    <span class="muted" style="font-size:13px;">(<?= e((string)$numeroFeedbackVenditore) ?>)</span>
+                    <strong class="u-style-003"><?= e(number_format((float)$mediaVenditore, 1)) ?></strong>
+                    <span class="muted u-style-004">(<?= e((string)$numeroFeedbackVenditore) ?>)</span>
                 </span>
             <?php else: ?>
-                <span class="muted" style="margin-left:8px;font-size:13px;">Nessuna recensione</span>
+                <span class="muted u-style-005">Nessuna recensione</span>
             <?php endif; ?>
-            <a class="btn btn-secondary"
-               style="font-size:12px;padding:4px 10px;margin-left:10px;"
+            <a class="btn btn-secondary u-small-inline-link"
                href="index.php?route=venditore&id=<?= e($annuncio['id_utente'] ?? '') ?>">
                 Vedi profilo
             </a>
@@ -115,7 +114,7 @@ require __DIR__ . '/../layout/header.php';
             <?php else: ?>
                 <?php $isInCart = in_array((int)($annuncio['id_annuncio'] ?? 0), $carrelloIds ?? [], true); ?>
                 <?php if ($isInCart): ?>
-                    <span class="btn btn-secondary" style="opacity:.55;cursor:default;pointer-events:none;">✓ Nel carrello</span>
+                    <span class="btn btn-secondary u-style-006">✓ Nel carrello</span>
                 <?php else: ?>
                     <a class="btn" href="index.php?route=carrello-add&id=<?= e($annuncio['id_annuncio'] ?? '') ?>">Aggiungi al carrello</a>
                 <?php endif; ?>

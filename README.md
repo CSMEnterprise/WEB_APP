@@ -20,6 +20,7 @@ Il progetto usa una struttura MVC leggera senza framework esterni: `public/index
 ```text
 WEB_APP/
 |-- public/
+|   |-- css/
 |   |-- index.php
 |   `-- uploads/
 |       `-- annunci/
@@ -63,6 +64,7 @@ WEB_APP/
 ## Cartelle principali
 
 - `public/`: contiene il punto di ingresso dell'applicazione. Apache deve servire questa cartella, non la root del progetto.
+- `public/css/`: contiene gli stylesheet dell'interfaccia, separati dalle view PHP e dai template Smarty.
 - `public/uploads/`: contiene i file caricati dagli utenti, per esempio le immagini degli annunci.
 - `src/config/`: contiene la configurazione dell'applicazione, inclusa la connessione al database.
 - `src/controllers/`: riceve le richieste dal router e coordina servizi e viste.

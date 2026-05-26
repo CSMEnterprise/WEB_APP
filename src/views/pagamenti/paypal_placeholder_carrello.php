@@ -10,14 +10,13 @@ require __DIR__ . '/../layout/header.php';
         <p class="muted">Simulazione pagamento sandbox</p>
 
         <div class="paypal-summary">
-            <h3 style="margin:0 0 12px;">Riepilogo ordine</h3>
+            <h3 class="u-style-040">Riepilogo ordine</h3>
 
             <?php foreach ($items as $item): ?>
-                <div style="display:flex;justify-content:space-between;align-items:center;
-                            padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);gap:12px;">
-                    <div style="flex:1;min-width:0;">
-                        <strong style="font-size:13px;"><?= e($item['titolo'] ?? '') ?></strong>
-                        <p class="muted" style="margin:2px 0;font-size:12px;">
+                <div class="u-style-041">
+                    <div class="u-style-042">
+                        <strong class="u-style-004"><?= e($item['titolo'] ?? '') ?></strong>
+                        <p class="muted u-style-043">
                             <?php if (!empty($item['venditore_business_id'])): ?>
                                 <?= e($item['venditore_nome_azienda'] ?? '') ?>
                                 <span class="seller-pro-badge">PRO</span>
@@ -26,20 +25,20 @@ require __DIR__ . '/../layout/header.php';
                             <?php endif; ?>
                         </p>
                     </div>
-                    <strong style="white-space:nowrap;">
+                    <strong class="u-style-044">
                         € <?= number_format((float)($item['prezzo'] ?? 0), 2, ',', '.') ?>
                     </strong>
                 </div>
             <?php endforeach; ?>
 
-            <div style="display:flex;justify-content:space-between;margin-top:14px;">
+            <div class="u-style-045">
                 <strong>Totale</strong>
-                <span class="price" style="font-size:18px;">
+                <span class="price u-style-046">
                     € <?= number_format((float)($totale ?? 0), 2, ',', '.') ?>
                 </span>
             </div>
 
-            <div style="margin-top:12px;font-size:13px;color:var(--muted);">
+            <div class="u-style-047">
                 <strong>Spedizione a:</strong><br>
                 <?php
                     $via = trim(($indirizzoSpedizione['via'] ?? '') . ' ' . ($indirizzoSpedizione['numero'] ?? ''));

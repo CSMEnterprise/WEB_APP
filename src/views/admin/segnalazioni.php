@@ -80,7 +80,7 @@ $tipologiaFilter = $filters['tipologia'] ?? '';
                         <?= e($oggettoLabel) ?>
                         <?php if ($oggettoLink): ?>
                             <br>
-                            <a class="btn btn-secondary" style="margin-top:6px;font-size:12px;padding:5px 10px;"
+                            <a class="btn btn-secondary u-admin-object-link"
                                href="<?= e($oggettoLink) ?>" target="_blank">
                                 Vai all'oggetto →
                             </a>

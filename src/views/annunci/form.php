@@ -13,54 +13,6 @@ require __DIR__ . '/../layout/header.php';
 require __DIR__ . '/../partials/flash.php';
 ?>
 
-<style>
-    .current-photo-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin: 0 0 16px;
-    }
-
-    .current-photo-item {
-        position: relative;
-        width: 82px;
-        height: 82px;
-        overflow: hidden;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        background: var(--bg-input);
-    }
-
-    .current-photo-item img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
-
-    .current-photo-delete {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        border: 0;
-        background: rgba(9, 9, 11, .72);
-        color: #fff;
-        font-size: 30px;
-        font-weight: 900;
-        line-height: 1;
-        cursor: pointer;
-        transition: opacity .18s ease;
-    }
-
-    .current-photo-item:hover .current-photo-delete,
-    .current-photo-delete:focus {
-        opacity: 1;
-    }
-</style>
-
 <div class="card">
     <h1><?= e($pageTitle) ?></h1>
 
@@ -151,7 +103,7 @@ require __DIR__ . '/../partials/flash.php';
                 id="delete-image-<?= e($immagine['id_immagine'] ?? '') ?>"
                 method="post"
                 action="index.php"
-                style="display:none;">
+                class="u-style-013">
                 <input type="hidden" name="route" value="annuncio-image-delete">
                 <input type="hidden" name="id_immagine" value="<?= e($immagine['id_immagine'] ?? '') ?>">
             </form>

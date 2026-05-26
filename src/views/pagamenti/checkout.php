@@ -43,18 +43,18 @@ require __DIR__ . '/../partials/flash.php';
 
                             $indirizzoLabel = implode(', ', array_filter([$viaIndirizzo, $localitaIndirizzo, $indirizzo['paese'] ?? 'Italia']));
                         ?>
-                        <label style="display:flex;align-items:flex-start;gap:10px;text-transform:none;letter-spacing:0;color:var(--text);font-size:14px;border:1px solid var(--border);border-radius:14px;padding:12px;background:rgba(255,255,255,.03);">
+                        <label class="u-style-034">
                             <input
                                 type="radio"
                                 name="id_indirizzo"
                                 value="<?= e($indirizzo['id_indirizzo'] ?? '') ?>"
                                 <?= !empty($indirizzo['predefinito']) ? 'checked' : '' ?>
                                 required
-                                style="width:auto;margin:3px 0 0;">
+                                class="u-radio-compact">
                             <span>
                                 <?= e($indirizzoLabel) ?>
                                 <?php if (!empty($indirizzo['predefinito'])): ?>
-                                    <span class="seller-pro-badge" style="margin-left:6px;">Predefinito</span>
+                                    <span class="seller-pro-badge u-style-035">Predefinito</span>
                                 <?php endif; ?>
                             </span>
                         </label>
