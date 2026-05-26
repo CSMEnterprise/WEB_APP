@@ -16,20 +16,18 @@
         {/if}
 
         <section class="profile-hero" aria-label="Riepilogo profilo">
-            <div class="profile-avatar-form">
-                <div class="profile-avatar-button" aria-hidden="true">
+            <form method="post" action="index.php" enctype="multipart/form-data" id="propic-form" class="profile-avatar-form">
+                <input type="hidden" name="route" value="profilo-propic-store">
+                <input type="file" id="propic-input" name="propic" accept="image/jpeg,image/png,image/webp" required hidden>
+                <button type="button" id="propic-button" class="profile-avatar-button" aria-label="Cambia foto profilo" title="Clicca per cambiare foto profilo">
                     {if !empty($utente.propic)}
                         <img src="{$utente.propic}" alt="Foto profilo">
                     {else}
                         <span class="profile-avatar-initial">{$displayName|substr:0:1|strtoupper}</span>
                     {/if}
-                </div>
-                <form method="post" action="index.php" enctype="multipart/form-data">
-                    <input type="hidden" name="route" value="profilo-propic-store">
-                    <input type="file" name="propic" accept="image/jpeg,image/png,image/webp" required>
-                    <button class="btn btn-secondary" type="submit">Aggiorna foto</button>
-                </form>
-            </div>
+                </button>
+                <p class="profile-avatar-hint">Clicca per aggiornare</p>
+            </form>
 
             <div class="profile-summary">
                 <span class="profile-kicker">{if $isBusiness}Account business{else}Account personale{/if}</span>
@@ -191,6 +189,28 @@
             </section>
         {/if}
     </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const propicInput = document.getElementById('propic-input');
+        const propicButton = document.getElementById('propic-button');
+        const propicForm = document.getElementById('propic-form');
+
+        if (propicButton && propicInput) {
+            propicButton.addEventListener('click', function () {
+                propicInput.click();
+            });
+        }
+
+        if (propicInput && propicForm) {
+            propicInput.addEventListener('change', function () {
+                if (this.files && this.files.length > 0) {
+                    propicForm.submit();
+                }
+            });
+        }
+    });
+    </script>
 {else}
     <div class="alert alert-error">Profilo non trovato.</div>
 {/if}
