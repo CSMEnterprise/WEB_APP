@@ -6,6 +6,7 @@ use App\Entity\EBaseEntity;
 use App\Entity\EAdmin;
 use App\Entity\EModera;
 use App\Foundation\FPersistentManager;
+use App\Foundation\SmartyView;
 use App\Services\ServiceException;
 
 abstract class BaseController
@@ -37,6 +38,15 @@ abstract class BaseController
         if (FPersistentManager::businessByUser($idUtente) !== null) {
             throw new ServiceException('Gli account business possono solo vendere: carrello, wishlist e acquisto prodotti non sono disponibili.');
         }
+    }
+
+    /**
+     * Shortcut per renderizzare un template Smarty.
+     * Equivalente a SmartyView::make()->render(...).
+     */
+    protected function view(string $template, array $data = [], string $pageTitle = 'NerdVault'): void
+    {
+        SmartyView::make()->render($template, $data, $pageTitle);
     }
 
     protected function clean(?string $value): string

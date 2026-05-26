@@ -8,15 +8,13 @@ use Smarty\Smarty;
 class SmartyView
 {
     private Smarty $smarty;
-    private string $viewsPath;
 
     public function __construct()
     {
-        $root = dirname(__DIR__, 2);
-        $this->viewsPath = $root . '/src/views';
-        $templatesPath = $root . '/src/templates';
-        $compilePath = $root . '/var/cache/smarty/compile';
-        $cachePath = $root . '/var/cache/smarty/cache';
+        $root          = dirname(__DIR__, 2);
+        $templatesPath = $root . '/templates';
+        $compilePath   = $root . '/templates_c';
+        $cachePath     = $root . '/cache';
 
         $this->ensureDirectory($compilePath);
         $this->ensureDirectory($cachePath);
@@ -25,7 +23,28 @@ class SmartyView
         $this->smarty->setTemplateDir($templatesPath);
         $this->smarty->setCompileDir($compilePath);
         $this->smarty->setCacheDir($cachePath);
+        $this->smarty->setCaching(false);
         $this->smarty->setEscapeHtml(true);
+
+        // ── Modificatori PHP utili nei template ──────────────────────────
+        $this->smarty->registerPlugin('modifier', 'number_format', 'number_format');
+        $this->smarty->registerPlugin('modifier', 'ucfirst', 'ucfirst');
+        $this->smarty->registerPlugin('modifier', 'urlencode', 'urlencode');
+        $this->smarty->registerPlugin('modifier', 'strtolower', 'strtolower');
+        $this->smarty->registerPlugin('modifier', 'preg_replace_slug',
+            fn($s) => strtolower(preg_replace('/[^a-z0-9]+/i', '-', (string)$s))
+        );
+        // nl2br_e: escape poi nl2br, output safe senza double-escape
+        $this->smarty->registerPlugin('modifier', 'nl2br_e', function ($str): string {
+            return nl2br(htmlspecialchars((string)($str ?? ''), ENT_QUOTES, 'UTF-8'));
+        });
+        // stella(n): genera n stelle piene + (5-n) vuote
+        $this->smarty->registerPlugin('modifier', 'star_full',
+            fn($n) => str_repeat('★', max(0, (int)$n))
+        );
+        $this->smarty->registerPlugin('modifier', 'star_empty',
+            fn($n) => str_repeat('☆', max(0, 5 - (int)$n))
+        );
     }
 
     public static function make(): self
@@ -33,23 +52,73 @@ class SmartyView
         return new self();
     }
 
+    /**
+     * Assegna variabili globali (sessione, header, categorie, carrello),
+     * poi le variabili di pagina, quindi visualizza il template.
+     */
     public function render(string $template, array $data = [], string $pageTitle = 'NerdVault'): void
     {
+        // ── Dati sempre disponibili ───────────────────────────────────────
+        $this->smarty->assign('pageTitle',  $pageTitle);
+        $this->smarty->assign('year',       (int) date('Y'));
+        $this->smarty->assign('get',        $_GET  ?? []);
+        $this->smarty->assign('post',       $_POST ?? []);
+
+        // ── Sessione ──────────────────────────────────────────────────────
+        $isLogged    = !empty($_SESSION['user_id']);
+        $isAdmin     = !empty($_SESSION['is_admin']);
+        $isBusiness  = !empty($_SESSION['is_business']);
+        $userId      = (int)($_SESSION['user_id']          ?? 0);
+        $livello     = (int)($_SESSION['livello_sicurezza'] ?? 1);
+
+        $this->smarty->assign('isLogged',         $isLogged);
+        $this->smarty->assign('isAdmin',          $isAdmin);
+        $this->smarty->assign('isBusiness',       $isBusiness);
+        $this->smarty->assign('userId',           $userId);
+        $this->smarty->assign('username',         (string)($_SESSION['username'] ?? ''));
+        $this->smarty->assign('propic',           (string)($_SESSION['propic']   ?? ''));
+        $this->smarty->assign('livelloSicurezza', $livello);
+
+        // ── Categorie per l'header ────────────────────────────────────────
+        $categorieHeader = [];
+        if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof \PDO) {
+            FDataBase::init($GLOBALS['pdo']);
+            $categorieHeader = array_map(
+                static fn($c) => $c->toArray(),
+                FPersistentManager::categorie()
+            );
+        }
+        $this->smarty->assign('categorieHeader', $categorieHeader);
+
+        // ── Contatore carrello (solo utente normale) ──────────────────────
+        $cartItemCount = 0;
+        if ($isLogged && !$isAdmin && !$isBusiness && isset($GLOBALS['pdo'])) {
+            try {
+                $stmt = $GLOBALS['pdo']->prepare("
+                    SELECT COUNT(*)
+                    FROM carrello c
+                    JOIN elemento_carrello e ON e.id_carrello = c.id_carrello
+                    JOIN annuncio a ON a.id_annuncio = e.id_annuncio
+                    WHERE c.id_utente = ? AND a.stato = 'attivo'
+                ");
+                $stmt->execute([$userId]);
+                $cartItemCount = (int)$stmt->fetchColumn();
+            } catch (\Throwable $ignored) {
+            }
+        }
+        $this->smarty->assign('cartItemCount', $cartItemCount);
+
+        // ── Variabili di pagina ───────────────────────────────────────────
         foreach ($data as $key => $value) {
             $this->smarty->assign($key, $value);
         }
 
-        $this->smarty->assign('pageTitle', $pageTitle);
-
-        extract($data, EXTR_SKIP);
-        require $this->viewsPath . '/layout/header.php';
         $this->smarty->display($template);
-        require $this->viewsPath . '/layout/footer.php';
     }
 
     private function ensureDirectory(string $path): void
     {
-        if (!is_dir($path) && !mkdir($path, 0775, true)) {
+        if (!is_dir($path) && !mkdir($path, 0775, true) && !is_dir($path)) {
             throw new RuntimeException('Impossibile creare la cartella Smarty: ' . $path);
         }
     }
