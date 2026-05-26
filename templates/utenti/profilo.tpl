@@ -69,7 +69,7 @@
 
                 <div class="nv-profile-inline-actions">
                     <details class="nv-profile-action-details">
-                        <summary class="nv-profile-small-btn">Modifica dati</summary>
+                        <summary class="nv-profile-small-btn"><span aria-hidden="true">✏️</span> Modifica dati</summary>
                         <form class="nv-profile-popover-form" method="post" action="index.php">
                             <input type="hidden" name="route" value="profilo-update">
                             <label for="nome">Nome</label>
@@ -81,7 +81,7 @@
                     </details>
 
                     <details class="nv-profile-action-details">
-                        <summary class="nv-profile-small-btn">Cambia password</summary>
+                        <summary class="nv-profile-small-btn">Cambia password <span aria-hidden="true">🔑</span></summary>
                         <form class="nv-profile-popover-form" method="post" action="index.php">
                             <input type="hidden" name="route" value="profilo-password">
                             <label for="password_attuale">Password attuale</label>
