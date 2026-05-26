@@ -2,15 +2,16 @@
 
 namespace App\Middleware;
 
-use App\Services\BusinessService;
+use App\Foundation\FDataBase;
+use App\Foundation\FPersistentManager;
 use PDO;
 
 function requireBusiness(PDO $pdo): void
 {
     requireAuth();
 
-    $businessService = new BusinessService($pdo);
-    $business = $businessService->findByUserId(currentUserId());
+    FDataBase::init($pdo);
+    $business = FPersistentManager::businessByUser(currentUserId());
 
     if (!$business) {
         header('Location: index.php?route=business-create');

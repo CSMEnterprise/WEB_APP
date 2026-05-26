@@ -69,7 +69,7 @@ WEB_APP/
 - `src/config/`: contiene la configurazione dell'applicazione, inclusa la connessione al database.
 - `src/controllers/`: riceve le richieste dal router e coordina servizi e viste.
 - `src/Entity/`: contiene le classi Entity con proprieta private, getter, setter e metodi di utilita.
-- `src/Foundation/`: contiene classi infrastrutturali, per esempio il renderer Smarty.
+- `src/Foundation/`: contiene classi infrastrutturali e mapper tabella/Entity. La persistenza segue la logica `FDataBase` + `FPersistentManager` + classi `F...`, mentre `SmartyView` gestisce il rendering Smarty.
 - `src/services/`: contiene la logica applicativa e le query al database tramite PDO.
 - `src/templates/`: contiene i template Smarty introdotti gradualmente.
 - `src/views/`: contiene le pagine PHP ancora renderizzate direttamente dall'applicazione.
@@ -296,6 +296,9 @@ Browser
   -> middleware, se richiesto
   -> controller
   -> service
+  -> Foundation/FPersistentManager
+  -> Foundation/F... table mapper
+  -> Foundation/FDataBase
   -> database
   -> view
   -> HTML restituito al browser
@@ -307,9 +310,13 @@ Esempio per la lista annunci:
 public/index.php
   -> FrontController::handle()
   -> AnnuncioController::lista()
-  -> AnnuncioService::getAnnunciAttivi()
+  -> AnnuncioService::getAnnunciAttiviEntity()
+  -> FPersistentManager::annunciAttivi()
+  -> FAnnuncio::attivi()
   -> src/views/annunci/lista.php
 ```
+
+La stessa logica e' stata estesa ai flussi principali di utenti, indirizzi, wishlist, carrello, feedback, segnalazioni, moderazione e pagamenti. Le transazioni di acquisto mantengono ancora alcune query dedicate con `FOR UPDATE` dentro `PaymentService`, per controllare in modo atomico lo stato dell'annuncio durante il pagamento.
 
 ## Verifica sintassi PHP
 

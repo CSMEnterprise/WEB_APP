@@ -2,58 +2,57 @@
 
 namespace App\Controllers;
 
-use App\Entity\EAccountBusiness;
 use App\Entity\EAnnuncio;
-use App\Entity\EIndirizzo;
-use App\Entity\EPagamento;
-use App\Entity\EUtenteRegistrato;
-use App\Foundation\SmartyView;
-use App\Services\AdminService;
-use App\Services\AnnuncioService;
-use App\Services\AuthService;
-use App\Services\BusinessService;
-use App\Services\CartService;
-use App\Services\CategoryService;
-use App\Services\FeedbackService;
-use App\Services\MailService;
-use App\Services\PaymentService;
-use App\Services\SegnalazioneService;
+use App\Entity\EElementoCarrello;
+use App\Foundation\FDataBase;
+use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
-use App\Services\UserService;
-use App\Services\WishlistService;
 use Exception;
 use PDO;
 
 class CarrelloController extends BaseController
 {
-    private CartService $cartService;
-
     public function __construct(PDO $db)
     {
-        $this->cartService = new CartService($db);
+        FDataBase::init($db);
     }
 
     public function lista(int $idUtente): void
     {
-        $carrello = $this->entitiesToArrays($this->cartService->getCarrelloUtenteEntity($idUtente));
-        $annunciRimossi = $this->cartService->getUltimiAnnunciRimossi();
-        $totale = 0.0;
+        try {
+            $this->requirePositiveId($idUtente, 'Utente');
+            $this->denyBusinessBuyer($idUtente);
 
-        foreach ($carrello as $item) {
-            $isOwner = (int)($item['id_utente'] ?? 0) === $idUtente;
+            $idCarrello = FPersistentManager::getOrCreateCartIdByUser($idUtente);
+            $annunciRimossi = FPersistentManager::unavailableCartItems($idCarrello);
 
-            if (!$isOwner && ($item['stato'] ?? '') === 'attivo') {
-                $totale += (float)($item['prezzo'] ?? 0);
+            if (!empty($annunciRimossi)) {
+                FPersistentManager::removeUnavailableCartItems($idCarrello);
             }
-        }
 
-        require __DIR__ . '/../views/carrello/lista.php';
+            $carrello = $this->entitiesToArrays(FPersistentManager::elementiCarrelloAcquistabili($idCarrello));
+            $totale = 0.0;
+
+            foreach ($carrello as $item) {
+                $isOwner = (int)($item['id_utente'] ?? 0) === $idUtente;
+
+                if (!$isOwner && ($item['stato'] ?? '') === 'attivo') {
+                    $totale += (float)($item['prezzo'] ?? 0);
+                }
+            }
+
+            require __DIR__ . '/../views/carrello/lista.php';
+        } catch (Exception $e) {
+            http_response_code(400);
+            $errore = $e->getMessage();
+            require __DIR__ . '/../views/errors/400.php';
+        }
     }
 
     public function aggiungi(int $idUtente, int $idAnnuncio): void
     {
         try {
-            $this->cartService->aggiungiAnnuncio($idUtente, $idAnnuncio);
+            $this->aggiungiAnnuncioAlCarrello($idUtente, $idAnnuncio);
 
             $back = $_SERVER['HTTP_REFERER'] ?? 'index.php?route=annunci';
             header('Location: ' . $back);
@@ -67,17 +66,64 @@ class CarrelloController extends BaseController
 
     public function rimuovi(int $idUtente, int $idAnnuncio): void
     {
-        $this->cartService->rimuoviAnnuncio($idUtente, $idAnnuncio);
+        try {
+            $this->requirePositiveId($idUtente, 'Utente');
+            $this->requirePositiveId($idAnnuncio, 'Annuncio');
+            $this->denyBusinessBuyer($idUtente);
 
-        header('Location: index.php?route=carrello');
-        exit;
+            $idCarrello = FPersistentManager::getOrCreateCartIdByUser($idUtente);
+            FPersistentManager::removeElementoCarrello($idCarrello, $idAnnuncio);
+
+            header('Location: index.php?route=carrello');
+            exit;
+        } catch (Exception $e) {
+            http_response_code(400);
+            $errore = $e->getMessage();
+            require __DIR__ . '/../views/errors/400.php';
+        }
     }
 
     public function svuota(int $idUtente): void
     {
-        $this->cartService->svuota($idUtente);
+        try {
+            $this->requirePositiveId($idUtente, 'Utente');
+            $this->denyBusinessBuyer($idUtente);
 
-        header('Location: index.php?route=carrello');
-        exit;
+            $idCarrello = FPersistentManager::getOrCreateCartIdByUser($idUtente);
+            FPersistentManager::clearCart($idCarrello);
+
+            header('Location: index.php?route=carrello');
+            exit;
+        } catch (Exception $e) {
+            http_response_code(400);
+            $errore = $e->getMessage();
+            require __DIR__ . '/../views/errors/400.php';
+        }
+    }
+
+    private function aggiungiAnnuncioAlCarrello(int $idUtente, int $idAnnuncio): void
+    {
+        $this->requirePositiveId($idUtente, 'Utente');
+        $this->requirePositiveId($idAnnuncio, 'Annuncio');
+        $this->denyBusinessBuyer($idUtente);
+
+        $annuncio = FPersistentManager::annuncioById($idAnnuncio);
+
+        if (!$annuncio instanceof EAnnuncio) {
+            throw new ServiceException('Annuncio non trovato.');
+        }
+
+        if (!$annuncio->isAttivo()) {
+            throw new ServiceException("Questo annuncio non e' acquistabile.");
+        }
+
+        if ((int)($annuncio->getIdUtente() ?? 0) === $idUtente) {
+            throw new ServiceException('Non puoi aggiungere al carrello un tuo annuncio.');
+        }
+
+        $idCarrello = FPersistentManager::getOrCreateCartIdByUser($idUtente);
+
+        FPersistentManager::addElementoCarrello(new EElementoCarrello($idCarrello, $idAnnuncio));
+        FPersistentManager::removePreferito($idUtente, $idAnnuncio);
     }
 }

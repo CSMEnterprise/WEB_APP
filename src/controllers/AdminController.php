@@ -2,53 +2,31 @@
 
 namespace App\Controllers;
 
-use App\Entity\EAccountBusiness;
-use App\Entity\EAnnuncio;
-use App\Entity\EIndirizzo;
-use App\Entity\EPagamento;
-use App\Entity\EUtenteRegistrato;
-use App\Foundation\SmartyView;
-use App\Services\AdminService;
-use App\Services\AnnuncioService;
-use App\Services\AuthService;
-use App\Services\BusinessService;
-use App\Services\CartService;
-use App\Services\CategoryService;
-use App\Services\FeedbackService;
-use App\Services\MailService;
-use App\Services\PaymentService;
-use App\Services\SegnalazioneService;
-use App\Services\ServiceException;
-use App\Services\UserService;
-use App\Services\WishlistService;
+use App\Foundation\FDataBase;
+use App\Foundation\FPersistentManager;
 use Exception;
 use PDO;
 
 class AdminController extends BaseController
 {
-    private AdminService $adminService;
-    private UserService $userService;
-    private SegnalazioneService $segnalazioneService;
-    private AnnuncioService $annuncioService;
-
     public function __construct(PDO $db)
     {
-        $this->adminService = new AdminService($db);
-        $this->userService = new UserService($db);
-        $this->segnalazioneService = new SegnalazioneService($db);
-        $this->annuncioService = new AnnuncioService($db);
+        FDataBase::init($db);
     }
 
     public function dashboard(int $idAdmin): void
     {
-        $stats = $this->adminService->getDashboardStats();
-        $azioniModera = $this->entitiesToArrays($this->adminService->getAzioniByAdminEntity($idAdmin));
+        $this->requirePositiveId($idAdmin, 'Admin');
+
+        $stats = FPersistentManager::dashboardStats();
+        $azioniModera = $this->entitiesToArrays(FPersistentManager::moderaByAdmin($idAdmin));
+
         require __DIR__ . '/../views/admin/dashboard.php';
     }
 
     public function dashboardModerazione(array $filters): void
     {
-        $azioniModerazione = $this->entitiesToArrays($this->adminService->getAzioniModerazioneEntity($filters));
+        $azioniModerazione = $this->entitiesToArrays(FPersistentManager::azioniModerazione($filters));
         $filters = [
             'admin' => trim((string) ($filters['admin'] ?? '')),
         ];
@@ -59,9 +37,9 @@ class AdminController extends BaseController
     public function utenti(array $filters = []): void
     {
         $searchUtente = trim((string) ($filters['q_utente'] ?? ''));
-        $utenti = $this->entitiesToArrays($this->userService->getAllEntity($searchUtente));
+        $utenti = $this->entitiesToArrays(FPersistentManager::utentiForAdmin($searchUtente));
         $admins = ((int) ($_SESSION['livello_sicurezza'] ?? 1) === 2)
-            ? $this->entitiesToArrays($this->adminService->getAllAdminsEntity())
+            ? $this->entitiesToArrays(FPersistentManager::admins())
             : [];
         $filters = ['q_utente' => $searchUtente];
 
@@ -70,16 +48,24 @@ class AdminController extends BaseController
 
     public function bannaUtente(int $idUtente, int $idAdmin): void
     {
-        $this->userService->banna($idUtente);
-        $this->adminService->registraAzione($idAdmin, 'Utente bannato', $idUtente);
+        $this->requirePositiveId($idUtente, 'Utente');
+        $this->requirePositiveId($idAdmin, 'Admin');
+
+        FPersistentManager::setUtenteBanState($idUtente, true);
+        $this->registerAdminAction($idAdmin, 'Utente bannato', $idUtente);
+
         header('Location: index.php?route=admin-utenti');
         exit;
     }
 
     public function sbloccaUtente(int $idUtente, int $idAdmin): void
     {
-        $this->userService->sblocca($idUtente);
-        $this->adminService->registraAzione($idAdmin, 'Utente sbloccato', $idUtente);
+        $this->requirePositiveId($idUtente, 'Utente');
+        $this->requirePositiveId($idAdmin, 'Admin');
+
+        FPersistentManager::setUtenteBanState($idUtente, false);
+        $this->registerAdminAction($idAdmin, 'Utente sbloccato', $idUtente);
+
         header('Location: index.php?route=admin-utenti');
         exit;
     }
@@ -87,8 +73,14 @@ class AdminController extends BaseController
     public function bannaAdmin(int $idAdminDaBannare, int $idAdminCorrente): void
     {
         try {
-            $this->adminService->bannaAdminLivello1($idAdminDaBannare, $idAdminCorrente);
-            $this->adminService->registraAzione($idAdminCorrente, 'Admin bannato #' . $idAdminDaBannare);
+            $target = $this->findAdminForModeration($idAdminDaBannare);
+            $current = $this->findAdminForModeration($idAdminCorrente);
+
+            $this->ensureCanModerateAdmin($target, $current);
+
+            FPersistentManager::setAdminBanState($idAdminDaBannare, true);
+            $this->registerAdminAction($idAdminCorrente, 'Admin bannato #' . $idAdminDaBannare);
+
             header('Location: index.php?route=admin-utenti');
             exit;
         } catch (Exception $e) {
@@ -101,8 +93,14 @@ class AdminController extends BaseController
     public function sbloccaAdmin(int $idAdminDaSbloccare, int $idAdminCorrente): void
     {
         try {
-            $this->adminService->sbloccaAdminLivello1($idAdminDaSbloccare, $idAdminCorrente);
-            $this->adminService->registraAzione($idAdminCorrente, 'Admin sbloccato #' . $idAdminDaSbloccare);
+            $target = $this->findAdminForModeration($idAdminDaSbloccare);
+            $current = $this->findAdminForModeration($idAdminCorrente);
+
+            $this->ensureCanModerateAdmin($target, $current);
+
+            FPersistentManager::setAdminBanState($idAdminDaSbloccare, false);
+            $this->registerAdminAction($idAdminCorrente, 'Admin sbloccato #' . $idAdminDaSbloccare);
+
             header('Location: index.php?route=admin-utenti');
             exit;
         } catch (Exception $e) {
@@ -114,7 +112,7 @@ class AdminController extends BaseController
 
     public function segnalazioni(array $filters = []): void
     {
-        $segnalazioni = $this->entitiesToArrays($this->segnalazioneService->getFiltrateEntity($filters));
+        $segnalazioni = $this->entitiesToArrays(FPersistentManager::segnalazioni($filters));
         $filters = [
             'oggetto' => trim((string) ($filters['oggetto'] ?? '')),
             'tipologia' => trim((string) ($filters['tipologia'] ?? '')),
@@ -125,8 +123,12 @@ class AdminController extends BaseController
 
     public function eliminaAnnuncio(int $idAnnuncio, int $idAdmin): void
     {
-        $this->adminService->registraAzione($idAdmin, 'Annuncio eliminato #' . $idAnnuncio);
-        $this->annuncioService->eliminaDaAdmin($idAnnuncio);
+        $this->requirePositiveId($idAnnuncio, 'Annuncio');
+        $this->requirePositiveId($idAdmin, 'Admin');
+
+        $this->registerAdminAction($idAdmin, 'Annuncio eliminato #' . $idAnnuncio);
+        FPersistentManager::deleteAnnuncioByAdmin($idAnnuncio);
+
         header('Location: index.php?route=annunci');
         exit;
     }

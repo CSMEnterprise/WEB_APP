@@ -16,7 +16,11 @@ $categorieHeader = [];
 $cartItemCount = 0;
 
 if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
-    $categorieHeader = (new \App\Services\CategoryService($GLOBALS['pdo']))->getAll();
+    \App\Foundation\FDataBase::init($GLOBALS['pdo']);
+    $categorieHeader = array_map(
+        static fn($categoria) => $categoria->toArray(),
+        \App\Foundation\FPersistentManager::categorie()
+    );
 
     if ($isLogged && empty($_SESSION['is_admin']) && empty($_SESSION['is_business'])) {
         $stmtCartCount = $GLOBALS['pdo']->prepare("

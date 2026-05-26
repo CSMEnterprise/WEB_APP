@@ -2,73 +2,47 @@
 
 namespace App\Controllers;
 
-use App\Entity\EAccountBusiness;
 use App\Entity\EAnnuncio;
-use App\Entity\EIndirizzo;
-use App\Entity\EPagamento;
-use App\Entity\EUtenteRegistrato;
-use App\Foundation\SmartyView;
-use App\Services\AdminService;
-use App\Services\AnnuncioService;
-use App\Services\AuthService;
-use App\Services\BusinessService;
-use App\Services\CartService;
-use App\Services\CategoryService;
-use App\Services\FeedbackService;
-use App\Services\MailService;
-use App\Services\PaymentService;
-use App\Services\SegnalazioneService;
+use App\Foundation\FDataBase;
+use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
-use App\Services\UserService;
-use App\Services\WishlistService;
 use Exception;
+use finfo;
 use PDO;
 
 class AnnuncioController extends BaseController
 {
-    private AnnuncioService  $annuncioService;
-    private CategoryService  $categoryService;
-    private FeedbackService  $feedbackService;
-    private UserService      $userService;
-    private WishlistService  $wishlistService;
-    private CartService      $cartService;
+    private PDO $db;
 
     public function __construct(PDO $db)
     {
-        $this->annuncioService = new AnnuncioService($db);
-        $this->categoryService = new CategoryService($db);
-        $this->feedbackService = new FeedbackService($db);
-        $this->userService     = new UserService($db);
-        $this->wishlistService = new WishlistService($db);
-        $this->cartService     = new CartService($db);
+        $this->db = $db;
+        FDataBase::init($db);
     }
 
     public function lista(): void
     {
         $q = trim($_GET['q'] ?? '');
         $idCategoria = (int) ($_GET['id_categoria'] ?? 0);
-        $categorie = $this->entitiesToArrays($this->categoryService->getAllEntity());
+        $categorie = $this->entitiesToArrays(FPersistentManager::categorie());
 
         if ($q !== '' || $idCategoria > 0) {
-            $annunci = $this->entitiesToArrays($this->annuncioService->searchAnnunciEntity($q, $idCategoria));
-            $utenti  = $this->entitiesToArrays($this->userService->searchEntity($q));
+            $annunci = $this->entitiesToArrays(FPersistentManager::searchAnnunci($q, $idCategoria));
+            $utenti = $this->entitiesToArrays(FPersistentManager::searchUtenti($q));
         } else {
-            $annunci = $this->entitiesToArrays($this->annuncioService->getAnnunciAttiviEntity());
-            $utenti  = [];
+            $annunci = $this->entitiesToArrays(FPersistentManager::annunciAttivi());
+            $utenti = [];
         }
 
         $isRegularUser = !empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business']);
-
-        $wishlistIds = $isRegularUser
-            ? $this->wishlistService->getWishlistIds((int) $_SESSION['user_id'])
-            : [];
+        $wishlistIds = $isRegularUser ? FPersistentManager::wishlistIdsByUser((int) $_SESSION['user_id']) : [];
 
         require __DIR__ . '/../views/annunci/lista.php';
     }
 
     public function dettaglio(int $idAnnuncio): void
     {
-        $annuncioEntity = $this->annuncioService->findEntityById($idAnnuncio);
+        $annuncioEntity = FPersistentManager::annuncioById($idAnnuncio);
 
         if (!$annuncioEntity) {
             http_response_code(404);
@@ -76,36 +50,40 @@ class AnnuncioController extends BaseController
             return;
         }
 
-        $annuncio           = $annuncioEntity->toArray();
-        $idVenditore        = (int) ($annuncioEntity->getIdUtente() ?? 0);
-        $feedbackVenditore  = $idVenditore > 0 ? $this->feedbackService->getByVenditoreId($idVenditore) : [];
-        $mediaVenditore     = $idVenditore > 0 ? $this->feedbackService->getMediaVoto($idVenditore) : 0.0;
+        $annuncio = $annuncioEntity->toArray();
+        $idVenditore = (int) ($annuncioEntity->getIdUtente() ?? 0);
+        $feedbackVenditore = $idVenditore > 0
+            ? $this->entitiesToArrays(FPersistentManager::feedbackByVenditore($idVenditore))
+            : [];
+        $mediaVenditore = $idVenditore > 0 ? FPersistentManager::mediaFeedbackVenditore($idVenditore) : 0.0;
 
         $isRegularUser = !empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business']);
-        $wishlistIds = $isRegularUser ? $this->wishlistService->getWishlistIds((int) $_SESSION['user_id']) : [];
-        $carrelloIds = $isRegularUser ? $this->cartService->getCarrelloIds((int) $_SESSION['user_id']) : [];
+        $wishlistIds = $isRegularUser ? FPersistentManager::wishlistIdsByUser((int) $_SESSION['user_id']) : [];
+        $carrelloIds = $isRegularUser ? FPersistentManager::carrelloAnnuncioIdsByUser((int) $_SESSION['user_id']) : [];
 
         require __DIR__ . '/../views/annunci/dettaglio.php';
     }
 
     public function formCreazione(): void
     {
-        $categorie = $this->entitiesToArrays($this->categoryService->getAllEntity());
+        $categorie = $this->entitiesToArrays(FPersistentManager::categorie());
+
         require __DIR__ . '/../views/annunci/form.php';
     }
 
     public function formModifica(int $idAnnuncio, int $idUtente): void
     {
         try {
-            $annuncioEntity = $this->annuncioService->findEntityById($idAnnuncio);
+            $annuncioEntity = FPersistentManager::annuncioById($idAnnuncio);
             $annuncio = $this->entityToArray($annuncioEntity);
 
             if (!$annuncioEntity || (int)($annuncioEntity->getIdUtente() ?? 0) !== $idUtente || !$annuncioEntity->isAttivo()) {
                 throw new ServiceException('Non puoi modificare questo annuncio.');
             }
 
-            $categorie = $this->entitiesToArrays($this->categoryService->getAllEntity());
+            $categorie = $this->entitiesToArrays(FPersistentManager::categorie());
             $isEdit = true;
+
             require __DIR__ . '/../views/annunci/form.php';
         } catch (Exception $e) {
             http_response_code(403);
@@ -117,12 +95,14 @@ class AnnuncioController extends BaseController
     public function crea(array $data, int $idUtente, array $files = []): void
     {
         try {
-            $idAnnuncio = $this->annuncioService->crea($data, $idUtente, $files);
+            $idAnnuncio = $this->createAnnuncio($data, $idUtente, $files);
+
             header('Location: index.php?route=annuncio&id=' . $idAnnuncio);
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
-            $categorie = $this->entitiesToArrays($this->categoryService->getAllEntity());
+            $categorie = $this->entitiesToArrays(FPersistentManager::categorie());
+
             require __DIR__ . '/../views/annunci/form.php';
         }
     }
@@ -132,15 +112,17 @@ class AnnuncioController extends BaseController
         $idAnnuncio = (int)($data['id_annuncio'] ?? 0);
 
         try {
-            $this->annuncioService->aggiorna($idAnnuncio, $idUtente, $data, $files);
+            $this->updateAnnuncio($idAnnuncio, $idUtente, $data, $files);
+
             header('Location: index.php?route=annuncio&id=' . $idAnnuncio);
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
-            $categorie = $this->entitiesToArrays($this->categoryService->getAllEntity());
-            $annuncioEntity = $idAnnuncio > 0 ? $this->annuncioService->findEntityById($idAnnuncio) : null;
+            $categorie = $this->entitiesToArrays(FPersistentManager::categorie());
+            $annuncioEntity = $idAnnuncio > 0 ? FPersistentManager::annuncioById($idAnnuncio) : null;
             $annuncio = $annuncioEntity ? $annuncioEntity->toArray() : $data;
             $isEdit = true;
+
             require __DIR__ . '/../views/annunci/form.php';
         }
     }
@@ -148,7 +130,8 @@ class AnnuncioController extends BaseController
     public function eliminaImmagine(array $data, int $idUtente): void
     {
         try {
-            $idAnnuncio = $this->annuncioService->eliminaImmagine((int)($data['id_immagine'] ?? 0), $idUtente);
+            $idAnnuncio = $this->deleteImage((int)($data['id_immagine'] ?? 0), $idUtente);
+
             header('Location: index.php?route=annuncio-edit&id=' . $idAnnuncio);
             exit;
         } catch (Exception $e) {
@@ -161,13 +144,221 @@ class AnnuncioController extends BaseController
     public function elimina(int $idAnnuncio, int $idUtente): void
     {
         try {
-            $this->annuncioService->elimina($idAnnuncio, $idUtente);
+            $this->requirePositiveId($idAnnuncio, 'Annuncio');
+            $this->requirePositiveId($idUtente, 'Utente');
+
+            if (!FPersistentManager::deleteAnnuncioForUser($idAnnuncio, $idUtente)) {
+                throw new ServiceException('Non puoi eliminare questo annuncio.');
+            }
+
             header('Location: index.php?route=annunci');
             exit;
         } catch (Exception $e) {
             http_response_code(403);
             $errore = $e->getMessage();
             require __DIR__ . '/../views/errors/400.php';
+        }
+    }
+
+    private function createAnnuncio(array $data, int $idUtente, array $files = []): int
+    {
+        $this->requirePositiveId($idUtente, 'Utente');
+        [$titolo, $descrizione, $idCategoria, $statoConservazione, $prezzo] = $this->validateAnnuncioData($data);
+
+        $this->db->beginTransaction();
+
+        try {
+            $annuncio = EAnnuncio::fromArray([
+                'id_utente' => $idUtente,
+                'id_categoria' => $idCategoria,
+                'titolo' => $titolo,
+                'descrizione' => $descrizione !== '' ? $descrizione : null,
+                'stato_conservazione' => $statoConservazione,
+                'prezzo' => $prezzo,
+                'modalita_consegna' => 'Consegna',
+                'stato' => 'attivo',
+            ]);
+
+            $idAnnuncio = FPersistentManager::createAnnuncioForUser($annuncio, $idUtente);
+            $this->saveAnnuncioImages($idAnnuncio, $files);
+
+            $this->db->commit();
+
+            return $idAnnuncio;
+        } catch (Exception $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+
+            throw $e;
+        }
+    }
+
+    private function updateAnnuncio(int $idAnnuncio, int $idUtente, array $data, array $files = []): void
+    {
+        $this->requirePositiveId($idAnnuncio, 'Annuncio');
+        $this->requirePositiveId($idUtente, 'Utente');
+
+        $annuncio = FPersistentManager::annuncioById($idAnnuncio);
+
+        if (!$annuncio || (int)($annuncio->getIdUtente() ?? 0) !== $idUtente) {
+            throw new ServiceException('Non puoi modificare questo annuncio.');
+        }
+
+        if (!$annuncio->isAttivo()) {
+            throw new ServiceException('Puoi modificare solo annunci attivi.');
+        }
+
+        [$titolo, $descrizione, $idCategoria, $statoConservazione, $prezzo] = $this->validateAnnuncioData($data);
+
+        $this->db->beginTransaction();
+
+        try {
+            $updated = EAnnuncio::fromArray(array_merge($annuncio->toArray(), [
+                'id_annuncio' => $idAnnuncio,
+                'id_categoria' => $idCategoria,
+                'titolo' => $titolo,
+                'descrizione' => $descrizione !== '' ? $descrizione : null,
+                'stato_conservazione' => $statoConservazione,
+                'prezzo' => $prezzo,
+            ]));
+
+            FPersistentManager::updateAnnuncioForUser($idAnnuncio, $idUtente, $updated);
+            $this->saveAnnuncioImages($idAnnuncio, $files);
+
+            $this->db->commit();
+        } catch (Exception $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+
+            throw $e;
+        }
+    }
+
+    private function validateAnnuncioData(array $data): array
+    {
+        $titolo = $this->clean($data['titolo'] ?? '');
+        $descrizione = $this->clean($data['descrizione'] ?? '');
+        $idCategoria = (int) ($data['id_categoria'] ?? 0);
+        $statoConservazione = $this->clean($data['stato_conservazione'] ?? '');
+        $prezzo = (float) ($data['prezzo'] ?? 0);
+        $validi = ['Nuovo', 'Usato come nuovo', 'Ottimo', 'Buono', 'Discreto', 'Scarso'];
+
+        if ($titolo === '' || $idCategoria <= 0 || $statoConservazione === '' || $prezzo <= 0) {
+            throw new ServiceException("Compila tutti i campi obbligatori dell'annuncio.");
+        }
+
+        if (!in_array($statoConservazione, $validi, true)) {
+            throw new ServiceException('Stato di conservazione non valido.');
+        }
+
+        return [$titolo, $descrizione, $idCategoria, $statoConservazione, $prezzo];
+    }
+
+    private function deleteImage(int $idImmagine, int $idUtente): int
+    {
+        $this->requirePositiveId($idImmagine, 'Immagine');
+        $this->requirePositiveId($idUtente, 'Utente');
+
+        $immagine = FPersistentManager::findImmagineOwnedByUser($idImmagine, $idUtente);
+
+        if (!$immagine) {
+            throw new ServiceException('Non puoi rimuovere questa foto.');
+        }
+
+        if (!FPersistentManager::deleteImmagineById($idImmagine)) {
+            throw new ServiceException('Foto non rimossa.');
+        }
+
+        $this->deleteImageFile($immagine->getUrl());
+
+        return (int) $immagine->getIdAnnuncio();
+    }
+
+    private function deleteImageFile(string $url): void
+    {
+        $url = trim($url);
+
+        if ($url === '' || str_contains($url, '..')) {
+            return;
+        }
+
+        $path = realpath(__DIR__ . '/../../public/' . ltrim(str_replace('\\', '/', $url), '/'));
+        $publicRoot = realpath(__DIR__ . '/../../public');
+
+        if ($path && $publicRoot && str_starts_with($path, $publicRoot) && is_file($path)) {
+            @unlink($path);
+        }
+    }
+
+    private function saveAnnuncioImages(int $idAnnuncio, array $files): void
+    {
+        if (empty($files['immagini']) || empty($files['immagini']['name'])) {
+            return;
+        }
+
+        $immagini = $files['immagini'];
+        $nomi = is_array($immagini['name']) ? $immagini['name'] : [$immagini['name']];
+        $tmpNames = is_array($immagini['tmp_name']) ? $immagini['tmp_name'] : [$immagini['tmp_name']];
+        $errori = is_array($immagini['error']) ? $immagini['error'] : [$immagini['error']];
+        $dimensioni = is_array($immagini['size']) ? $immagini['size'] : [$immagini['size']];
+        $maxFile = 5;
+        $maxSize = 3 * 1024 * 1024;
+        $allowedMime = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+        $uploadDir = __DIR__ . '/../../public/uploads/annunci/' . $idAnnuncio;
+        $publicDir = 'uploads/annunci/' . $idAnnuncio;
+
+        if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true)) {
+            throw new ServiceException('Impossibile creare la cartella per le immagini.');
+        }
+
+        $existing = FPersistentManager::countImmaginiByAnnuncio($idAnnuncio);
+
+        if ($existing >= $maxFile) {
+            return;
+        }
+
+        $ordine = $existing;
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+
+        foreach ($nomi as $index => $nomeOriginale) {
+            if ($ordine >= $maxFile) {
+                break;
+            }
+
+            $errore = $errori[$index] ?? UPLOAD_ERR_NO_FILE;
+
+            if ($errore === UPLOAD_ERR_NO_FILE) {
+                continue;
+            }
+
+            if ($errore !== UPLOAD_ERR_OK) {
+                throw new ServiceException('Errore durante il caricamento di una foto.');
+            }
+
+            $tmpName = $tmpNames[$index] ?? '';
+            $size = (int) ($dimensioni[$index] ?? 0);
+
+            if ($size <= 0 || $size > $maxSize) {
+                throw new ServiceException('Ogni foto deve pesare al massimo 3 MB.');
+            }
+
+            $mime = $finfo->file($tmpName);
+
+            if (!isset($allowedMime[$mime])) {
+                throw new ServiceException('Puoi caricare solo immagini JPG, PNG o WEBP.');
+            }
+
+            $filename = bin2hex(random_bytes(16)) . '.' . $allowedMime[$mime];
+            $destination = $uploadDir . '/' . $filename;
+
+            if (!move_uploaded_file($tmpName, $destination)) {
+                throw new ServiceException('Impossibile salvare una foto caricata.');
+            }
+
+            FPersistentManager::addImmagineForAnnuncio($idAnnuncio, $publicDir . '/' . $filename, $ordine);
+            $ordine++;
         }
     }
 }

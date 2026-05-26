@@ -2,48 +2,42 @@
 
 namespace App\Controllers;
 
-use App\Entity\EAccountBusiness;
 use App\Entity\EAnnuncio;
-use App\Entity\EIndirizzo;
-use App\Entity\EPagamento;
-use App\Entity\EUtenteRegistrato;
-use App\Foundation\SmartyView;
-use App\Services\AdminService;
-use App\Services\AnnuncioService;
-use App\Services\AuthService;
-use App\Services\BusinessService;
-use App\Services\CartService;
-use App\Services\CategoryService;
-use App\Services\FeedbackService;
-use App\Services\MailService;
-use App\Services\PaymentService;
-use App\Services\SegnalazioneService;
+use App\Entity\EPreferito;
+use App\Foundation\FDataBase;
+use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
-use App\Services\UserService;
-use App\Services\WishlistService;
 use Exception;
 use PDO;
 
 class WishlistController extends BaseController
 {
-    private WishlistService $wishlistService;
-
     public function __construct(PDO $db)
     {
-        $this->wishlistService = new WishlistService($db);
+        FDataBase::init($db);
     }
 
     public function lista(int $idUtente): void
     {
-        $wishlist = $this->entitiesToArrays($this->wishlistService->getWishlistUtenteEntity($idUtente));
+        try {
+            $this->requirePositiveId($idUtente, 'Utente');
+            $this->denyBusinessBuyer($idUtente);
 
-        require __DIR__ . '/../views/wishlist/lista.php';
+            FPersistentManager::removeUnavailablePreferitiForUser($idUtente);
+            $wishlist = $this->entitiesToArrays(FPersistentManager::wishlistAnnunciByUser($idUtente));
+
+            require __DIR__ . '/../views/wishlist/lista.php';
+        } catch (Exception $e) {
+            http_response_code(400);
+            $errore = $e->getMessage();
+            require __DIR__ . '/../views/errors/400.php';
+        }
     }
 
     public function aggiungi(int $idUtente, int $idAnnuncio): void
     {
         try {
-            $this->wishlistService->aggiungiAnnuncio($idUtente, $idAnnuncio);
+            $this->aggiungiAnnuncioAllaWishlist($idUtente, $idAnnuncio);
 
             header('Location: index.php?route=wishlist');
             exit;
@@ -56,16 +50,34 @@ class WishlistController extends BaseController
 
     public function rimuovi(int $idUtente, int $idAnnuncio): void
     {
-        $this->wishlistService->rimuoviAnnuncio($idUtente, $idAnnuncio);
+        try {
+            $this->requirePositiveId($idUtente, 'Utente');
+            $this->requirePositiveId($idAnnuncio, 'Annuncio');
+            $this->denyBusinessBuyer($idUtente);
 
-        header('Location: index.php?route=wishlist');
-        exit;
+            FPersistentManager::removePreferito($idUtente, $idAnnuncio);
+
+            header('Location: index.php?route=wishlist');
+            exit;
+        } catch (Exception $e) {
+            http_response_code(400);
+            $errore = $e->getMessage();
+            require __DIR__ . '/../views/errors/400.php';
+        }
     }
 
     public function toggle(int $idUtente, int $idAnnuncio): void
     {
         try {
-            $this->wishlistService->toggleAnnuncio($idUtente, $idAnnuncio);
+            $this->requirePositiveId($idUtente, 'Utente');
+            $this->requirePositiveId($idAnnuncio, 'Annuncio');
+            $this->denyBusinessBuyer($idUtente);
+
+            if (FPersistentManager::preferitoExists($idUtente, $idAnnuncio)) {
+                FPersistentManager::removePreferito($idUtente, $idAnnuncio);
+            } else {
+                $this->aggiungiAnnuncioAllaWishlist($idUtente, $idAnnuncio);
+            }
 
             $redirect = $_SERVER['HTTP_REFERER'] ?? 'index.php?route=annunci';
             header('Location: ' . $redirect);
@@ -79,9 +91,41 @@ class WishlistController extends BaseController
 
     public function svuota(int $idUtente): void
     {
-        $this->wishlistService->svuota($idUtente);
+        try {
+            $this->requirePositiveId($idUtente, 'Utente');
+            $this->denyBusinessBuyer($idUtente);
 
-        header('Location: index.php?route=wishlist');
-        exit;
+            FPersistentManager::clearPreferitiForUser($idUtente);
+
+            header('Location: index.php?route=wishlist');
+            exit;
+        } catch (Exception $e) {
+            http_response_code(400);
+            $errore = $e->getMessage();
+            require __DIR__ . '/../views/errors/400.php';
+        }
+    }
+
+    private function aggiungiAnnuncioAllaWishlist(int $idUtente, int $idAnnuncio): void
+    {
+        $this->requirePositiveId($idUtente, 'Utente');
+        $this->requirePositiveId($idAnnuncio, 'Annuncio');
+        $this->denyBusinessBuyer($idUtente);
+
+        $annuncio = FPersistentManager::annuncioById($idAnnuncio);
+
+        if (!$annuncio instanceof EAnnuncio) {
+            throw new ServiceException('Annuncio non trovato.');
+        }
+
+        if (!$annuncio->isAttivo()) {
+            throw new ServiceException('Non puoi aggiungere alla wishlist un annuncio non disponibile.');
+        }
+
+        if ((int)($annuncio->getIdUtente() ?? 0) === $idUtente) {
+            throw new ServiceException('Non puoi aggiungere alla wishlist un tuo annuncio.');
+        }
+
+        FPersistentManager::addPreferito(new EPreferito($idUtente, $idAnnuncio));
     }
 }

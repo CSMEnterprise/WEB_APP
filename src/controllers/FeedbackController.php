@@ -2,42 +2,23 @@
 
 namespace App\Controllers;
 
-use App\Entity\EAccountBusiness;
-use App\Entity\EAnnuncio;
-use App\Entity\EIndirizzo;
-use App\Entity\EPagamento;
-use App\Entity\EUtenteRegistrato;
-use App\Foundation\SmartyView;
-use App\Services\AdminService;
-use App\Services\AnnuncioService;
-use App\Services\AuthService;
-use App\Services\BusinessService;
-use App\Services\CartService;
-use App\Services\CategoryService;
-use App\Services\FeedbackService;
-use App\Services\MailService;
-use App\Services\PaymentService;
-use App\Services\SegnalazioneService;
+use App\Entity\EFeedback;
+use App\Foundation\FDataBase;
+use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
-use App\Services\UserService;
-use App\Services\WishlistService;
 use Exception;
 use PDO;
 
 class FeedbackController extends BaseController
 {
-    private FeedbackService $feedbackService;
-    private PaymentService  $paymentService;
-
     public function __construct(PDO $db)
     {
-        $this->feedbackService = new FeedbackService($db);
-        $this->paymentService  = new PaymentService($db);
+        FDataBase::init($db);
     }
 
     public function form(int $idPagamento, int $idAutore): void
     {
-        $pagamentoEntity = $this->paymentService->findEntityById($idPagamento);
+        $pagamentoEntity = FPersistentManager::pagamentoById($idPagamento);
         $pagamento = $this->entityToArray($pagamentoEntity);
 
         if (!$pagamentoEntity || $pagamentoEntity->getIdAcquirente() !== $idAutore) {
@@ -46,7 +27,7 @@ class FeedbackController extends BaseController
             return;
         }
 
-        if ($this->feedbackService->hasFeedback($idPagamento, $idAutore)) {
+        if (FPersistentManager::feedbackExists($idPagamento, $idAutore)) {
             header('Location: index.php?route=profilo');
             exit;
         }
@@ -57,27 +38,58 @@ class FeedbackController extends BaseController
     public function crea(array $data, int $idAutore): void
     {
         try {
-            $this->feedbackService->crea($data, $idAutore);
+            $this->createFeedback($data, $idAutore);
+
             header('Location: index.php?route=profilo');
             exit;
         } catch (Exception $e) {
-            $errore   = $e->getMessage();
+            $errore = $e->getMessage();
             $idPagamento = (int) ($data['id_pagamento'] ?? 0);
-            $pagamento   = $this->entityToArray($this->paymentService->findEntityById($idPagamento));
+            $pagamento = $this->entityToArray(FPersistentManager::pagamentoById($idPagamento));
+
             require __DIR__ . '/../views/feedback/form.php';
         }
     }
 
     public function lista(int $idUtente): void
     {
-        $feedback = $this->entitiesToArrays($this->feedbackService->getByUserIdEntity($idUtente));
+        $this->requirePositiveId($idUtente, 'Utente');
+
+        $feedback = $this->entitiesToArrays(FPersistentManager::feedbackByUser($idUtente));
+
         require __DIR__ . '/../views/feedback/lista.php';
     }
 
     public function listaVenditore(int $idVenditore): void
     {
-        $feedback = $this->entitiesToArrays($this->feedbackService->getByVenditoreIdEntity($idVenditore));
-        $media    = $this->feedbackService->getMediaVoto($idVenditore);
+        $this->requirePositiveId($idVenditore, 'Venditore');
+
+        $feedback = $this->entitiesToArrays(FPersistentManager::feedbackByVenditore($idVenditore));
+        $media = FPersistentManager::mediaFeedbackVenditore($idVenditore);
+
         require __DIR__ . '/../views/feedback/lista_venditore.php';
+    }
+
+    private function createFeedback(array $data, int $idAutore): int
+    {
+        $feedback = EFeedback::fromArray(array_merge($data, [
+            'id_autore' => $idAutore,
+            'valutazione' => (int) ($data['valutazione'] ?? $data['voto'] ?? 0),
+        ]));
+
+        $this->requirePositiveId($feedback->getIdAutore(), 'Autore');
+
+        if ($feedback->getIdPagamento() <= 0) {
+            throw new ServiceException('Pagamento obbligatorio.');
+        }
+
+        if ($feedback->getValutazione() < 1 || $feedback->getValutazione() > 5) {
+            throw new ServiceException('La valutazione deve essere compresa tra 1 e 5.');
+        }
+
+        $commento = $this->clean($feedback->getCommento());
+        $feedback->setCommento($commento !== '' ? $commento : null);
+
+        return FPersistentManager::createFeedback($feedback);
     }
 }

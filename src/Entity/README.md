@@ -15,34 +15,28 @@ Ogni Entity segue lo stile del modello usato a lezione:
 - `jsonSerialize()`;
 - `__toString()`.
 
-Le Entity sono introdotte gradualmente: i service espongono metodi che restituiscono oggetti, mentre le view PHP esistenti ricevono ancora array per non obbligare a riscrivere tutta l'interfaccia in una sola volta.
+Le Entity sono usate dai controller e dal package Foundation, mentre le view PHP esistenti ricevono ancora array per non obbligare a riscrivere tutta l'interfaccia in una sola volta.
 
-`App\Controllers\BaseController` contiene i metodi di conversione da Entity ad array. In questo modo controller e service possono ragionare sugli oggetti, e la conversione resta confinata al confine con le view.
+La persistenza viene spostata nel package `App\Foundation`, seguendo la logica del progetto FillSpace:
+
+- `FDataBase` mantiene l'accesso al database;
+- `FPersistentManager` e' la facciata unica usata dal livello applicativo;
+- le classi tabella `F...` fanno da mapper tra PDO e Entity.
+
+Queste classi leggono righe dal database, restituiscono oggetti `E...` e salvano gli oggetti filtrando solo le colonne della tabella.
+Le validazioni, le transazioni e le regole applicative stanno nei controller; la persistenza resta nel package `App\Foundation`.
+
+`App\Controllers\BaseController` contiene i metodi di conversione da Entity ad array. In questo modo i controller possono ragionare sugli oggetti, e la conversione resta confinata al confine con le view.
 
 `EBaseEntity` conserva anche i campi extra letti dalle query con join, per esempio `categoria_nome`, `immagine_principale`, `venditore_username`, `annuncio_titolo`. Questo evita di perdere dati utili alle pagine quando una riga del database viene trasformata in Entity.
 
-Primi passi applicati:
-
-- `AnnuncioService` mantiene i metodi storici basati su array;
-- `AnnuncioService` espone metodi equivalenti che restituiscono `EAnnuncio`;
-- `AnnuncioController` usa `EAnnuncio` per leggere proprieta e stato dell'annuncio senza rompere le view.
-
-Passi successivi applicati:
-
-- `UserService` espone `EUtenteRegistrato` ed `EIndirizzo` e usa `EIndirizzo` in alcuni controlli sugli indirizzi;
-- `CategoryService` espone `ECategoria`;
-- `BusinessService` espone `EAccountBusiness`, `EIndirizzo` ed `EPagamento`;
-- `CartService` espone `ECarrello`/`EElementoCarrello` e usa `EAnnuncio` quando controlla gli articoli;
-- `WishlistService` espone `EPreferito` e usa `EAnnuncio` quando controlla i preferiti;
-- `PaymentService` usa `EAnnuncio` ed `EPagamento` durante la conferma acquisto;
-- `FeedbackService` usa `EFeedback` in creazione e lettura;
-- `AdminService` espone `EAdmin`/`EModera` e usa `EAdmin` nei controlli di moderazione;
-- `SegnalazioneService` usa `ESegnalazione` in creazione e lettura.
-
 Stato attuale:
 
-- i controller principali chiamano i metodi `...Entity()` dei service;
+- i controller principali chiamano `FPersistentManager` e lavorano sulle Entity;
 - le view restano compatibili perche ricevono array generati dalle Entity;
+- `FDataBase` e `FPersistentManager` riprendono la struttura Foundation del progetto di riferimento;
+- `FBaseTable` contiene le operazioni comuni di mapping tabella/Entity;
+- `FAnnuncio`, `FImmagine`, `FCategoria`, `FUtenteRegistrato`, `FIndirizzo`, `FAccountBusiness`, `FCarrello`, `FElementoCarrello`, `FPreferito`, `FFeedback`, `FSegnalazione`, `FAdmin`, `FModera` e `FPagamento` gestiscono le prime tabelle migrate nel package Foundation;
 - le Entity sono il punto di passaggio tra dati del database e logica applicativa.
 
 Mappatura principale:

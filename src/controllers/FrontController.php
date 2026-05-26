@@ -2,11 +2,8 @@
 
 namespace App\Controllers;
 
-use App\Services\AnnuncioService;
-use App\Services\CartService;
-use App\Services\CategoryService;
-use App\Services\UserService;
-use App\Services\WishlistService;
+use App\Foundation\FDataBase;
+use App\Foundation\FPersistentManager;
 use PDO;
 use Throwable;
 use function App\Middleware\currentUserId;
@@ -28,6 +25,7 @@ class FrontController extends BaseController
         $this->pdo = $pdo;
         $this->viewsPath = dirname(__DIR__) . '/views';
         $GLOBALS['pdo'] = $pdo;
+        FDataBase::init($pdo);
     }
 
     public function handle(): void
@@ -138,7 +136,6 @@ class FrontController extends BaseController
                 */
 
                 case 'home':
-                    $homeAnnuncioService = new AnnuncioService($this->pdo);
                     $q          = trim($_GET['q'] ?? '');
                     $idCategoria = (int) ($_GET['id_categoria'] ?? 0);
                     $prezzoMin = isset($_GET['prezzo_min']) && $_GET['prezzo_min'] !== '' ? max(0, (float) $_GET['prezzo_min']) : null;
@@ -160,33 +157,33 @@ class FrontController extends BaseController
                     $wishlistIds = [];
                     $carrelloIds = [];
                     $utenti      = [];
-                    $categorie   = $this->entitiesToArrays((new CategoryService($this->pdo))->getAllEntity());
+                    $categorie   = $this->entitiesToArrays(FPersistentManager::categorie());
 
                     if ($q !== '' || $idCategoria > 0 || $hasFiltriAvanzati) {
                         // modalità ricerca
-                        $totaleAnnunci     = $homeAnnuncioService->countSearchAnnunci($q, $idCategoria, $prezzoMin, $prezzoMax, $excludeHomeUserId);
+                        $totaleAnnunci     = FPersistentManager::countSearchAnnunci($q, $idCategoria, $prezzoMin, $prezzoMax, $excludeHomeUserId);
                         $totalePagine      = max(1, (int) ceil($totaleAnnunci / $annunciPerPagina));
                         if ($paginaCorrente > $totalePagine) {
                             $paginaCorrente = $totalePagine;
                             $offsetAnnunci = ($paginaCorrente - 1) * $annunciPerPagina;
                         }
-                        $homeAnnunci       = $this->entitiesToArrays($homeAnnuncioService->searchAnnunciEntity($q, $idCategoria, $prezzoMin, $prezzoMax, $ordinamento, $annunciPerPagina, $offsetAnnunci, $excludeHomeUserId));
-                        $utenti            = $q !== '' ? $this->entitiesToArrays((new UserService($this->pdo))->searchEntity($q)) : [];
+                        $homeAnnunci       = $this->entitiesToArrays(FPersistentManager::searchAnnunci($q, $idCategoria, $prezzoMin, $prezzoMax, $ordinamento, $annunciPerPagina, $offsetAnnunci, $excludeHomeUserId));
+                        $utenti            = $q !== '' ? $this->entitiesToArrays(FPersistentManager::searchUtenti($q)) : [];
                         $homeTitoloAnnunci = $q !== '' ? 'Risultati per "' . htmlspecialchars($q, ENT_QUOTES, 'UTF-8') . '"' : 'Risultati ricerca';
                     } else {
-                        $totaleAnnunci     = $homeAnnuncioService->countSearchAnnunci('', 0, null, null, $excludeHomeUserId);
+                        $totaleAnnunci     = FPersistentManager::countSearchAnnunci('', 0, null, null, $excludeHomeUserId);
                         $totalePagine      = max(1, (int) ceil($totaleAnnunci / $annunciPerPagina));
                         if ($paginaCorrente > $totalePagine) {
                             $paginaCorrente = $totalePagine;
                             $offsetAnnunci = ($paginaCorrente - 1) * $annunciPerPagina;
                         }
-                        $homeAnnunci       = $this->entitiesToArrays($homeAnnuncioService->searchAnnunciEntity('', 0, null, null, 'data_desc', $annunciPerPagina, $offsetAnnunci, $excludeHomeUserId));
+                        $homeAnnunci       = $this->entitiesToArrays(FPersistentManager::searchAnnunci('', 0, null, null, 'data_desc', $annunciPerPagina, $offsetAnnunci, $excludeHomeUserId));
                         $homeTitoloAnnunci = 'Annunci in evidenza';
                     }
 
                     if ($isRegularUser) {
-                        $wishlistIds = (new WishlistService($this->pdo))->getWishlistIds(currentUserId());
-                        $carrelloIds = (new CartService($this->pdo))->getCarrelloIds(currentUserId());
+                        $wishlistIds = FPersistentManager::wishlistIdsByUser(currentUserId());
+                        $carrelloIds = FPersistentManager::carrelloAnnuncioIdsByUser(currentUserId());
                     }
 
                     require $this->viewsPath . '/home.php';
