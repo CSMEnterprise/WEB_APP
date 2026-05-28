@@ -213,6 +213,11 @@
     }
     .profile-dropdown .dropdown-heart { color: #fb7185; fill: currentColor; stroke: currentColor; }
     .profile-dropdown .dropdown-logout { color: var(--muted); }
+    .admin-avatar {
+        background: rgba(124,58,237,.25);
+        border-color: rgba(124,58,237,.6);
+    }
+    .admin-avatar svg { width: 16px; height: 16px; stroke: #a78bfa; }
 
     /* ── SEARCH ────────────────────────────────────────── */
     .search-form { display: flex; align-items: stretch; flex: 1; max-width: none; padding-top: 18px; }

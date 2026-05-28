@@ -33,6 +33,24 @@
                         {/if}
                         <a href="index.php?route=admin-utenti">Utenti</a>
                         <a href="index.php?route=admin-segnalazioni">Segnalazioni</a>
+                        <div class="profile-menu">
+                            <a class="profile-trigger admin-profile-trigger" href="index.php?route=admin" aria-haspopup="true" aria-expanded="false">
+                                <span class="profile-avatar-fallback admin-avatar" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                </span>
+                                <span>Admin</span>
+                            </a>
+                            <div class="profile-dropdown">
+                                <a href="index.php?route=admin">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                                    <span>Home Admin</span>
+                                </a>
+                                <a href="index.php?route=logout">
+                                    <svg class="dropdown-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path></svg>
+                                    <span>Logout</span>
+                                </a>
+                            </div>
+                        </div>
                     {elseif $isBusiness}
                         <a href="index.php?route=business">Business</a>
                     {else}
@@ -63,18 +81,16 @@
                                 </a>
                             </div>
                         </div>
-                    {else}
+                    {elseif $isBusiness}
                         <a href="index.php?route=logout">Logout</a>
-                        {if !$isAdmin}
-                            <a class="u-style-027" href="index.php?route=profilo">
-                                {if $propic}
-                                    <img class="profile-avatar" src="{$propic}" alt="Foto profilo">
-                                {else}
-                                    <span class="u-style-028">👤</span>
-                                {/if}
-                                <span>{$username}</span>
-                            </a>
-                        {/if}
+                        <a class="u-style-027" href="index.php?route=profilo">
+                            {if $propic}
+                                <img class="profile-avatar" src="{$propic}" alt="Foto profilo">
+                            {else}
+                                <span class="u-style-028">👤</span>
+                            {/if}
+                            <span>{$username}</span>
+                        </a>
                     {/if}
                 {else}
                     <a href="index.php?route=login">Login</a>
