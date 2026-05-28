@@ -1,14 +1,12 @@
 {
+    "name": "matte/web_app",
     "require": {
         "phpmailer/phpmailer": "^6.9",
         "smarty/smarty": "^5.8"
     },
     "autoload": {
         "psr-4": {
-            "App\\Controllers\\": "src/controllers/",
-            "App\\Entity\\": "src/Entity/",
-            "App\\Foundation\\": "src/Foundation/",
-            "App\\Services\\": "src/services/"
+            "App\\": "src/"
         },
         "files": [
             "src/helpers/functions.php",
@@ -17,5 +15,11 @@
             "src/middleware/business.php",
             "src/middleware/guest.php"
         ]
-    }
+    },
+    "authors": [
+        {
+            "name": "Matteo",
+            "email": "80070764+ErVype@users.noreply.github.com"
+        }
+    ]
 }
