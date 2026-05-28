@@ -14,6 +14,9 @@ use PDO;
 use PDOException;
 use Throwable;
 
+/**
+ * Gestisce autenticazione, registrazione, profilo utente, indirizzi e recupero password.
+ */
 class UtenteController extends BaseController
 {
     private PDO $db;
@@ -21,17 +24,26 @@ class UtenteController extends BaseController
     private string $lastRegistrationEmail = '';
     private string $lastRegistrationNome = '';
 
+    /**
+     * Mantiene PDO per query dirette e inizializza il layer persistence.
+     */
     public function __construct(PDO $db)
     {
         $this->db = $db;
         FDataBase::init($db);
     }
 
+    /**
+     * Mostra la pagina di accesso.
+     */
     public function showLogin(): void
     {
         $this->renderLogin();
     }
 
+    /**
+     * Autentica admin o utenti normali e prepara le variabili di sessione.
+     */
     public function login(array $data): void
     {
         try {
@@ -57,16 +69,25 @@ class UtenteController extends BaseController
         }
     }
 
+    /**
+     * Schermata intermedia per scegliere tra registrazione utente e business.
+     */
     public function showRegister(): void
     {
         $this->view('auth/register.tpl', [], 'Scegli registrazione');
     }
 
+    /**
+     * Mostra il form di registrazione per utenti acquirenti/venditori non business.
+     */
     public function showRegisterUser(): void
     {
         $this->view('utenti/registrazione_utente.tpl', [], 'Registrazione utente');
     }
 
+    /**
+     * Registra un utente normale e avvia il flusso di verifica email.
+     */
     public function register(array $data): void
     {
         try {
@@ -93,11 +114,17 @@ class UtenteController extends BaseController
     }
 
 
+    /**
+     * Mostra il form di registrazione business.
+     */
     public function showRegisterBusiness(): void
     {
         $this->view('utenti/registrazione_business.tpl', [], 'Registrazione business');
     }
 
+    /**
+     * Registra utente base e account business nella stessa transazione.
+     */
     public function registerBusiness(array $data): void
     {
         try {
@@ -146,11 +173,17 @@ class UtenteController extends BaseController
         }
     }
 
+    /**
+     * Carica tutti i dati necessari alla pagina profilo.
+     */
     public function profilo(int $idUtente, string $filtroAnnunci = 'attivo'): void
     {
         $this->renderProfilo($this->loadProfiloData($idUtente, $filtroAnnunci));
     }
 
+    /**
+     * Mostra il profilo pubblico di un venditore non bannato.
+     */
     public function venditore(int $idVenditore): void
     {
         if ($idVenditore <= 0) {
@@ -173,6 +206,9 @@ class UtenteController extends BaseController
         $this->view('utenti/venditore.tpl', compact('venditore', 'annunciVenditore', 'feedbackVenditore', 'mediaVenditore'), 'Profilo venditore');
     }
 
+    /**
+     * Termina la sessione e riporta alla home.
+     */
     public function logout(): void
     {
         session_destroy();
@@ -180,6 +216,9 @@ class UtenteController extends BaseController
         exit;
     }
 
+    /**
+     * Aggiorna la foto profilo e sincronizza subito la sessione.
+     */
     public function aggiornaFotoProfilo(array $files, int $idUtente): void
     {
         try {
@@ -194,6 +233,9 @@ class UtenteController extends BaseController
         }
     }
 
+    /**
+     * Aggiorna i dati anagrafici visibili nel profilo.
+     */
     public function aggiornaProfiloUtente(array $data, int $idUtente): void
     {
         try {
@@ -208,6 +250,9 @@ class UtenteController extends BaseController
         }
     }
 
+    /**
+     * Cambia password dopo aver verificato quella attuale.
+     */
     public function cambiaPassword(array $data, int $idUtente): void
     {
         try {
@@ -227,6 +272,9 @@ class UtenteController extends BaseController
         }
     }
 
+    /**
+     * Salva un nuovo indirizzo di spedizione per utenti non business.
+     */
     public function salvaIndirizzoSpedizione(array $data, int $idUtente): void
     {
         try {
@@ -241,6 +289,9 @@ class UtenteController extends BaseController
         }
     }
 
+    /**
+     * Riapre il profilo in modalita modifica indirizzo.
+     */
     public function showModificaIndirizzo(int $idIndirizzo, int $idUtente): void
     {
         $editingIndirizzoEntity = FPersistentManager::indirizzoForUser($idIndirizzo, $idUtente);
@@ -256,6 +307,9 @@ class UtenteController extends BaseController
         $this->renderProfilo($data);
     }
 
+    /**
+     * Aggiorna un indirizzo solo se appartiene all'utente corrente.
+     */
     public function aggiornaIndirizzo(array $data, int $idUtente): void
     {
         $idIndirizzo = (int) ($data['id_indirizzo'] ?? 0);
@@ -271,6 +325,9 @@ class UtenteController extends BaseController
         }
     }
 
+    /**
+     * Elimina un indirizzo e ripristina un predefinito se necessario.
+     */
     public function eliminaIndirizzo(int $idIndirizzo, int $idUtente): void
     {
         try {
@@ -282,6 +339,9 @@ class UtenteController extends BaseController
         exit;
     }
 
+    /**
+     * Imposta l'indirizzo principale usato nel checkout.
+     */
     public function impostaIndirizzoPredefinito(int $idIndirizzo, int $idUtente): void
     {
         try {
@@ -299,13 +359,20 @@ class UtenteController extends BaseController
     // Verifica email
     // ----------------------------------------------------------------
 
+    /**
+     * Pagina mostrata dopo registrazione, in attesa della conferma email.
+     */
     public function verificaEmailAttesa(): void
     {
+        // In sviluppo puo mostrare un link debug salvato in sessione dal MailService.
         $email = $_GET['email'] ?? '';
         $debugLink = $this->consumeDebugMailLink('verifica');
         $this->view('utenti/verifica_email_attesa.tpl', compact('email', 'debugLink'), 'Verifica email');
     }
 
+    /**
+     * Consuma il token arrivato via email e abilita l'account.
+     */
     public function verificaEmail(string $token): void
     {
         $successo = '';
@@ -320,6 +387,9 @@ class UtenteController extends BaseController
         $this->view('utenti/verifica_email.tpl', compact('successo', 'errore'), 'Verifica email');
     }
 
+    /**
+     * Genera un nuovo token di verifica senza rivelare dettagli sensibili.
+     */
     public function reinviaVerifica(array $data): void
     {
         $successo = '';
@@ -341,11 +411,17 @@ class UtenteController extends BaseController
     // Recupero password
     // ----------------------------------------------------------------
 
+    /**
+     * Mostra il form per richiedere il reset password.
+     */
     public function showRecuperoPassword(): void
     {
         $this->view('utenti/recupero_password.tpl', [], 'Recupero password');
     }
 
+    /**
+     * Invia email di reset mostrando sempre una risposta generica.
+     */
     public function inviaResetPassword(array $data): void
     {
         try {
@@ -360,6 +436,9 @@ class UtenteController extends BaseController
         $this->view('utenti/recupero_password.tpl', compact('successo', 'debugLink'), 'Recupero password');
     }
 
+    /**
+     * Mostra il form di inserimento nuova password se il token e valido.
+     */
     public function showResetPassword(string $token): void
     {
         $errore = '';
@@ -370,6 +449,9 @@ class UtenteController extends BaseController
         $this->view('utenti/reset_password.tpl', compact('token', 'idUtente', 'errore'), 'Reset password');
     }
 
+    /**
+     * Applica il cambio password richiesto tramite token monouso.
+     */
     public function resetPassword(array $data): void
     {
         $token = $data['token'] ?? '';
@@ -384,6 +466,9 @@ class UtenteController extends BaseController
         }
     }
 
+    /**
+     * Verifica credenziali contro admin e utenti registrati.
+     */
     private function loginUser(string $email, string $password): array
     {
         $email = $this->clean($email);
@@ -392,6 +477,7 @@ class UtenteController extends BaseController
             throw new ServiceException('Email e password sono obbligatorie.');
         }
 
+        // Gli admin vivono in una tabella separata, quindi vengono controllati prima.
         $stmt = $this->db->prepare('SELECT * FROM admin WHERE email = ? LIMIT 1');
         $stmt->execute([$email]);
         $admin = $stmt->fetch();
@@ -434,8 +520,12 @@ class UtenteController extends BaseController
         return $utente;
     }
 
+    /**
+     * Valida e inserisce un nuovo record utente con token verifica email.
+     */
     private function registerUser(array $data): int
     {
+        // Questo metodo e riusato anche dalla registrazione business con vincoli leggermente diversi.
         $isBusinessRegistration = !empty($data['_business_registration']);
         $username = $this->clean($data['username'] ?? '');
         $email = $this->clean($data['email'] ?? '');
@@ -505,6 +595,9 @@ class UtenteController extends BaseController
         return (int) $this->db->lastInsertId();
     }
 
+    /**
+     * Crea i dati aziendali collegati a un utente gia registrato.
+     */
     private function createBusinessAccount(array $data, int $idUtente): int
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -554,8 +647,12 @@ class UtenteController extends BaseController
         }
     }
 
+    /**
+     * Controlla e consuma il token di verifica email.
+     */
     private function verifyEmail(string $token): void
     {
+        // Il token conferma l'email e viene invalidato subito dopo l'uso.
         if ($token === '') {
             throw new ServiceException('Token non valido.');
         }
@@ -585,6 +682,9 @@ class UtenteController extends BaseController
         $stmt->execute([$utente['id_utente']]);
     }
 
+    /**
+     * Rigenera token verifica email per account ancora non confermati.
+     */
     private function resendVerification(string $email, MailService $mail): void
     {
         $email = $this->clean($email);
@@ -613,6 +713,9 @@ class UtenteController extends BaseController
         $mail->inviaVerificaEmail($email, $utente['nome'] ?? $utente['username'], $token);
     }
 
+    /**
+     * Crea un token monouso di recupero password.
+     */
     private function requestPasswordReset(string $email, MailService $mail): void
     {
         $email = $this->clean($email);
@@ -645,6 +748,9 @@ class UtenteController extends BaseController
         $mail->inviaResetPassword($email, $utente['nome'] ?? $utente['username'], $token);
     }
 
+    /**
+     * Cambia password usando un token reset valido e non scaduto.
+     */
     private function resetUserPassword(string $token, string $password, string $confirm): void
     {
         if ($token === '') {
@@ -677,6 +783,9 @@ class UtenteController extends BaseController
             ->execute([$token]);
     }
 
+    /**
+     * Cambio password da profilo: richiede la password attuale.
+     */
     private function changePassword(int $idUtente, string $passwordAttuale, string $nuovaPassword, string $conferma): void
     {
         if ($passwordAttuale === '' || $nuovaPassword === '' || $conferma === '') {
@@ -697,6 +806,9 @@ class UtenteController extends BaseController
         $stmt->execute([password_hash($nuovaPassword, PASSWORD_DEFAULT), $idUtente]);
     }
 
+    /**
+     * Restituisce l'utente collegato a un token reset valido, oppure 0.
+     */
     private function getResetTokenUserId(string $token): int
     {
         $stmt = $this->db->prepare("
@@ -711,8 +823,12 @@ class UtenteController extends BaseController
         return $row ? (int) $row['id_utente'] : 0;
     }
 
+    /**
+     * Valida robustezza e conferma della password.
+     */
     private function validatePasswordPair(string $password, string $confirm, ?string $passwordMessage = null): void
     {
+        // Regola unica per tutte le password utente: lunghezza, maiuscola e carattere speciale.
         if (!preg_match('/^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{10,}$/', $password)) {
             throw new ServiceException($passwordMessage ?? 'La password deve contenere almeno 10 caratteri, una lettera maiuscola e un carattere speciale.');
         }
@@ -722,6 +838,9 @@ class UtenteController extends BaseController
         }
     }
 
+    /**
+     * Valida campi specifici della registrazione business.
+     */
     private function validateBusinessRegistration(
         string $nomeAzienda,
         string $pIva,
@@ -764,6 +883,9 @@ class UtenteController extends BaseController
         }
     }
 
+    /**
+     * Valida e salva una nuova immagine profilo.
+     */
     private function updatePropic(int $idUtente, array $file): string
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -805,6 +927,9 @@ class UtenteController extends BaseController
         return $url;
     }
 
+    /**
+     * Aggiorna nome e telefono dell'utente.
+     */
     private function updateUserProfile(int $idUtente, array $data): void
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -823,6 +948,9 @@ class UtenteController extends BaseController
         FPersistentManager::updateProfiloUtente($idUtente, $nome, $telefono !== '' ? $telefono : null);
     }
 
+    /**
+     * Crea un indirizzo di spedizione e lo rende predefinito se e il primo.
+     */
     private function createShippingAddress(int $idUtente, array $data): void
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -855,6 +983,9 @@ class UtenteController extends BaseController
         ]));
     }
 
+    /**
+     * Aggiorna un indirizzo gia esistente dell'utente.
+     */
     private function updateAddress(int $idIndirizzo, int $idUtente, array $data): void
     {
         $this->requirePositiveId($idIndirizzo, 'Indirizzo');
@@ -887,6 +1018,9 @@ class UtenteController extends BaseController
         ]));
     }
 
+    /**
+     * Cancella un indirizzo dell'utente.
+     */
     private function deleteAddress(int $idIndirizzo, int $idUtente): void
     {
         $this->requirePositiveId($idIndirizzo, 'Indirizzo');
@@ -901,10 +1035,14 @@ class UtenteController extends BaseController
         FPersistentManager::deleteIndirizzoForUser($idIndirizzo, $idUtente);
 
         if ($indirizzo->isPredefinito()) {
+            // Evita che l'utente resti senza indirizzo predefinito se ne ha altri.
             FPersistentManager::makeMostRecentIndirizzoDefault($idUtente);
         }
     }
 
+    /**
+     * Rende predefinito un indirizzo dell'utente con transazione dedicata.
+     */
     private function setDefaultAddress(int $idUtente, int $idIndirizzo): void
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -917,6 +1055,7 @@ class UtenteController extends BaseController
         $this->db->beginTransaction();
 
         try {
+            // L'operazione toglie il flag agli altri indirizzi e lo assegna a quello scelto.
             FPersistentManager::setIndirizzoPredefinito($idUtente, $idIndirizzo);
             $this->db->commit();
         } catch (Throwable $e) {
@@ -928,8 +1067,12 @@ class UtenteController extends BaseController
         }
     }
 
+    /**
+     * Aggrega dati profilo, annunci, indirizzi e pagamenti per la view.
+     */
     private function loadProfiloData(int $idUtente, string $filtroAnnunci = 'attivo'): array
     {
+        // I business vendono soltanto: niente indirizzi di spedizione o cronologia acquisti.
         $filtroAnnunci = $filtroAnnunci === 'venduto' ? 'venduto' : 'attivo';
         $isBusiness = !empty($_SESSION['is_business']);
 
@@ -943,13 +1086,20 @@ class UtenteController extends BaseController
         ];
     }
 
+    /**
+     * Render unico del profilo per evitare duplicazione tra successi ed errori.
+     */
     private function renderProfilo(array $data): void
     {
         $this->view('utenti/profilo.tpl', $data, 'Profilo');
     }
 
+    /**
+     * Recupera un link email di debug salvato in sessione.
+     */
     private function consumeDebugMailLink(string $tipo): string
     {
+        // Il link debug viene consumato una sola volta per non mostrarlo in pagine successive.
         $debugMail = $_SESSION['debug_mail'] ?? null;
 
         if (!is_array($debugMail) || ($debugMail['tipo'] ?? '') !== $tipo) {
@@ -962,8 +1112,12 @@ class UtenteController extends BaseController
         return $link;
     }
 
+    /**
+     * Prepara variabili speciali della pagina login.
+     */
     private function renderLogin(string $errore = ''): void
     {
+        // EMAIL_NON_VERIFICATA e un marker interno usato per mostrare la CTA di reinvio.
         $isEmailNonVerificata = str_starts_with($errore, 'EMAIL_NON_VERIFICATA:');
         $emailNonVerificata = $isEmailNonVerificata
             ? substr($errore, strlen('EMAIL_NON_VERIFICATA:'))

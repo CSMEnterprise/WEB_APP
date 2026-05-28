@@ -11,13 +11,22 @@ use Exception;
 use PDO;
 use PDOException;
 
+/**
+ * Gestisce area business: profilo aziendale, sede e ordini ricevuti.
+ */
 class BusinessController extends BaseController
 {
+    /**
+     * Inizializza il layer persistence con la connessione corrente.
+     */
     public function __construct(PDO $db)
     {
         FDataBase::init($db);
     }
 
+    /**
+     * Mostra profilo business e tutti gli annunci associati all'utente venditore.
+     */
     public function dashboard(int $idUtente): void
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -28,11 +37,17 @@ class BusinessController extends BaseController
         $this->view('business/profilo.tpl', compact('business', 'annunci'), 'Area business');
     }
 
+    /**
+     * Mostra il form per trasformare un utente in account business.
+     */
     public function formCreazione(): void
     {
         $this->view('business/form.tpl', [], 'Crea account business');
     }
 
+    /**
+     * Crea l'account business e torna al form con errore in caso di dati non validi.
+     */
     public function creaAccount(array $data, int $idUtente): void
     {
         try {
@@ -46,6 +61,9 @@ class BusinessController extends BaseController
         }
     }
 
+    /**
+     * Aggiorna la sede principale dell'account business.
+     */
     public function salvaIndirizzo(array $data, int $idUtente): void
     {
         $businessEntity = FPersistentManager::businessByUser($idUtente);
@@ -69,6 +87,9 @@ class BusinessController extends BaseController
         }
     }
 
+    /**
+     * Mostra gli ordini ricevuti come venditore.
+     */
     public function ordini(int $idUtente): void
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -78,6 +99,9 @@ class BusinessController extends BaseController
         $this->view('business/ordini.tpl', compact('ordini'), 'Ordini ricevuti');
     }
 
+    /**
+     * Valida dati aziendali, crea account business e opzionalmente la sede.
+     */
     private function createBusinessAccount(array $data, int $idUtente): int
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -127,6 +151,9 @@ class BusinessController extends BaseController
         }
     }
 
+    /**
+     * Sostituisce la sede predefinita business con quella appena inviata.
+     */
     private function updateBusinessAddress(int $idBusiness, array $data): void
     {
         $this->requirePositiveId($idBusiness, 'Business');
@@ -155,6 +182,9 @@ class BusinessController extends BaseController
         ]));
     }
 
+    /**
+     * Regole minime per dati aziendali italiani usati in registrazione business.
+     */
     private function validateBusinessData(
         string $nomeAzienda,
         string $pIva,

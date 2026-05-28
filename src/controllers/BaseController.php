@@ -9,13 +9,24 @@ use App\Foundation\FPersistentManager;
 use App\Foundation\SmartyView;
 use App\Services\ServiceException;
 
+/**
+ * Classe base condivisa da tutti i controller.
+ * Contiene helper comuni per view, validazioni semplici, conversione entity/array
+ * e registrazione delle azioni di moderazione.
+ */
 abstract class BaseController
 {
+    /**
+     * Converte una singola entity in array per passarla facilmente ai template.
+     */
     protected function entityToArray(?EBaseEntity $entity): ?array
     {
         return $entity?->toArray();
     }
 
+    /**
+     * Normalizza liste di entity o array misti nel formato atteso dalle view.
+     */
     protected function entitiesToArrays(array $entities): array
     {
         return array_map(
@@ -24,6 +35,9 @@ abstract class BaseController
         );
     }
 
+    /**
+     * Verifica che un identificativo ricevuto da rotta/form sia valido.
+     */
     protected function requirePositiveId(int $id, string $fieldName = 'ID'): void
     {
         if ($id <= 0) {
@@ -31,6 +45,9 @@ abstract class BaseController
         }
     }
 
+    /**
+     * Blocca gli account business dalle funzionalita da acquirente.
+     */
     protected function denyBusinessBuyer(int $idUtente): void
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -53,17 +70,24 @@ abstract class BaseController
     {
         http_response_code($statusCode);
 
+        // Usa template diversi per 404 e per gli altri errori gestiti.
         $template = $statusCode === 404 ? 'errors/404.tpl' : 'errors/400.tpl';
         $title = $statusCode === 404 ? 'Pagina non trovata' : 'Errore';
 
         $this->view($template, ['errore' => $message], $title);
     }
 
+    /**
+     * Sanitizzazione minima usata prima di validazioni e salvataggi.
+     */
     protected function clean(?string $value): string
     {
         return trim((string) $value);
     }
 
+    /**
+     * Converte valori opzionali da form in interi positivi o null.
+     */
     protected function nullablePositiveInt($value): ?int
     {
         if ($value === null || $value === '') {
@@ -83,6 +107,7 @@ abstract class BaseController
         ?int $idAnnuncio = null,
         ?int $idBusiness = null
     ): void {
+        // Ogni moderazione viene tracciata per audit nella tabella dedicata.
         $this->requirePositiveId($idAdmin, 'Admin');
 
         $azione = $this->clean($azione);
@@ -100,6 +125,9 @@ abstract class BaseController
         FPersistentManager::createModerazione($moderazione);
     }
 
+    /**
+     * Carica un admin e fallisce con messaggio applicativo se non esiste.
+     */
     protected function findAdminForModeration(int $idAdmin): EAdmin
     {
         $this->requirePositiveId($idAdmin, 'Admin');
@@ -113,6 +141,9 @@ abstract class BaseController
         return $admin;
     }
 
+    /**
+     * Regole centralizzate per evitare che admin non autorizzati moderino altri admin.
+     */
     protected function ensureCanModerateAdmin(EAdmin $target, EAdmin $current): void
     {
         if ($current->getLivelloSicurezza() !== 2) {

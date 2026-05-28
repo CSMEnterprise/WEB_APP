@@ -10,13 +10,22 @@ use App\Services\ServiceException;
 use Exception;
 use PDO;
 
+/**
+ * Gestisce carrello acquisti: lista, aggiunta, rimozione e svuotamento.
+ */
 class CarrelloController extends BaseController
 {
+    /**
+     * Inizializza il layer persistence con la connessione corrente.
+     */
     public function __construct(PDO $db)
     {
         FDataBase::init($db);
     }
 
+    /**
+     * Mostra il carrello pulendo prima eventuali articoli non piu acquistabili.
+     */
     public function lista(int $idUtente): void
     {
         try {
@@ -34,6 +43,7 @@ class CarrelloController extends BaseController
             $purchasableItems = [];
             $totale = 0.0;
 
+            // La view riceve sia il carrello completo sia il sottoinsieme davvero acquistabile.
             foreach ($carrello as $item) {
                 $isOwner = (int)($item['id_utente'] ?? 0) === $idUtente;
 
@@ -49,6 +59,9 @@ class CarrelloController extends BaseController
         }
     }
 
+    /**
+     * Aggiunge un annuncio al carrello e torna alla pagina di provenienza.
+     */
     public function aggiungi(int $idUtente, int $idAnnuncio): void
     {
         try {
@@ -62,6 +75,9 @@ class CarrelloController extends BaseController
         }
     }
 
+    /**
+     * Rimuove un singolo annuncio dal carrello dell'utente.
+     */
     public function rimuovi(int $idUtente, int $idAnnuncio): void
     {
         try {
@@ -79,6 +95,9 @@ class CarrelloController extends BaseController
         }
     }
 
+    /**
+     * Svuota completamente il carrello.
+     */
     public function svuota(int $idUtente): void
     {
         try {
@@ -95,6 +114,9 @@ class CarrelloController extends BaseController
         }
     }
 
+    /**
+     * Contiene le regole di business per aggiungere solo annunci comprabili.
+     */
     private function aggiungiAnnuncioAlCarrello(int $idUtente, int $idAnnuncio): void
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -118,6 +140,7 @@ class CarrelloController extends BaseController
         $idCarrello = FPersistentManager::getOrCreateCartIdByUser($idUtente);
 
         FPersistentManager::addElementoCarrello(new EElementoCarrello($idCarrello, $idAnnuncio));
+        // Un prodotto nel carrello non deve comparire anche tra i preferiti dello stesso utente.
         FPersistentManager::removePreferito($idUtente, $idAnnuncio);
     }
 }

@@ -15,10 +15,17 @@ use function App\Middleware\requireAuth;
 use function App\Middleware\requireBusiness;
 use function App\Middleware\requireGuest;
 
+/**
+ * Punto di ingresso HTTP dell'applicazione.
+ * Legge la rotta, applica middleware di accesso e delega il lavoro al controller corretto.
+ */
 class FrontController extends BaseController
 {
     private PDO $pdo;
 
+    /**
+     * Inizializza la connessione condivisa usata dai repository/foundation.
+     */
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
@@ -26,6 +33,9 @@ class FrontController extends BaseController
         FDataBase::init($pdo);
     }
 
+    /**
+     * Router centrale: normalizza la rotta e collega URL, permessi e controller applicativi.
+     */
     public function handle(): void
     {
         /*
@@ -50,6 +60,7 @@ class FrontController extends BaseController
         }
 
         $routeAliases = [
+            // Alias mantenuti per non rompere vecchi link o form gia presenti nei template.
             'index' => 'home',
             'homepage' => 'home',
 
@@ -134,6 +145,7 @@ class FrontController extends BaseController
                 */
 
                 case 'home':
+                    // Home e ricerca condividono la stessa view: i filtri decidono quali dati caricare.
                     $q          = trim($_GET['q'] ?? '');
                     $idCategoria = (int) ($_GET['id_categoria'] ?? 0);
                     $prezzoMin = isset($_GET['prezzo_min']) && $_GET['prezzo_min'] !== '' ? max(0, (float) $_GET['prezzo_min']) : null;
@@ -180,6 +192,7 @@ class FrontController extends BaseController
                     }
 
                     if ($isRegularUser) {
+                        // Per gli utenti normali evidenziamo elementi gia in wishlist/carrello.
                         $wishlistIds = FPersistentManager::wishlistIdsByUser(currentUserId());
                         $carrelloIds = FPersistentManager::carrelloAnnuncioIdsByUser(currentUserId());
                     }
@@ -322,6 +335,7 @@ class FrontController extends BaseController
                 case 'profilo-annunci-attivi':
                     requireAuth();
                     if (!empty($_SESSION['is_admin'])) {
+                        // Gli admin non hanno un profilo utente classico: finiscono in dashboard.
                         (new AdminController($this->pdo))->dashboard(currentUserId());
                         break;
                     }
@@ -763,6 +777,7 @@ class FrontController extends BaseController
 
     private function buildHomePagination(int $paginaCorrente, int $totalePagine): array
     {
+        // Ricostruisce i link pagina preservando i filtri correnti della home.
         $buildPageUrl = static function (int $page): string {
             $params = $_GET;
             $params['route'] = 'home';
@@ -813,6 +828,7 @@ class FrontController extends BaseController
 
     private function buildHomeResetUrl(string $q, int $idCategoria): string
     {
+        // Il reset rimuove solo filtri avanzati, mantenendo ricerca testuale/categoria.
         $params = ['route' => 'home'];
 
         if ($q !== '') {

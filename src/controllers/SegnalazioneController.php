@@ -9,18 +9,30 @@ use App\Services\ServiceException;
 use Exception;
 use PDO;
 
+/**
+ * Gestisce segnalazioni create dagli utenti e lavorate dagli admin.
+ */
 class SegnalazioneController extends BaseController
 {
+    /**
+     * Inizializza il layer persistence con la connessione corrente.
+     */
     public function __construct(PDO $db)
     {
         FDataBase::init($db);
     }
 
+    /**
+     * Mostra il form di apertura segnalazione.
+     */
     public function form(): void
     {
         $this->view('segnalazioni/form.tpl', [], 'Nuova segnalazione');
     }
 
+    /**
+     * Crea una segnalazione e torna al form se i dati non sono coerenti.
+     */
     public function crea(array $data, int $idSegnalante): void
     {
         try {
@@ -34,6 +46,9 @@ class SegnalazioneController extends BaseController
         }
     }
 
+    /**
+     * Lista semplice delle segnalazioni, usata dalle pagine amministrative.
+     */
     public function lista(): void
     {
         $segnalazioni = $this->entitiesToArrays(FPersistentManager::segnalazioni());
@@ -41,6 +56,9 @@ class SegnalazioneController extends BaseController
         $this->view('segnalazioni/lista.tpl', compact('segnalazioni'), 'Segnalazioni');
     }
 
+    /**
+     * Chiude una segnalazione e registra l'azione dell'admin.
+     */
     public function chiudi(int $idSegnalazione, int $idAdmin): void
     {
         $this->requirePositiveId($idSegnalazione, 'Segnalazione');
@@ -53,6 +71,9 @@ class SegnalazioneController extends BaseController
         exit;
     }
 
+    /**
+     * Elimina una segnalazione e registra l'azione dell'admin.
+     */
     public function elimina(int $idSegnalazione, int $idAdmin): void
     {
         $this->requirePositiveId($idSegnalazione, 'Segnalazione');
@@ -65,6 +86,10 @@ class SegnalazioneController extends BaseController
         exit;
     }
 
+    /**
+     * Valida che la segnalazione abbia una sola destinazione tra annuncio, utente,
+     * business o feedback, poi la salva come aperta.
+     */
     private function createSegnalazione(array $data, int $idSegnalante): int
     {
         $segnalazione = ESegnalazione::fromArray(array_merge($data, [
@@ -89,6 +114,7 @@ class SegnalazioneController extends BaseController
             static fn($value) => $value !== null
         );
 
+        // Una segnalazione deve essere precisa: una tipologia valida e un solo oggetto.
         if ($tipologia === '' || !in_array($tipologia, ['Spam', 'Truffa', 'Contenuto_inappropriato', 'Altro'], true)) {
             throw new ServiceException('Tipologia segnalazione non valida.');
         }

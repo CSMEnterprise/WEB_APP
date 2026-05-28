@@ -7,13 +7,22 @@ use App\Foundation\FPersistentManager;
 use Exception;
 use PDO;
 
+/**
+ * Gestisce dashboard e azioni di moderazione disponibili agli amministratori.
+ */
 class AdminController extends BaseController
 {
+    /**
+     * Inizializza il layer persistence con la connessione corrente.
+     */
     public function __construct(PDO $db)
     {
         FDataBase::init($db);
     }
 
+    /**
+     * Dashboard personale dell'admin con statistiche e storico delle sue azioni.
+     */
     public function dashboard(int $idAdmin): void
     {
         $this->requirePositiveId($idAdmin, 'Admin');
@@ -24,6 +33,9 @@ class AdminController extends BaseController
         $this->view('admin/dashboard.tpl', compact('stats', 'azioniModera'), 'Dashboard admin');
     }
 
+    /**
+     * Vista di audit sulle azioni di moderazione filtrabili per admin.
+     */
     public function dashboardModerazione(array $filters): void
     {
         $azioniModerazione = $this->entitiesToArrays(FPersistentManager::azioniModerazione($filters));
@@ -34,6 +46,9 @@ class AdminController extends BaseController
         $this->view('admin/dashboard_moderazione.tpl', compact('azioniModerazione', 'filters'), 'Moderazione');
     }
 
+    /**
+     * Elenco utenti e, per admin livello 2, anche gestione altri admin.
+     */
     public function utenti(array $filters = []): void
     {
         $searchUtente = trim((string) ($filters['q_utente'] ?? ''));
@@ -46,6 +61,9 @@ class AdminController extends BaseController
         $this->view('admin/utenti.tpl', compact('utenti', 'admins', 'filters'), 'Gestione utenti');
     }
 
+    /**
+     * Blocca un utente e registra l'azione per tracciabilita.
+     */
     public function bannaUtente(int $idUtente, int $idAdmin): void
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -58,6 +76,9 @@ class AdminController extends BaseController
         exit;
     }
 
+    /**
+     * Sblocca un utente precedentemente bannato.
+     */
     public function sbloccaUtente(int $idUtente, int $idAdmin): void
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -70,6 +91,9 @@ class AdminController extends BaseController
         exit;
     }
 
+    /**
+     * Banna un admin di livello 1, operazione riservata agli admin livello 2.
+     */
     public function bannaAdmin(int $idAdminDaBannare, int $idAdminCorrente): void
     {
         try {
@@ -89,6 +113,9 @@ class AdminController extends BaseController
         }
     }
 
+    /**
+     * Riabilita un admin di livello 1 se l'admin corrente ha permessi sufficienti.
+     */
     public function sbloccaAdmin(int $idAdminDaSbloccare, int $idAdminCorrente): void
     {
         try {
@@ -108,6 +135,9 @@ class AdminController extends BaseController
         }
     }
 
+    /**
+     * Lista segnalazioni con filtri usati dalla pagina di moderazione.
+     */
     public function segnalazioni(array $filters = []): void
     {
         $segnalazioni = $this->entitiesToArrays(FPersistentManager::segnalazioni($filters));
@@ -119,6 +149,9 @@ class AdminController extends BaseController
         $this->view('admin/segnalazioni.tpl', compact('segnalazioni', 'filters'), 'Segnalazioni');
     }
 
+    /**
+     * Elimina un annuncio da moderazione e salva l'evento nello storico.
+     */
     public function eliminaAnnuncio(int $idAnnuncio, int $idAdmin): void
     {
         $this->requirePositiveId($idAnnuncio, 'Annuncio');

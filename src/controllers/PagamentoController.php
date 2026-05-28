@@ -11,16 +11,25 @@ use Exception;
 use PDO;
 use Throwable;
 
+/**
+ * Gestisce checkout e pagamento simulato PayPal per singoli annunci e carrello.
+ */
 class PagamentoController extends BaseController
 {
     private PDO $db;
 
+    /**
+     * Mantiene PDO per transazioni e query con lock sugli annunci.
+     */
     public function __construct(PDO $db)
     {
         $this->db = $db;
         FDataBase::init($db);
     }
 
+    /**
+     * Prepara la pagina di checkout per un singolo annuncio.
+     */
     public function checkout(int $idUtente, int $idAnnuncio): void
     {
         try {
@@ -35,6 +44,9 @@ class PagamentoController extends BaseController
         }
     }
 
+    /**
+     * Mostra la schermata PayPal simulata dopo la scelta dell'indirizzo.
+     */
     public function paypalPlaceholder(int $idUtente, int $idAnnuncio, int $idIndirizzo = 0): void
     {
         try {
@@ -48,6 +60,7 @@ class PagamentoController extends BaseController
                 throw new ServiceException('Seleziona un indirizzo di spedizione valido.');
             }
 
+            // ID fittizio: simula il codice transazione che arriverebbe da PayPal reale.
             $paypalTransactionId = 'PAYPAL-SIM-' . date('YmdHis') . '-' . random_int(1000, 9999);
 
             $this->view('pagamenti/paypal_placeholder.tpl', compact('annuncio', 'totale', 'indirizzoSpedizione', 'paypalTransactionId'), 'Pagamento PayPal');
@@ -56,6 +69,9 @@ class PagamentoController extends BaseController
         }
     }
 
+    /**
+     * Conferma il pagamento di un singolo annuncio e mostra pagina esito.
+     */
     public function conferma(array $data, int $idUtente): void
     {
         try {
@@ -69,6 +85,9 @@ class PagamentoController extends BaseController
         }
     }
 
+    /**
+     * Prepara checkout per tutti gli articoli acquistabili nel carrello.
+     */
     public function checkoutCarrello(int $idUtente): void
     {
         try {
@@ -88,6 +107,9 @@ class PagamentoController extends BaseController
         }
     }
 
+    /**
+     * Mostra pagamento simulato PayPal per gli articoli acquistabili nel carrello.
+     */
     public function paypalPlaceholderCarrello(int $idUtente, int $idIndirizzo): void
     {
         try {
@@ -114,6 +136,9 @@ class PagamentoController extends BaseController
         }
     }
 
+    /**
+     * Conferma piu pagamenti partendo dagli articoli selezionati nel carrello.
+     */
     public function confermaCarrello(array $data, int $idUtente): void
     {
         try {
@@ -127,12 +152,18 @@ class PagamentoController extends BaseController
         }
     }
 
+    /**
+     * Gestisce annullamento pagamento simulato.
+     */
     public function paypalCancel(): void
     {
         header('Location: index.php?route=carrello&paypal=cancel');
         exit;
     }
 
+    /**
+     * Pagina finale con stato pagamento e numero operazioni completate.
+     */
     public function esito(): void
     {
         $status = $_GET['status'] ?? 'errore';
@@ -142,6 +173,9 @@ class PagamentoController extends BaseController
         $this->view('pagamenti/esito.tpl', compact('status', 'idPagamento', 'numeroPagamenti'), 'Esito pagamento');
     }
 
+    /**
+     * Controlli comuni prima di mostrare checkout/pagamento di un annuncio.
+     */
     private function preparePayment(int $idUtente, int $idAnnuncio): array
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -165,6 +199,9 @@ class PagamentoController extends BaseController
         return ['annuncio' => $annuncio, 'totale' => $annuncio->getPrezzo()];
     }
 
+    /**
+     * Conferma un acquisto atomico: pagamento, stato venduto e pulizia carrelli/wishlist.
+     */
     private function confirmPayment(array $data, int $idUtente): int
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -224,6 +261,9 @@ class PagamentoController extends BaseController
         }
     }
 
+    /**
+     * Conferma in blocco il carrello: gli articoli non piu acquistabili vengono saltati.
+     */
     private function confirmCartPayment(array $data, int $idUtente): array
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -249,6 +289,7 @@ class PagamentoController extends BaseController
             $idPagamenti = [];
 
             foreach ($idAnnunci as $idAnnuncio) {
+                // Ogni annuncio viene letto con lock per evitare doppie vendite concorrenti.
                 $annuncioRow = $this->getAnnuncioForPaymentUpdate($idAnnuncio);
                 $annuncio = $annuncioRow ? EAnnuncio::fromArray($annuncioRow) : null;
 
@@ -288,6 +329,9 @@ class PagamentoController extends BaseController
         }
     }
 
+    /**
+     * Restituisce solo righe acquistabili, togliendo prima quelle obsolete dal carrello.
+     */
     private function getCarrelloAcquistabile(int $idUtente): array
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -308,6 +352,9 @@ class PagamentoController extends BaseController
         }));
     }
 
+    /**
+     * Legge l'annuncio con FOR UPDATE per bloccarlo durante la transazione di pagamento.
+     */
     private function getAnnuncioForPaymentUpdate(int $idAnnuncio): ?array
     {
         $stmt = $this->db->prepare("
@@ -330,6 +377,9 @@ class PagamentoController extends BaseController
         return $stmt->fetch() ?: null;
     }
 
+    /**
+     * Marca l'annuncio come venduto solo se era ancora attivo.
+     */
     private function markAnnuncioSoldForPayment(int $idAnnuncio): void
     {
         $stmt = $this->db->prepare("
@@ -344,6 +394,9 @@ class PagamentoController extends BaseController
         }
     }
 
+    /**
+     * Dopo la vendita rimuove l'annuncio da carrelli e wishlist di tutti gli utenti.
+     */
     private function removeAnnuncioFromBuyerSurfaces(int $idAnnuncio): void
     {
         FPersistentManager::removeAnnuncioFromAllCarts($idAnnuncio);

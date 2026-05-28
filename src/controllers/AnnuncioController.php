@@ -10,16 +10,25 @@ use Exception;
 use finfo;
 use PDO;
 
+/**
+ * Gestisce annunci, dettaglio pubblico, creazione/modifica e immagini caricate.
+ */
 class AnnuncioController extends BaseController
 {
     private PDO $db;
 
+    /**
+     * Mantiene PDO per transazioni e inizializza il livello persistence.
+     */
     public function __construct(PDO $db)
     {
         $this->db = $db;
         FDataBase::init($db);
     }
 
+    /**
+     * Lista annunci con eventuale ricerca testuale o filtro categoria.
+     */
     public function lista(): void
     {
         $q = trim($_GET['q'] ?? '');
@@ -41,6 +50,9 @@ class AnnuncioController extends BaseController
         $this->view('annunci/lista.tpl', compact('q', 'idCategoria', 'categorie', 'annunci', 'utenti', 'wishlistIds', 'carrelloIds'), 'Annunci');
     }
 
+    /**
+     * Mostra un annuncio con dati del venditore e stato wishlist/carrello dell'utente.
+     */
     public function dettaglio(int $idAnnuncio): void
     {
         $annuncioEntity = FPersistentManager::annuncioById($idAnnuncio);
@@ -64,6 +76,9 @@ class AnnuncioController extends BaseController
         $this->view('annunci/dettaglio.tpl', compact('annuncio', 'feedbackVenditore', 'mediaVenditore', 'wishlistIds', 'carrelloIds'), $annuncio['titolo'] ?? 'Annuncio');
     }
 
+    /**
+     * Mostra il form vuoto per la pubblicazione di un nuovo annuncio.
+     */
     public function formCreazione(): void
     {
         $categorie = $this->entitiesToArrays(FPersistentManager::categorie());
@@ -71,6 +86,9 @@ class AnnuncioController extends BaseController
         $this->view('annunci/form.tpl', compact('categorie'), 'Nuovo annuncio');
     }
 
+    /**
+     * Mostra il form di modifica solo al proprietario di un annuncio ancora attivo.
+     */
     public function formModifica(int $idAnnuncio, int $idUtente): void
     {
         try {
@@ -90,6 +108,9 @@ class AnnuncioController extends BaseController
         }
     }
 
+    /**
+     * Riceve il POST di creazione e torna al form con errore se qualcosa non passa.
+     */
     public function crea(array $data, int $idUtente, array $files = []): void
     {
         try {
@@ -105,6 +126,9 @@ class AnnuncioController extends BaseController
         }
     }
 
+    /**
+     * Aggiorna dati e immagini di un annuncio esistente.
+     */
     public function aggiorna(array $data, int $idUtente, array $files = []): void
     {
         $idAnnuncio = (int)($data['id_annuncio'] ?? 0);
@@ -125,6 +149,9 @@ class AnnuncioController extends BaseController
         }
     }
 
+    /**
+     * Elimina una singola immagine dopo aver verificato che appartenga all'utente.
+     */
     public function eliminaImmagine(array $data, int $idUtente): void
     {
         try {
@@ -137,6 +164,9 @@ class AnnuncioController extends BaseController
         }
     }
 
+    /**
+     * Elimina logicamente/fisicamente un annuncio dell'utente corrente.
+     */
     public function elimina(int $idAnnuncio, int $idUtente): void
     {
         try {
@@ -154,6 +184,9 @@ class AnnuncioController extends BaseController
         }
     }
 
+    /**
+     * Crea annuncio e immagini nella stessa transazione per evitare dati incompleti.
+     */
     private function createAnnuncio(array $data, int $idUtente, array $files = []): int
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -188,6 +221,9 @@ class AnnuncioController extends BaseController
         }
     }
 
+    /**
+     * Aggiorna un annuncio solo se appartiene all'utente ed e ancora modificabile.
+     */
     private function updateAnnuncio(int $idAnnuncio, int $idUtente, array $data, array $files = []): void
     {
         $this->requirePositiveId($idAnnuncio, 'Annuncio');
@@ -230,6 +266,9 @@ class AnnuncioController extends BaseController
         }
     }
 
+    /**
+     * Valida i campi comuni a creazione e modifica annuncio.
+     */
     private function validateAnnuncioData(array $data): array
     {
         $titolo = $this->clean($data['titolo'] ?? '');
@@ -250,6 +289,9 @@ class AnnuncioController extends BaseController
         return [$titolo, $descrizione, $idCategoria, $statoConservazione, $prezzo];
     }
 
+    /**
+     * Rimuove il record immagine e poi il file pubblico collegato.
+     */
     private function deleteImage(int $idImmagine, int $idUtente): int
     {
         $this->requirePositiveId($idImmagine, 'Immagine');
@@ -270,6 +312,9 @@ class AnnuncioController extends BaseController
         return (int) $immagine->getIdAnnuncio();
     }
 
+    /**
+     * Cancella il file solo se il path resta dentro public, evitando path traversal.
+     */
     private function deleteImageFile(string $url): void
     {
         $url = trim($url);
@@ -286,6 +331,9 @@ class AnnuncioController extends BaseController
         }
     }
 
+    /**
+     * Salva fino a 5 immagini per annuncio, validando dimensione e MIME reali.
+     */
     private function saveAnnuncioImages(int $idAnnuncio, array $files): void
     {
         if (empty($files['immagini']) || empty($files['immagini']['name'])) {

@@ -9,13 +9,22 @@ use App\Services\ServiceException;
 use Exception;
 use PDO;
 
+/**
+ * Gestisce creazione e consultazione dei feedback post-acquisto.
+ */
 class FeedbackController extends BaseController
 {
+    /**
+     * Inizializza il layer persistence con la connessione corrente.
+     */
     public function __construct(PDO $db)
     {
         FDataBase::init($db);
     }
 
+    /**
+     * Mostra il form solo all'acquirente del pagamento e solo se non ha gia recensito.
+     */
     public function form(int $idPagamento, int $idAutore): void
     {
         $pagamentoEntity = FPersistentManager::pagamentoById($idPagamento);
@@ -34,6 +43,9 @@ class FeedbackController extends BaseController
         $this->view('feedback/form.tpl', compact('idPagamento', 'pagamento'), 'Lascia feedback');
     }
 
+    /**
+     * Salva il feedback e, in caso di errore, ripresenta lo stesso form.
+     */
     public function crea(array $data, int $idAutore): void
     {
         try {
@@ -50,6 +62,9 @@ class FeedbackController extends BaseController
         }
     }
 
+    /**
+     * Mostra i feedback scritti o ricevuti dall'utente corrente.
+     */
     public function lista(int $idUtente): void
     {
         $this->requirePositiveId($idUtente, 'Utente');
@@ -59,6 +74,9 @@ class FeedbackController extends BaseController
         $this->view('feedback/lista.tpl', compact('feedback'), 'I miei feedback');
     }
 
+    /**
+     * Mostra feedback pubblici e media voto di un venditore.
+     */
     public function listaVenditore(int $idVenditore): void
     {
         $this->requirePositiveId($idVenditore, 'Venditore');
@@ -69,6 +87,9 @@ class FeedbackController extends BaseController
         $this->view('feedback/lista_venditore.tpl', compact('feedback', 'media'), 'Feedback venditore');
     }
 
+    /**
+     * Normalizza dati del form e applica i vincoli prima del salvataggio.
+     */
     private function createFeedback(array $data, int $idAutore): int
     {
         $feedback = EFeedback::fromArray(array_merge($data, [

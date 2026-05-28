@@ -10,13 +10,22 @@ use App\Services\ServiceException;
 use Exception;
 use PDO;
 
+/**
+ * Gestisce la wishlist dell'utente e le azioni rapide dai dettagli/lista annunci.
+ */
 class WishlistController extends BaseController
 {
+    /**
+     * Inizializza il layer persistence con la connessione corrente.
+     */
     public function __construct(PDO $db)
     {
         FDataBase::init($db);
     }
 
+    /**
+     * Mostra la wishlist pulendo prima eventuali annunci non piu disponibili.
+     */
     public function lista(int $idUtente): void
     {
         try {
@@ -36,6 +45,9 @@ class WishlistController extends BaseController
         }
     }
 
+    /**
+     * Aggiunge un annuncio alla wishlist e apre la pagina preferiti.
+     */
     public function aggiungi(int $idUtente, int $idAnnuncio): void
     {
         try {
@@ -48,6 +60,9 @@ class WishlistController extends BaseController
         }
     }
 
+    /**
+     * Rimuove un annuncio dalla wishlist.
+     */
     public function rimuovi(int $idUtente, int $idAnnuncio): void
     {
         try {
@@ -64,6 +79,9 @@ class WishlistController extends BaseController
         }
     }
 
+    /**
+     * Aggiunge o rimuove il preferito mantenendo l'utente sulla pagina di provenienza.
+     */
     public function toggle(int $idUtente, int $idAnnuncio): void
     {
         try {
@@ -85,6 +103,9 @@ class WishlistController extends BaseController
         }
     }
 
+    /**
+     * Svuota tutti i preferiti dell'utente.
+     */
     public function svuota(int $idUtente): void
     {
         try {
@@ -100,6 +121,9 @@ class WishlistController extends BaseController
         }
     }
 
+    /**
+     * Applica le regole per evitare preferiti non validi o propri annunci.
+     */
     private function aggiungiAnnuncioAllaWishlist(int $idUtente, int $idAnnuncio): void
     {
         $this->requirePositiveId($idUtente, 'Utente');
