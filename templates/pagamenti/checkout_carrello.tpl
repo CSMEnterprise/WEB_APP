@@ -1,3 +1,4 @@
+{* Checkout carrello: lista di tutti gli articoli selezionati, totale, selezione indirizzo di spedizione e conferma per il pagamento multiplo PayPal simulato. *}
 {include file="layouts/header.tpl"}
 
 <h1>Checkout</h1>

@@ -1,3 +1,4 @@
+{* Lista ordini ricevuti dall'account business: tabella con ID pagamento, titolo annuncio, importo, stato e data. *}
 {include file="layouts/header.tpl"}
 
 <h1>Ordini ricevuti</h1>

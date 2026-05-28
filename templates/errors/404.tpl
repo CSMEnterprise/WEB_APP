@@ -1,3 +1,4 @@
+{* Pagina errore 404: la rotta richiesta non esiste. Mostra un messaggio generico e un link per tornare alla home. *}
 {include file="layouts/header.tpl"}
 
 <section class="card">

@@ -1,3 +1,4 @@
+{* Componente card utente: mostra avatar (foto o icona fallback), username, nome e link al profilo venditore. Usato nei risultati di ricerca testuale. *}
 <div
     class="card clickable-card u-user-result-card"
     data-href="index.php?route=venditore&id={$utente.id_utente|default:0}"

@@ -1,5 +1,7 @@
+{* Home page / pagina di ricerca: banner promozionale per ospiti, sezione utenti trovati (solo con query testo), grid annunci con filtri avanzati (prezzo, ordinamento) e paginazione. *}
 {include file="layouts/header.tpl"}
 
+{* Il banner viene nascosto se l'utente è loggato o se sta vedendo risultati di ricerca *}
 {if !$isRicerca && !$isLogged}
     <section class="card">
         <h1>Compra e vendi articoli nerd in modo semplice.</h1>
@@ -112,6 +114,7 @@
     {/if}
 </section>
 
+{* JS filtri: toggle show/hide del pannello filtri avanzati tramite attributo hidden *}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const toggle = document.getElementById('homeFilterToggle');

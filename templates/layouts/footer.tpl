@@ -1,3 +1,4 @@
+{* Layout footer: chiude il <main>, mostra brand, link categorie, link account adattivi per ruolo (utente/business/admin/ospite), newsletter placeholder. Contiene anche i JS globali: toggle password, navigazione clickable-card. *}
 </main>
 
 <footer class="site-footer">
@@ -92,6 +93,7 @@
 
 </footer>
 
+{* JS globale: toggle visibilità password, navigazione da click su qualsiasi .clickable-card (esclude click su link/button interni) *}
 <script>
 function togglePasswordVisibility(inputId, button) {
     const input = document.getElementById(inputId);

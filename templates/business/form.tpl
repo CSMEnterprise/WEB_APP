@@ -1,3 +1,4 @@
+{* Form creazione profilo business (usato dall'area business per aggiungere i dati aziendali dopo la registrazione). Raccoglie nome azienda, P.IVA, email, telefono e indirizzo sede. *}
 {include file="layouts/header.tpl"}
 
 <div class="card">

@@ -1,3 +1,4 @@
+{* Esito verifica email: mostra successo (account attivato) o errore (token scaduto/non valido) con link per reinviare il messaggio di verifica. *}
 {include file="layouts/header.tpl"}
 
 <div class="u-style-080">

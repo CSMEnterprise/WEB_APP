@@ -1,3 +1,4 @@
+{* Pagina errore 400: richiesta non valida. Mostra il messaggio di errore passato dal controller e un link per tornare alla home. *}
 {include file="layouts/header.tpl"}
 
 <section class="card">

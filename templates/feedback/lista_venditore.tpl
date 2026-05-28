@@ -1,3 +1,4 @@
+{* Profilo feedback pubblico di un venditore: media con badge stella in cima, poi lista di tutte le recensioni con link all'annuncio collegato. *}
 {include file="layouts/header.tpl"}
 
 <h1>Feedback ricevuti</h1>

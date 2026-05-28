@@ -1,3 +1,4 @@
+{* Gestione segnalazioni admin: lista filtrabile per oggetto (annuncio/utente/business/feedback) e tipologia. Permette di chiudere o eliminare ogni segnalazione. *}
 {include file="layouts/header.tpl"}
 
 <h1>Gestione segnalazioni</h1>

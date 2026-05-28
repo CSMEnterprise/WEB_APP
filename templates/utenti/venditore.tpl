@@ -1,3 +1,4 @@
+{* Profilo pubblico venditore: mostra avatar, statistiche (annunci attivi, media feedback), e grid degli annunci attualmente in vendita. Solo lettura, senza azioni di modifica. *}
 {include file="layouts/header.tpl"}
 
 {if !empty($venditore)}

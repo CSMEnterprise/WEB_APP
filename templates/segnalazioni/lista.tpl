@@ -1,3 +1,4 @@
+{* Lista delle proprie segnalazioni: mostra tipologia, descrizione, stato e data di ogni segnalazione inviata dall'utente corrente. *}
 {include file="layouts/header.tpl"}
 
 <h1>Segnalazioni</h1>

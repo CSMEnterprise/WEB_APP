@@ -1,6 +1,8 @@
+{* Dettaglio annuncio: galleria foto con navigazione, info venditore con rating, azioni contestuali in base al ruolo (proprietario, admin, business, utente normale). *}
 {include file="layouts/header.tpl"}
 
 {if !empty($annuncio)}
+    {* Variabili di contesto calcolate una sola volta per evitare ripetizioni nelle condizioni *}
     {assign var=annuncioId value=$annuncio.id_annuncio|default:0}
     {assign var=annuncioOwner value=$annuncio.id_utente|default:0}
     {assign var=isOwner value=$isLogged && !$isAdmin && $annuncioOwner == $userId}
@@ -110,6 +112,7 @@
         {/if}
     </article>
 
+    {* Gallery JS: naviga tra le miniature aggiornando l'immagine principale e lo stato attivo dei thumb *}
     <script>
     document.querySelectorAll('[data-gallery]').forEach(function (gallery) {
         const mainImage = gallery.querySelector('[data-gallery-main]');

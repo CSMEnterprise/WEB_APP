@@ -1,3 +1,4 @@
+{* Checkout acquisto singolo: riepilogo annuncio, selezione indirizzo di spedizione e redirect al pagamento PayPal simulato. Se l'utente non ha indirizzi, viene rimandato al profilo. *}
 {include file="layouts/header.tpl"}
 
 <h1>Checkout</h1>

@@ -1,7 +1,9 @@
+{* Gestione utenti admin: ricerca e ban/sblocco utenti registrati. Gli admin di livello 2 vedono anche la sezione di gestione degli altri admin. *}
 {include file="layouts/header.tpl"}
 
 <h1>Gestione utenti</h1>
 
+{* La sezione gestione admin è visibile solo al super-admin (livello 2) *}
 {if $livelloSicurezza == 2}
     <section class="u-style-002">
         <h2>Gestione admin</h2>

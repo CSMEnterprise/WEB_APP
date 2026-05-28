@@ -1,3 +1,4 @@
+{* Reset password: permette di impostare una nuova password tramite il token ricevuto via email. Il form è mostrato solo se il token è valido ($idUtente > 0). *}
 {include file="layouts/header.tpl"}
 
 <div class="u-style-080">

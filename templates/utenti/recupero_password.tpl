@@ -1,3 +1,4 @@
+{* Recupero password: form richiesta link di reset via email. In modalità debug (senza SMTP configurato) il link viene mostrato direttamente nella pagina. *}
 {include file="layouts/header.tpl"}
 
 <div class="u-style-080">

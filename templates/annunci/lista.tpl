@@ -1,3 +1,4 @@
+{* Lista annunci: mostra tutti gli annunci disponibili o i risultati di una ricerca per testo/categoria. Se la ricerca restituisce anche utenti, li mostra in una sezione separata. *}
 {include file="layouts/header.tpl"}
 
 <div class="u-style-007">

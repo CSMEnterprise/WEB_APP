@@ -1,7 +1,9 @@
+{* Profilo utente personale: hero con dati anagrafici e tre <details> per modifica dati/password/indirizzi (add e edit separati). Sezioni: tutti gli indirizzi, annunci attivi/venduti, cronologia pagamenti. *}
 {include file="layouts/header.tpl"}
 
 {if !empty($utente)}
     {assign var=displayName value=$utente.username|default:'Utente'}
+    {* $editing è l'indirizzo in corso di modifica; vuoto quando si aggiunge un nuovo indirizzo *}
     {assign var=editing value=$editingIndirizzo|default:[]}
     {assign var=indirizziCount value=$indirizziUtente|count_items}
     {assign var=annunciCount value=$annunciUtente|count_items}
@@ -94,6 +96,7 @@
                         </form>
                     </details>
 
+                    {* Due <details> separati: uno sempre per aggiungere, uno (condizionale) per modificare l'indirizzo selezionato *}
                     {if !$isBusiness}
                         <details class="nv-profile-action-details nv-profile-address-details">
                             <summary class="nv-profile-small-btn">Aggiungi indirizzo di spedizione</summary>
@@ -194,6 +197,7 @@
             </div>
         </section>
 
+        {* Link rapidi sempre visibili sopra le sezioni principali *}
         <nav class="nv-profile-quick-actions" aria-label="Azioni profilo">
             <a class="nv-profile-chip nv-profile-chip-gold" href="index.php?route=annuncio-create">Crea annuncio</a>
             <a class="nv-profile-chip" href="index.php?route=feedback">I miei feedback</a>

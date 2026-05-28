@@ -1,3 +1,4 @@
+{* Pagina scelta tipo account: l'utente sceglie tra registrazione come utente normale o come business prima di procedere al form specifico. *}
 {include file="layouts/header.tpl"}
 
 <div class="u-style-092">

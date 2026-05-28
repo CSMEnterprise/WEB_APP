@@ -1,3 +1,4 @@
+{* Esito pagamento: mostra il risultato (successo o fallimento) del pagamento simulato. In caso di successo invita a lasciare un feedback al venditore. *}
 {include file="layouts/header.tpl"}
 
 <div class="card">

@@ -1,3 +1,4 @@
+{* Privacy policy: trattamento dei dati personali, finalità, conservazione e diritto alla cancellazione. La variabile $today viene iniettata dal controller. *}
 {include file="layouts/header.tpl"}
 
 <section class="card">

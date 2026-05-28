@@ -1,7 +1,9 @@
+{* Dashboard personale dell'admin: statistiche globali della piattaforma e log delle azioni di moderazione eseguite dall'admin corrente. *}
 {include file="layouts/header.tpl"}
 
 <h1>Profilo admin</h1>
 
+{* Riquadri con i contatori principali della piattaforma *}
 <section class="grid">
     <article class="card"><h2>Utenti</h2><p class="price">{$stats.totUtenti|default:0}</p></article>
     <article class="card"><h2>Annunci</h2><p class="price">{$stats.totAnnunci|default:0}</p></article>
@@ -14,6 +16,7 @@
     <a class="btn btn-secondary" href="index.php?route=admin-segnalazioni">Gestisci segnalazioni</a>
 </p>
 
+{* Log delle sole azioni compiute dall'admin attualmente loggato *}
 <section class="u-style-001">
     <h2>Azioni eseguite da te</h2>
 

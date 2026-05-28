@@ -1,3 +1,4 @@
+{* Registrazione account business: form completo diviso in due colonne (dati aziendali + sicurezza) con una sezione separata per l'indirizzo della sede. *}
 {include file="layouts/header.tpl"}
 
 <div class="card u-style-110">

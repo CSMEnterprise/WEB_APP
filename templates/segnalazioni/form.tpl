@@ -1,3 +1,4 @@
+{* Form invio segnalazione: l'oggetto segnalato (annuncio/utente/business/feedback) viene passato tramite campi hidden popolati dal GET. L'utente sceglie solo tipologia e descrizione. *}
 {include file="layouts/header.tpl"}
 
 <div class="card">

@@ -1,3 +1,4 @@
+{* Pagina login: form email/password con link a recupero password. Mostra un alert specifico se l'email non è ancora verificata, con link al reinvio. *}
 {include file="layouts/header.tpl"}
 
 <div class="u-style-048">

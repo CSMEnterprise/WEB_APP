@@ -1,3 +1,4 @@
+{* Simulazione PayPal (carrello): riepilogo di tutti gli articoli del carrello con totale e indirizzo di spedizione. Invia gli id_annunci[] come campi hidden per il pagamento multiplo simulato. *}
 {include file="layouts/header.tpl"}
 
 <div class="paypal-page">

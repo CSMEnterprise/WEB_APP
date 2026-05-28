@@ -1,3 +1,4 @@
+{* Pagina di attesa verifica email: mostrata subito dopo la registrazione. Include istruzioni, form di reinvio e (solo in modalità debug) il link di verifica diretto. *}
 {include file="layouts/header.tpl"}
 
 <div class="u-style-080">

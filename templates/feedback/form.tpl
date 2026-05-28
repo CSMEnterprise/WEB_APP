@@ -1,3 +1,4 @@
+{* Form inserimento feedback: valutazione 1-5 stelle con anteprima interattiva via JS e campo commento. Collegato a un pagamento completato tramite id_pagamento. *}
 {include file="layouts/header.tpl"}
 
 <div class="card">

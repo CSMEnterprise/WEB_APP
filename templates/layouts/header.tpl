@@ -1,3 +1,4 @@
+{* Layout header: apre il documento HTML, carica tutti i CSS e costruisce la navbar adattiva in base al ruolo (admin, business, utente normale, ospite). Contiene la barra di ricerca con filtro categoria. Ogni pagina include questo file come prima istruzione. *}
 <!doctype html>
 <html lang="it">
 <head>
@@ -26,6 +27,7 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
                 </a>
 
+                {* Navbar adattiva: admin vede dashboard/utenti/segnalazioni, business vede area business, utente normale vede carrello e menu profilo *}
                 {if $isLogged}
                     {if $isAdmin}
                         {if $livelloSicurezza == 2}

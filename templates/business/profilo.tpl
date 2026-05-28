@@ -1,3 +1,4 @@
+{* Area business: mostra dati aziendali, form toggle per aggiungere/modificare l'indirizzo sede, lista annunci propri con accesso rapido ai dettagli e al pannello ordini. *}
 {include file="layouts/header.tpl"}
 
 <h1>Area business</h1>

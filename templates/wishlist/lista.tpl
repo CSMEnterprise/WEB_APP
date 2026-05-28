@@ -1,3 +1,4 @@
+{* Lista wishlist: grid di annunci salvati dall'utente. Il pulsante "Svuota wishlist" appare solo se la wishlist contiene elementi. *}
 {include file="layouts/header.tpl"}
 
 <div class="u-style-007">

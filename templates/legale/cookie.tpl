@@ -1,3 +1,4 @@
+{* Pagina cookie policy: informa l'utente che vengono usati solo cookie tecnici (sessione, login, carrello) e nessun cookie pubblicitario. *}
 {include file="layouts/header.tpl"}
 
 <section class="card">

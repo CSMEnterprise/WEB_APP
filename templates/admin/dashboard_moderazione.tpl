@@ -1,3 +1,4 @@
+{* Dashboard moderazione globale: tabella di tutte le azioni compiute da tutti gli admin, filtrabile per email o ID admin. Solo gli admin di livello 2 possono accedere. *}
 {include file="layouts/header.tpl"}
 
 <h1>Dashboard moderazione</h1>

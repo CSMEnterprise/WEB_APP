@@ -1,3 +1,4 @@
+{* Simulazione PayPal (acquisto singolo): schermata placeholder che mostra riepilogo ordine e indirizzo di spedizione. Nessun pagamento reale viene effettuato. *}
 {include file="layouts/header.tpl"}
 
 <section class="paypal-page">

@@ -1,3 +1,4 @@
+{* Componente card annuncio: riutilizzato in home, lista, profilo, wishlist. Mostra wishlist heart, foto, prezzo, venditore e azioni contestuali (modifica se owner, carrello se utente normale). *}
 {assign var=annuncioId value=$annuncio.id_annuncio|default:0}
 {assign var=annuncioOwner value=$annuncio.id_utente|default:0}
 {assign var=isOwner value=$isLogged && !$isAdmin && $annuncioOwner == $userId}

@@ -1,3 +1,4 @@
+{* Registrazione utente normale: form diviso in due colonne (dati profilo + sicurezza) con username, nome opzionale, telefono, email e password con conferma. *}
 {include file="layouts/header.tpl"}
 
 <div class="card u-style-123">

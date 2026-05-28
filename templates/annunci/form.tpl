@@ -1,5 +1,7 @@
+{* Form crea/modifica annuncio: il flag $isEdit determina route, label submit e visibilità delle foto già salvate. Gestisce l'upload progressivo fino a 5 foto tramite JS con DataTransfer. *}
 {include file="layouts/header.tpl"}
 
+{* Impostazione route e label in base alla modalità create/edit *}
 {assign var=isEdit value=$isEdit|default:false}
 {if $isEdit}
     {assign var=formRoute value='annuncio-update'}
@@ -92,6 +94,7 @@
         <button class="btn" type="submit">{$submitLabel}</button>
     </form>
 
+    {* Form nascosti per l'eliminazione delle singole foto: vengono submittati dal pulsante × della foto corrispondente *}
     {if $isEdit && !empty($annuncio.immagini)}
         {foreach $annuncio.immagini as $immagine}
             <form

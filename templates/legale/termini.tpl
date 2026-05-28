@@ -1,3 +1,4 @@
+{* Termini di servizio: responsabilità degli utenti sulle pubblicazioni, obblighi dei business e poteri di moderazione della piattaforma. *}
 {include file="layouts/header.tpl"}
 
 <section class="card">

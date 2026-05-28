@@ -1,3 +1,4 @@
+{* Lista feedback dell'utente loggato: mostra i feedback con titolo annuncio, autore, stelle e commento. *}
 {include file="layouts/header.tpl"}
 
 <h1>Feedback</h1>

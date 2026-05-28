@@ -1,3 +1,4 @@
+{* Lista carrello: mostra gli articoli aggiunti con immagine, prezzo e pulsante rimozione. Gli articoli non acquistabili (venduti o propri) mostrano un avviso. Il checkout è abilitato solo se ci sono articoli acquistabili. *}
 {include file="layouts/header.tpl"}
 
 <div class="u-style-007">
