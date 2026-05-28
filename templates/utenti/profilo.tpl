@@ -95,51 +95,89 @@
                     </details>
 
                     {if !$isBusiness}
-                        <details class="nv-profile-action-details nv-profile-address-details" {if !empty($editing)}open{/if}>
-                            <summary class="nv-profile-small-btn">{if !empty($editing)}Modifica indirizzo{else}Aggiungi indirizzo di spedizione{/if}</summary>
+                        <details class="nv-profile-action-details nv-profile-address-details">
+                            <summary class="nv-profile-small-btn">Aggiungi indirizzo di spedizione</summary>
                             <form class="nv-profile-popover-form nv-profile-address-popover" method="post" action="index.php">
-                                <input type="hidden" name="route" value="{if !empty($editing)}profilo-indirizzo-update{else}profilo-indirizzo-store{/if}">
-                                {if !empty($editing)}
-                                    <input type="hidden" name="id_indirizzo" value="{$editing.id_indirizzo|default:0}">
-                                {/if}
+                                <input type="hidden" name="route" value="profilo-indirizzo-store">
 
                                 <div class="nv-field nv-field-wide">
-                                    <label for="indirizzo_nome">Nome e cognome</label>
-                                    <input type="text" id="indirizzo_nome" name="nome" value="{$utente.nome|default:''}" placeholder="Nome destinatario">
+                                    <label for="add_nome">Nome e cognome</label>
+                                    <input type="text" id="add_nome" name="nome" value="{$utente.nome|default:''}" placeholder="Nome destinatario">
                                 </div>
                                 <div class="nv-field nv-field-wide">
-                                    <label for="via">Via / corso / piazza</label>
-                                    <input type="text" id="via" name="via" value="{$editing.via|default:''}" required>
+                                    <label for="add_via">Via / corso / piazza</label>
+                                    <input type="text" id="add_via" name="via" value="" required>
                                 </div>
                                 <div class="nv-field">
-                                    <label for="numero">Numero civico</label>
-                                    <input type="text" id="numero" name="numero" value="{$editing.numero|default:''}">
+                                    <label for="add_numero">Numero civico</label>
+                                    <input type="text" id="add_numero" name="numero" value="">
                                 </div>
                                 <div class="nv-field">
-                                    <label for="cap">CAP</label>
-                                    <input type="text" id="cap" name="cap" value="{$editing.cap|default:''}">
+                                    <label for="add_cap">CAP</label>
+                                    <input type="text" id="add_cap" name="cap" value="">
                                 </div>
                                 <div class="nv-field">
-                                    <label for="citta">Citta</label>
-                                    <input type="text" id="citta" name="citta" value="{$editing.citta|default:''}" required>
+                                    <label for="add_citta">Citta</label>
+                                    <input type="text" id="add_citta" name="citta" value="" required>
                                 </div>
                                 <div class="nv-field">
-                                    <label for="provincia">Provincia</label>
-                                    <input type="text" id="provincia" name="provincia" value="{$editing.provincia|default:''}">
+                                    <label for="add_provincia">Provincia</label>
+                                    <input type="text" id="add_provincia" name="provincia" value="">
                                 </div>
                                 <div class="nv-field nv-field-wide">
-                                    <label for="paese">Paese</label>
-                                    <input type="text" id="paese" name="paese" value="{$editing.paese|default:'Italia'}">
+                                    <label for="add_paese">Paese</label>
+                                    <input type="text" id="add_paese" name="paese" value="Italia">
                                 </div>
 
                                 <div class="nv-address-actions">
-                                    <button class="btn" type="submit">{if !empty($editing)}Salva modifiche{else}Salva nuovo indirizzo{/if}</button>
-                                    {if !empty($editing)}
-                                        <a class="btn btn-secondary" href="index.php?route=profilo">Annulla</a>
-                                    {/if}
+                                    <button class="btn" type="submit">Salva nuovo indirizzo</button>
                                 </div>
                             </form>
                         </details>
+
+                        {if !empty($editing)}
+                            <details class="nv-profile-action-details nv-profile-address-details" open>
+                                <summary class="nv-profile-small-btn">Modifica indirizzo</summary>
+                                <form class="nv-profile-popover-form nv-profile-address-popover" method="post" action="index.php">
+                                    <input type="hidden" name="route" value="profilo-indirizzo-update">
+                                    <input type="hidden" name="id_indirizzo" value="{$editing.id_indirizzo|default:0}">
+
+                                    <div class="nv-field nv-field-wide">
+                                        <label for="edit_nome">Nome e cognome</label>
+                                        <input type="text" id="edit_nome" name="nome" value="{$utente.nome|default:''}" placeholder="Nome destinatario">
+                                    </div>
+                                    <div class="nv-field nv-field-wide">
+                                        <label for="edit_via">Via / corso / piazza</label>
+                                        <input type="text" id="edit_via" name="via" value="{$editing.via|default:''}" required>
+                                    </div>
+                                    <div class="nv-field">
+                                        <label for="edit_numero">Numero civico</label>
+                                        <input type="text" id="edit_numero" name="numero" value="{$editing.numero|default:''}">
+                                    </div>
+                                    <div class="nv-field">
+                                        <label for="edit_cap">CAP</label>
+                                        <input type="text" id="edit_cap" name="cap" value="{$editing.cap|default:''}">
+                                    </div>
+                                    <div class="nv-field">
+                                        <label for="edit_citta">Citta</label>
+                                        <input type="text" id="edit_citta" name="citta" value="{$editing.citta|default:''}" required>
+                                    </div>
+                                    <div class="nv-field">
+                                        <label for="edit_provincia">Provincia</label>
+                                        <input type="text" id="edit_provincia" name="provincia" value="{$editing.provincia|default:''}">
+                                    </div>
+                                    <div class="nv-field nv-field-wide">
+                                        <label for="edit_paese">Paese</label>
+                                        <input type="text" id="edit_paese" name="paese" value="{$editing.paese|default:'Italia'}">
+                                    </div>
+
+                                    <div class="nv-address-actions">
+                                        <button class="btn" type="submit">Salva modifiche</button>
+                                        <a class="btn btn-secondary" href="index.php?route=profilo">Annulla</a>
+                                    </div>
+                                </form>
+                            </details>
+                        {/if}
                     {/if}
                 </div>
             </div>
