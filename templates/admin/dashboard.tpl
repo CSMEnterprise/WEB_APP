@@ -12,8 +12,8 @@
 </section>
 
 <p>
-    <a class="btn" href="index.php?route=admin-utenti">Gestisci utenti</a>
-    <a class="btn btn-secondary" href="index.php?route=admin-segnalazioni">Gestisci segnalazioni</a>
+    <a class="btn" href="/admin/utenti">Gestisci utenti</a>
+    <a class="btn btn-secondary" href="/admin/segnalazioni">Gestisci segnalazioni</a>
 </p>
 
 {* Log delle sole azioni compiute dall'admin attualmente loggato *}

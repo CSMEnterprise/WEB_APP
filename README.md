@@ -2,7 +2,7 @@
 
 NerdVault e' una web app marketplace sviluppata in PHP per la gestione di annunci, utenti, wishlist, carrello, pagamenti simulati, account business, feedback, segnalazioni e area amministratore.
 
-Il progetto usa una struttura MVC leggera senza framework esterni: `public/index.php` fa solo da bootstrap, mentre il routing principale e' gestito dalla classe `App\Controllers\FrontController`. Controller, servizi, entity, viste, middleware e configurazione sono separati nella cartella `src`.
+Il progetto usa una struttura MVC leggera senza framework esterni: `public/index.php` fa solo da bootstrap, mentre il routing principale e' gestito dalla classe `App\Core\FrontController`. Controller, servizi, entity, viste, middleware e configurazione sono separati nella cartella `src`.
 
 ## Tecnologie
 
@@ -32,22 +32,20 @@ WEB_APP/
 |   |-- Foundation/
 |   |-- helpers/
 |   |-- middleware/
-|   |-- services/
-|   |-- templates/
-|   `-- views/
-|       |-- admin/
-|       |-- annunci/
-|       |-- auth/
-|       |-- business/
-|       |-- carrello/
-|       |-- errors/
-|       |-- feedback/
-|       |-- layout/
-|       |-- pagamenti/
-|       |-- partials/
-|       |-- segnalazioni/
-|       |-- utenti/
-|       `-- wishlist/
+|   `-- services/
+|-- templates/
+|   |-- admin/
+|   |-- annunci/
+|   |-- auth/
+|   |-- business/
+|   |-- carrello/
+|   |-- errors/
+|   |-- feedback/
+|   |-- layouts/
+|   |-- pagamenti/
+|   |-- segnalazioni/
+|   |-- utenti/
+|   `-- wishlist/
 |-- database/
 |   |-- nerdvault.sql
 |   `-- README.md
@@ -64,15 +62,14 @@ WEB_APP/
 ## Cartelle principali
 
 - `public/`: contiene il punto di ingresso dell'applicazione. Apache deve servire questa cartella, non la root del progetto.
-- `public/css/`: contiene gli stylesheet dell'interfaccia, separati dalle view PHP e dai template Smarty.
+- `public/css/`: contiene gli stylesheet dell'interfaccia, separati dai template Smarty.
 - `public/uploads/`: contiene i file caricati dagli utenti, per esempio le immagini degli annunci.
 - `src/config/`: contiene la configurazione dell'applicazione, inclusa la connessione al database.
 - `src/controllers/`: riceve le richieste dal router e coordina servizi e viste.
 - `src/Entity/`: contiene le classi Entity con proprieta private, getter, setter e metodi di utilita.
 - `src/Foundation/`: contiene classi infrastrutturali e mapper tabella/Entity. La persistenza segue la logica `FDataBase` + `FPersistentManager` + classi `F...`, mentre `SmartyView` gestisce il rendering Smarty.
 - `src/services/`: contiene la logica applicativa e le query al database tramite PDO.
-- `src/templates/`: contiene i template Smarty introdotti gradualmente.
-- `src/views/`: contiene le pagine PHP ancora renderizzate direttamente dall'applicazione.
+- `templates/`: contiene i template Smarty usati per renderizzare le pagine.
 - `src/middleware/`: contiene i controlli di accesso per utenti autenticati, admin, business e guest.
 - `src/helpers/`: contiene funzioni comuni, come l'escape HTML.
 - `database/`: contiene lo schema SQL completo per creare il database.
@@ -84,6 +81,7 @@ Il progetto usa Composer anche per caricare le classi interne.
 
 Namespace principali:
 
+- `App\Core\` -> `src/Core/`
 - `App\Controllers\` -> `src/controllers/`
 - `App\Services\` -> `src/services/`
 - `App\Entity\` -> `src/Entity/`
@@ -242,13 +240,13 @@ http://localhost/WEB_APP/public/
 
 ## Smarty
 
-Smarty e' stato introdotto in modo graduale nella parte View:
+Smarty gestisce la parte View:
 
 - `src/Foundation/SmartyView.php` configura Smarty;
-- `src/templates/` contiene i nuovi template `.tpl`;
-- `src/views/` resta disponibile per le pagine PHP non ancora convertite.
+- `templates/` contiene i template `.tpl`;
+- i controller renderizzano le pagine tramite `BaseController::view()`.
 
-La prima pagina convertita e' il login: `UtenteController` renderizza `src/templates/utenti/login.tpl` tramite `SmartyView`.
+Per esempio, `UtenteController` renderizza `templates/utenti/login.tpl` tramite `SmartyView`.
 
 ## Routing
 
@@ -261,28 +259,32 @@ public/index.php
 Questo file avvia la sessione, carica Composer, apre la connessione al database e delega tutto a:
 
 ```text
-src/controllers/FrontController.php
+src/Core/FrontController.php
 ```
 
-La classe `App\Controllers\FrontController` normalizza la rotta e contiene lo `switch` principale dell'applicazione.
+La classe `App\Core\FrontController` normalizza la richiesta, rimuove eventuali prefissi locali come `/WEB_APP/public` e risolve il formato:
 
-Le rotte vengono lette da:
+```text
+/controller/action/parametri
+```
 
-- query string: `index.php?route=annunci`
-- campi hidden nei form POST: `<input name="route" value="...">`
-- `PATH_INFO`, se configurato da Apache
+Le rotte vengono lette dal percorso dell'URL, ad esempio `/annuncio/show/1`.
+Apache inoltra le richieste a `public/index.php` tramite `public/.htaccess`;
+query string e campi POST restano disponibili solo per filtri e dati dei form,
+non per scegliere la route.
 
 Esempi:
 
 ```text
-index.php?route=home
-index.php?route=annunci
-index.php?route=annuncio&id=1
-index.php?route=login
-index.php?route=register
-index.php?route=carrello
-index.php?route=wishlist
-index.php?route=admin
+/
+/home/index
+/annuncio/list
+/annuncio/show/1
+/auth/login
+/auth/logout
+/utente/profilo
+/annuncio/show/1
+/annuncio/create
 ```
 
 ## Flusso MVC
@@ -292,7 +294,7 @@ Il flusso principale dell'applicazione e':
 ```text
 Browser
   -> public/index.php
-  -> App\Controllers\FrontController
+  -> App\Core\FrontController
   -> middleware, se richiesto
   -> controller
   -> service
@@ -313,7 +315,7 @@ public/index.php
   -> AnnuncioService::getAnnunciAttiviEntity()
   -> FPersistentManager::annunciAttivi()
   -> FAnnuncio::attivi()
-  -> src/views/annunci/lista.php
+  -> templates/annunci/lista.tpl
 ```
 
 La stessa logica e' stata estesa ai flussi principali di utenti, indirizzi, wishlist, carrello, feedback, segnalazioni, moderazione e pagamenti. Le transazioni di acquisto mantengono ancora alcune query dedicate con `FOR UPDATE` dentro `PaymentService`, per controllare in modo atomico lo stato dell'annuncio durante il pagamento.

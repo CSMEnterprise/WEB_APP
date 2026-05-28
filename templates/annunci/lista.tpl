@@ -5,7 +5,7 @@
     <h1 class="u-style-008">{if $q != '' || $idCategoria > 0}Risultati ricerca{else}Annunci disponibili{/if}</h1>
 
     {if $isLogged && !$isAdmin}
-        <a class="btn" href="index.php?route=annuncio-create">Crea annuncio</a>
+        <a class="btn" href="/annuncio/create">Crea annuncio</a>
     {/if}
 </div>
 

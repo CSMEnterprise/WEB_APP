@@ -9,7 +9,7 @@ function requireAuth(): void
     }
 
     if (empty($_SESSION['user_id'])) {
-        header('Location: index.php?route=login');
+        header('Location: /auth/login');
         exit;
     }
 }

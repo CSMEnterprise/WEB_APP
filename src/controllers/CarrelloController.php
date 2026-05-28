@@ -67,7 +67,7 @@ class CarrelloController extends BaseController
         try {
             $this->aggiungiAnnuncioAlCarrello($idUtente, $idAnnuncio);
 
-            $back = $_SERVER['HTTP_REFERER'] ?? 'index.php?route=annunci';
+            $back = $_SERVER['HTTP_REFERER'] ?? '/annuncio/list';
             header('Location: ' . $back);
             exit;
         } catch (Exception $e) {
@@ -88,7 +88,7 @@ class CarrelloController extends BaseController
             $idCarrello = FPersistentManager::getOrCreateCartIdByUser($idUtente);
             FPersistentManager::removeElementoCarrello($idCarrello, $idAnnuncio);
 
-            header('Location: index.php?route=carrello');
+            header('Location: /carrello/list');
             exit;
         } catch (Exception $e) {
             $this->renderError($e->getMessage(), 400);
@@ -107,7 +107,7 @@ class CarrelloController extends BaseController
             $idCarrello = FPersistentManager::getOrCreateCartIdByUser($idUtente);
             FPersistentManager::clearCart($idCarrello);
 
-            header('Location: index.php?route=carrello');
+            header('Location: /carrello/list');
             exit;
         } catch (Exception $e) {
             $this->renderError($e->getMessage(), 400);

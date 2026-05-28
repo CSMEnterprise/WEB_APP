@@ -12,10 +12,8 @@
         <div class="alert alert-error">{$errore}</div>
     {/if}
 
-    <form method="post" action="index.php">
-        <input type="hidden" name="route" value="register-user-post">
-
-        <div class="grid-2 u-style-114">
+    <form method="post" action="/auth/register-user">
+                <div class="grid-2 u-style-114">
             <div class="u-style-115">
                 <h3 class="u-style-116">Profilo utente</h3>
 
@@ -52,8 +50,8 @@
         <div class="u-style-120">
             <button class="btn u-style-121" type="submit">Crea account utente</button>
             <p class="u-style-122">
-                Vuoi scegliere un altro tipo di account? <a class="u-style-102" href="index.php?route=register">Scelta registrazione</a><br>
-                Hai gia un account? <a class="u-style-102" href="index.php?route=login">Accedi qui</a>
+                Vuoi scegliere un altro tipo di account? <a class="u-style-102" href="/auth/register">Scelta registrazione</a><br>
+                Hai gia un account? <a class="u-style-102" href="/auth/login">Accedi qui</a>
             </p>
         </div>
     </form>

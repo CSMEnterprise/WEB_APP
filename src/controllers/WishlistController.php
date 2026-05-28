@@ -53,7 +53,7 @@ class WishlistController extends BaseController
         try {
             $this->aggiungiAnnuncioAllaWishlist($idUtente, $idAnnuncio);
 
-            header('Location: index.php?route=wishlist');
+            header('Location: /wishlist/list');
             exit;
         } catch (Exception $e) {
             $this->renderError($e->getMessage(), 400);
@@ -72,7 +72,7 @@ class WishlistController extends BaseController
 
             FPersistentManager::removePreferito($idUtente, $idAnnuncio);
 
-            header('Location: index.php?route=wishlist');
+            header('Location: /wishlist/list');
             exit;
         } catch (Exception $e) {
             $this->renderError($e->getMessage(), 400);
@@ -95,7 +95,7 @@ class WishlistController extends BaseController
                 $this->aggiungiAnnuncioAllaWishlist($idUtente, $idAnnuncio);
             }
 
-            $redirect = $_SERVER['HTTP_REFERER'] ?? 'index.php?route=annunci';
+            $redirect = $_SERVER['HTTP_REFERER'] ?? '/annuncio/list';
             header('Location: ' . $redirect);
             exit;
         } catch (Exception $e) {
@@ -114,7 +114,7 @@ class WishlistController extends BaseController
 
             FPersistentManager::clearPreferitiForUser($idUtente);
 
-            header('Location: index.php?route=wishlist');
+            header('Location: /wishlist/list');
             exit;
         } catch (Exception $e) {
             $this->renderError($e->getMessage(), 400);

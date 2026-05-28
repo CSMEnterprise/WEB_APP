@@ -4,10 +4,10 @@
 {* Impostazione route e label in base alla modalità create/edit *}
 {assign var=isEdit value=$isEdit|default:false}
 {if $isEdit}
-    {assign var=formRoute value='annuncio-update'}
+    {assign var=formRoute value='annuncio/update'}
     {assign var=submitLabel value='Salva modifiche'}
 {else}
-    {assign var=formRoute value='annuncio-store'}
+    {assign var=formRoute value='annuncio/store'}
     {assign var=submitLabel value='Pubblica'}
 {/if}
 {assign var=titoloValue value=$post.titolo|default:$annuncio.titolo|default:''}
@@ -23,9 +23,8 @@
         <div class="alert alert-error">{$errore}</div>
     {/if}
 
-    <form method="post" action="index.php" enctype="multipart/form-data">
-        <input type="hidden" name="route" value="{$formRoute}">
-        {if $isEdit}
+    <form method="post" action="/{$formRoute}" enctype="multipart/form-data">
+                {if $isEdit}
             <input type="hidden" name="id_annuncio" value="{$annuncio.id_annuncio|default:''}">
         {/if}
 
@@ -100,10 +99,9 @@
             <form
                 id="delete-image-{$immagine.id_immagine|default:''}"
                 method="post"
-                action="index.php"
+                action="/annuncio/image-delete"
                 class="u-style-013">
-                <input type="hidden" name="route" value="annuncio-image-delete">
-                <input type="hidden" name="id_immagine" value="{$immagine.id_immagine|default:''}">
+                                <input type="hidden" name="id_immagine" value="{$immagine.id_immagine|default:''}">
             </form>
         {/foreach}
     {/if}

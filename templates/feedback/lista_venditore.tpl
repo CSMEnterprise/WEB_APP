@@ -21,7 +21,7 @@
                 <span class="u-style-021">{include file="components/stars.tpl" value=$item.valutazione|default:0}</span>
             </div>
             <p class="muted u-style-004">
-                Annuncio: <a href="index.php?route=annuncio&id={$item.annuncio_id|default:0}">{$item.annuncio_titolo|default:''}</a>
+                Annuncio: <a href="/annuncio/show/{$item.annuncio_id|default:0}">{$item.annuncio_titolo|default:''}</a>
             </p>
             {if !empty($item.commento)}<p>{$item.commento}</p>{/if}
             <p class="muted u-style-022">{$item.data_feedback|default:''}</p>

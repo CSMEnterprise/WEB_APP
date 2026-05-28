@@ -28,7 +28,7 @@ function denyAdmin(): void
 {
     if (!empty($_SESSION['is_admin'])) {
         http_response_code(403);
-        require __DIR__ . '/../views/errors/400.php';
+        echo 'Accesso negato: gli amministratori non possono usare questa funzione.';
         exit;
     }
 }

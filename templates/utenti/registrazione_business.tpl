@@ -12,9 +12,8 @@
         <div class="alert alert-error">{$errore}</div>
     {/if}
 
-    <form method="post" action="index.php">
-        <input type="hidden" name="route" value="register-business-post">
-        <input type="hidden" name="_business_registration" value="1">
+    <form method="post" action="/auth/register-business">
+                <input type="hidden" name="_business_registration" value="1">
 
         <div class="grid-2 u-style-114">
             <div class="u-style-115">
@@ -79,8 +78,8 @@
         <div class="u-style-120">
             <button class="btn u-style-121" type="submit">Crea account business</button>
             <p class="u-style-122">
-                Vuoi scegliere un altro tipo di account? <a class="u-style-107" href="index.php?route=register">Scelta registrazione</a><br>
-                Hai gia un account? <a class="u-style-107" href="index.php?route=login">Accedi qui</a>
+                Vuoi scegliere un altro tipo di account? <a class="u-style-107" href="/auth/register">Scelta registrazione</a><br>
+                Hai gia un account? <a class="u-style-107" href="/auth/login">Accedi qui</a>
             </p>
         </div>
     </form>

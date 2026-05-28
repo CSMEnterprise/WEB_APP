@@ -1,6 +1,6 @@
 <?php
 
-use App\Controllers\FrontController;
+use App\Core\FrontController;
 use App\Foundation\FDataBase;
 
 session_start();

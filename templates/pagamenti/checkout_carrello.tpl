@@ -34,10 +34,8 @@
         <h2 class="u-style-038">Indirizzo di spedizione</h2>
 
         {if !empty($indirizziUtente)}
-            <form method="get" action="index.php" class="cart-summary-actions">
-                <input type="hidden" name="route" value="paypal-placeholder-carrello">
-
-                {foreach $indirizziUtente as $indirizzo}
+            <form method="post" action="/pagamento/paypal-carrello" class="cart-summary-actions">
+                                {foreach $indirizziUtente as $indirizzo}
                     <label class="u-style-039">
                         <input
                             type="radio"
@@ -57,7 +55,7 @@
             </form>
         {else}
             <div class="alert alert-error">Aggiungi un indirizzo di spedizione prima di procedere al pagamento.</div>
-            <a class="btn" href="index.php?route=profilo">Vai al profilo</a>
+            <a class="btn" href="/utente/profilo">Vai al profilo</a>
         {/if}
     </aside>
 </section>

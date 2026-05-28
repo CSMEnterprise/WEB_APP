@@ -36,7 +36,7 @@
             </div>
         </div>
 
-        <form method="post" action="index.php?route=pagamento-conferma-carrello" class="paypal-actions">
+        <form method="post" action="/pagamento/conferma-carrello" class="paypal-actions">
             {foreach $items as $item}
                 <input type="hidden" name="id_annunci[]" value="{$item.id_annuncio|default:0}">
             {/foreach}
@@ -46,7 +46,7 @@
             <button type="submit" class="btn paypal-confirm-btn">
                 Conferma pagamento - &euro; {$totale|default:0|number_format:2:",":"."}
             </button>
-            <a class="btn btn-secondary" href="index.php?route=paypal-cancel">Annulla</a>
+            <a class="btn btn-secondary" href="/pagamento/cancel">Annulla</a>
         </form>
     </div>
 </div>

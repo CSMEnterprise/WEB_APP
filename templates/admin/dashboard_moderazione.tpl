@@ -5,12 +5,11 @@
 
 <section class="card">
     <h2>Ricerca e filtri</h2>
-    <form method="get" action="index.php">
-        <input type="hidden" name="route" value="admin-dashboard">
-        <label for="admin">Admin</label>
+    <form method="get" action="/admin/dashboard">
+                <label for="admin">Admin</label>
         <input type="search" id="admin" name="admin" placeholder="Cerca per email o ID admin" value="{$filters.admin|default:''}">
         <button class="btn" type="submit">Filtra</button>
-        <a class="btn btn-secondary" href="index.php?route=admin-dashboard">Reset</a>
+        <a class="btn btn-secondary" href="/admin/dashboard">Reset</a>
     </form>
 </section>
 

@@ -10,11 +10,11 @@
             <p>Sono stati completati {$numeroPagamenti} pagamenti.</p>
         {/if}
         <p>Vuoi lasciare un feedback al venditore?</p>
-        <a class="btn" href="index.php?route=feedback-create&id_pagamento={$idPagamento|default:0}">Lascia un feedback</a>
-        <a class="btn btn-secondary" href="index.php?route=home">Torna agli annunci</a>
+        <a class="btn" href="/feedback/create/{$idPagamento|default:0}">Lascia un feedback</a>
+        <a class="btn btn-secondary" href="/home/index">Torna agli annunci</a>
     {else}
         <div class="alert alert-error">Pagamento non completato.</div>
-        <a class="btn" href="index.php?route=home">Torna agli annunci</a>
+        <a class="btn" href="/home/index">Torna agli annunci</a>
     {/if}
 </div>
 

@@ -6,7 +6,7 @@
     <div class="alert alert-error">
         {$errore|default:'Richiesta non valida.'}
     </div>
-    <p><a class="btn" href="index.php?route=home">Torna alla home</a></p>
+    <p><a class="btn" href="/home/index">Torna alla home</a></p>
 </section>
 
 {include file="layouts/footer.tpl"}

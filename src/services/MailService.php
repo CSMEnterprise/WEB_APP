@@ -69,7 +69,7 @@ class MailService
 
     public function inviaVerificaEmail(string $destinatario, string $nome, string $token): void
     {
-        $link = rtrim($this->config['base_url'], '/') . '/index.php?route=verifica-email&token=' . urlencode($token);
+        $link = rtrim($this->config['base_url'], '/') . '/auth/verifica-email/' . urlencode($token);
 
         // ── MODALITÀ DEBUG: mostra il link a schermo, non invia email ──
         if (!empty($this->config['debug'])) {
@@ -95,7 +95,7 @@ class MailService
 
     public function inviaResetPassword(string $destinatario, string $nome, string $token): void
     {
-        $link = rtrim($this->config['base_url'], '/') . '/index.php?route=reset-password&token=' . urlencode($token);
+        $link = rtrim($this->config['base_url'], '/') . '/auth/reset-password/' . urlencode($token);
 
         // ── MODALITÀ DEBUG: mostra il link a schermo, non invia email ──
         if (!empty($this->config['debug'])) {

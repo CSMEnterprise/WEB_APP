@@ -55,13 +55,13 @@ class UtenteController extends BaseController
                 $_SESSION['is_admin'] = true;
                 $_SESSION['propic']   = null;
                 $_SESSION['livello_sicurezza'] = (int) ($utente['livello_sicurezza'] ?? 1);
-                header('Location: index.php?route=admin');
+                header('Location: /admin/index');
             } else {
                 $_SESSION['user_id']     = (int) $utente['id_utente'];
                 $_SESSION['username']    = $utente['username'];
                 $_SESSION['propic']      = $utente['propic'] ?? null;
                 $_SESSION['is_business'] = !empty($utente['_is_business']);
-                header('Location: index.php?route=profilo');
+                header('Location: /utente/profilo');
             }
             exit;
         } catch (Exception $e) {
@@ -105,7 +105,7 @@ class UtenteController extends BaseController
                 // Ignora errori mail: l'utente potrà richiedere il reinvio
             }
 
-            header('Location: index.php?route=verifica-email-attesa&email=' . urlencode($this->lastRegistrationEmail));
+            header('Location: /auth/verifica-email-attesa?email=' . urlencode($this->lastRegistrationEmail));
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
@@ -161,7 +161,7 @@ class UtenteController extends BaseController
                 // Ignora errori mail
             }
 
-            header('Location: index.php?route=verifica-email-attesa&email=' . urlencode($this->lastRegistrationEmail));
+            header('Location: /auth/verifica-email-attesa?email=' . urlencode($this->lastRegistrationEmail));
             exit;
         } catch (Exception $e) {
             if ($this->db->inTransaction()) {
@@ -212,7 +212,7 @@ class UtenteController extends BaseController
     public function logout(): void
     {
         session_destroy();
-        header('Location: index.php?route=home');
+        header('Location: /home/index');
         exit;
     }
 
@@ -224,7 +224,7 @@ class UtenteController extends BaseController
         try {
             $url = $this->updatePropic($idUtente, $files['propic'] ?? []);
             $_SESSION['propic'] = $url;
-            header('Location: index.php?route=profilo');
+            header('Location: /utente/profilo');
             exit;
         } catch (Exception $e) {
             $data = $this->loadProfiloData($idUtente);
@@ -240,7 +240,7 @@ class UtenteController extends BaseController
     {
         try {
             $this->updateUserProfile($idUtente, $data);
-            header('Location: index.php?route=profilo&profilo_aggiornato=1');
+            header('Location: /utente/profilo?profilo_aggiornato=1');
             exit;
         } catch (Exception $e) {
             $data = $this->loadProfiloData($idUtente);
@@ -262,7 +262,7 @@ class UtenteController extends BaseController
                 $data['nuova_password']    ?? '',
                 $data['password_confirm']  ?? ''
             );
-            header('Location: index.php?route=profilo&password_aggiornata=1');
+            header('Location: /utente/profilo?password_aggiornata=1');
             exit;
         } catch (Exception $e) {
             $data = $this->loadProfiloData($idUtente);
@@ -280,7 +280,7 @@ class UtenteController extends BaseController
         try {
             $this->createShippingAddress($idUtente, $data);
 
-            header('Location: index.php?route=profilo');
+            header('Location: /utente/profilo');
             exit;
         } catch (Exception $e) {
             $data = $this->loadProfiloData($idUtente);
@@ -298,7 +298,7 @@ class UtenteController extends BaseController
         $editingIndirizzo = $this->entityToArray($editingIndirizzoEntity);
 
         if (!$editingIndirizzoEntity) {
-            header('Location: index.php?route=profilo');
+            header('Location: /utente/profilo');
             exit;
         }
 
@@ -315,7 +315,7 @@ class UtenteController extends BaseController
         $idIndirizzo = (int) ($data['id_indirizzo'] ?? 0);
         try {
             $this->updateAddress($idIndirizzo, $idUtente, $data);
-            header('Location: index.php?route=profilo');
+            header('Location: /utente/profilo');
             exit;
         } catch (Exception $e) {
             $data = $this->loadProfiloData($idUtente);
@@ -335,7 +335,7 @@ class UtenteController extends BaseController
         } catch (Exception $e) {
             // Ignora errori silenziosi, torna al profilo comunque
         }
-        header('Location: index.php?route=profilo');
+        header('Location: /utente/profilo');
         exit;
     }
 
@@ -346,7 +346,7 @@ class UtenteController extends BaseController
     {
         try {
             $this->setDefaultAddress($idUtente, $idIndirizzo);
-            header('Location: index.php?route=profilo');
+            header('Location: /utente/profilo');
             exit;
         } catch (Exception $e) {
             $data = $this->loadProfiloData($idUtente);
@@ -457,7 +457,7 @@ class UtenteController extends BaseController
         $token = $data['token'] ?? '';
         try {
             $this->resetUserPassword($token, $data['password'] ?? '', $data['password_confirm'] ?? '');
-            header('Location: index.php?route=login&reset=ok');
+            header('Location: /auth/login?reset=ok');
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
@@ -907,7 +907,7 @@ class UtenteController extends BaseController
         }
 
         $dir = __DIR__ . '/../../public/uploads/propic/';
-        $publicDir = 'uploads/propic/';
+        $publicDir = '/uploads/propic/';
 
         if (!is_dir($dir) && !mkdir($dir, 0775, true)) {
             throw new ServiceException('Impossibile creare la cartella per le foto profilo.');

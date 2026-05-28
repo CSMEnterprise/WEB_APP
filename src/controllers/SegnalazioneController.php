@@ -25,9 +25,14 @@ class SegnalazioneController extends BaseController
     /**
      * Mostra il form di apertura segnalazione.
      */
-    public function form(): void
+    public function form(int $idAnnuncio = 0): void
     {
-        $this->view('segnalazioni/form.tpl', [], 'Nuova segnalazione');
+        $get = $_GET;
+        if ($idAnnuncio > 0) {
+            $get['id_annuncio'] = $idAnnuncio;
+        }
+
+        $this->view('segnalazioni/form.tpl', ['get' => $get], 'Nuova segnalazione');
     }
 
     /**
@@ -38,7 +43,7 @@ class SegnalazioneController extends BaseController
         try {
             $this->createSegnalazione($data, $idSegnalante);
 
-            header('Location: index.php?route=annunci');
+            header('Location: /annuncio/list');
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
@@ -67,7 +72,7 @@ class SegnalazioneController extends BaseController
         FPersistentManager::closeSegnalazione($idSegnalazione, $idAdmin);
         $this->registerAdminAction($idAdmin, 'Segnalazione chiusa #' . $idSegnalazione);
 
-        header('Location: index.php?route=admin-segnalazioni');
+        header('Location: /admin/segnalazioni');
         exit;
     }
 
@@ -82,7 +87,7 @@ class SegnalazioneController extends BaseController
         $this->registerAdminAction($idAdmin, 'Segnalazione eliminata #' . $idSegnalazione);
         FPersistentManager::deleteSegnalazione($idSegnalazione);
 
-        header('Location: index.php?route=admin-segnalazioni');
+        header('Location: /admin/segnalazioni');
         exit;
     }
 

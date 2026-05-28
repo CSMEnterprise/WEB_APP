@@ -50,7 +50,7 @@
         </section>
 
         <div class="profile-actions">
-            <a class="btn btn-secondary" href="index.php?route=feedback-venditore&id={$venditore.id_utente|default:0}">Vedi feedback</a>
+            <a class="btn btn-secondary" href="/feedback/venditore/{$venditore.id_utente|default:0}">Vedi feedback</a>
         </div>
 
         <section class="profile-annunci">

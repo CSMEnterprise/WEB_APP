@@ -34,7 +34,7 @@ class PagamentoController extends BaseController
     {
         try {
             $pagamento = $this->preparePayment($idUtente, $idAnnuncio);
-            $annuncio = $pagamento['annuncio']->toArray();
+            $annuncio = $this->entityToArray($pagamento['annuncio']);
             $totale = $pagamento['totale'];
             $indirizziUtente = $this->entitiesToArrays(FPersistentManager::indirizziByUser($idUtente));
 
@@ -51,7 +51,7 @@ class PagamentoController extends BaseController
     {
         try {
             $pagamento = $this->preparePayment($idUtente, $idAnnuncio);
-            $annuncio = $pagamento['annuncio']->toArray();
+            $annuncio = $this->entityToArray($pagamento['annuncio']);
             $totale = $pagamento['totale'];
             $indirizzoSpedizioneEntity = FPersistentManager::indirizzoForUser($idIndirizzo, $idUtente);
             $indirizzoSpedizione = $this->entityToArray($indirizzoSpedizioneEntity);
@@ -77,10 +77,10 @@ class PagamentoController extends BaseController
         try {
             $idPagamento = $this->confirmPayment($data, $idUtente);
 
-            header('Location: index.php?route=pagamento-esito&status=ok&id=' . $idPagamento);
+            header('Location: /pagamento/esito?status=ok&id=' . $idPagamento);
             exit;
         } catch (Exception $e) {
-            header('Location: index.php?route=pagamento-esito&status=errore');
+            header('Location: /pagamento/esito?status=errore');
             exit;
         }
     }
@@ -94,7 +94,7 @@ class PagamentoController extends BaseController
             $items = $this->getCarrelloAcquistabile($idUtente);
 
             if (empty($items)) {
-                header('Location: index.php?route=carrello');
+                header('Location: /carrello/list');
                 exit;
             }
 
@@ -116,7 +116,7 @@ class PagamentoController extends BaseController
             $items = $this->getCarrelloAcquistabile($idUtente);
 
             if (empty($items)) {
-                header('Location: index.php?route=carrello');
+                header('Location: /carrello/list');
                 exit;
             }
 
@@ -144,10 +144,10 @@ class PagamentoController extends BaseController
         try {
             $idPagamenti = $this->confirmCartPayment($data, $idUtente);
 
-            header('Location: index.php?route=pagamento-esito&status=ok&id=' . end($idPagamenti) . '&n=' . count($idPagamenti));
+            header('Location: /pagamento/esito?status=ok&id=' . end($idPagamenti) . '&n=' . count($idPagamenti));
             exit;
         } catch (Exception $e) {
-            header('Location: index.php?route=pagamento-esito&status=errore');
+            header('Location: /pagamento/esito?status=errore');
             exit;
         }
     }
@@ -157,7 +157,7 @@ class PagamentoController extends BaseController
      */
     public function paypalCancel(): void
     {
-        header('Location: index.php?route=carrello&paypal=cancel');
+        header('Location: /carrello/list?paypal=cancel');
         exit;
     }
 

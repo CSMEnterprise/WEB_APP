@@ -12,12 +12,12 @@
         {if !empty($errore)}
             <div class="alert alert-error">{$errore}</div>
             {if ($idUtente|default:0) == 0}
-                <p class="u-style-125"><a href="index.php?route=recupero-password" class="btn btn-secondary">Richiedi nuovo link</a></p>
+                <p class="u-style-125"><a href="/auth/recupero-password" class="btn btn-secondary">Richiedi nuovo link</a></p>
             {/if}
         {/if}
 
         {if ($idUtente|default:0) > 0}
-            <form method="post" action="index.php?route=reset-password-post">
+            <form method="post" action="/auth/reset-password">
                 <input type="hidden" name="token" value="{$token|default:''}">
 
                 <label for="newPassword">Nuova password</label>

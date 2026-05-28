@@ -36,7 +36,7 @@ class FeedbackController extends BaseController
         }
 
         if (FPersistentManager::feedbackExists($idPagamento, $idAutore)) {
-            header('Location: index.php?route=profilo');
+            header('Location: /utente/profilo');
             exit;
         }
 
@@ -51,7 +51,7 @@ class FeedbackController extends BaseController
         try {
             $this->createFeedback($data, $idAutore);
 
-            header('Location: index.php?route=profilo');
+            header('Location: /utente/profilo');
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();

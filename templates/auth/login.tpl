@@ -26,7 +26,7 @@
                 <div class="alert alert-error u-style-057">
                     <strong>Email non verificata.</strong><br>
                     Controlla la tua casella oppure
-                    <a href="index.php?route=verifica-email-attesa&email={$emailNonVerificataUrl nofilter}"
+                    <a href="/auth/verifica-email-attesa?email={$emailNonVerificataUrl nofilter}"
                        class="u-style-140">richiedi un nuovo link</a>.
                 </div>
             {else}
@@ -34,10 +34,8 @@
             {/if}
         {/if}
 
-        <form class="u-style-059" method="post" action="index.php">
-            <input type="hidden" name="route" value="login-post">
-
-            <div class="u-style-060">
+        <form class="u-style-059" method="post" action="/auth/login">
+                        <div class="u-style-060">
                 <label class="u-style-061" for="email">Email</label>
                 <input class="u-style-062" type="email" id="email" name="email" required>
             </div>
@@ -45,7 +43,7 @@
             <div class="u-style-002">
                 <div class="u-style-063">
                     <label class="u-style-064" for="loginPassword">Password</label>
-                    <a class="u-style-065" href="index.php?route=recupero-password">Dimenticata?</a>
+                    <a class="u-style-065" href="/auth/recupero-password">Dimenticata?</a>
                 </div>
                 <div class="u-style-066">
                     <input class="u-style-067" type="password" id="loginPassword" name="password" required>
@@ -59,7 +57,7 @@
         </form>
 
         <div class="u-style-070">
-            <p class="u-style-071">Nuovo esploratore? <a class="u-style-072" href="index.php?route=register">Crea un account</a></p>
+            <p class="u-style-071">Nuovo esploratore? <a class="u-style-072" href="/auth/register">Crea un account</a></p>
         </div>
     </div>
 </div>

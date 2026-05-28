@@ -53,7 +53,7 @@ class BusinessController extends BaseController
         try {
             $this->createBusinessAccount($data, $idUtente);
 
-            header('Location: index.php?route=business');
+            header('Location: /business/dashboard');
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
@@ -69,14 +69,14 @@ class BusinessController extends BaseController
         $businessEntity = FPersistentManager::businessByUser($idUtente);
 
         if (!$businessEntity) {
-            header('Location: index.php?route=business');
+            header('Location: /business/dashboard');
             exit;
         }
 
         try {
             $this->updateBusinessAddress((int) ($businessEntity->getIdAccBusiness() ?? 0), $data);
 
-            header('Location: index.php?route=business');
+            header('Location: /business/dashboard');
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();

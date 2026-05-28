@@ -19,7 +19,7 @@
                 <li class="u-style-101"><span class="u-style-102">&#10004;</span> Vota e ricevi feedback</li>
             </ul>
         </div>
-        <a class="btn u-style-103" href="index.php?route=register-user">Registrati come utente</a>
+        <a class="btn u-style-103" href="/auth/register-user">Registrati come utente</a>
     </article>
 
     <!-- Business -->
@@ -35,12 +35,12 @@
                 <li class="u-style-101"><span class="u-style-107">&#10004;</span> Vendita senza carrello e wishlist</li>
             </ul>
         </div>
-        <a class="btn btn-gold u-style-103" href="index.php?route=register-business">Registrati come business</a>
+        <a class="btn btn-gold u-style-103" href="/auth/register-business">Registrati come business</a>
     </article>
 </div>
 
 <div class="u-style-108">
-    <p>Hai gia un account? <a class="u-style-109" href="index.php?route=login">Accedi qui</a></p>
+    <p>Hai gia un account? <a class="u-style-109" href="/auth/login">Accedi qui</a></p>
 </div>
 
 {include file="layouts/footer.tpl"}

@@ -5,7 +5,7 @@ namespace App\Middleware;
 function requireGuest(): void
 {
     if (isLoggedIn()) {
-        header('Location: index.php?route=profilo');
+        header('Location: /utente/profilo');
         exit;
     }
 }

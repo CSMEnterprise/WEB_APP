@@ -5,10 +5,8 @@
 
 <section class="card">
     <h2>Filtri</h2>
-    <form method="get" action="index.php">
-        <input type="hidden" name="route" value="admin-segnalazioni">
-
-        <label for="oggetto">Oggetto segnalato</label>
+    <form method="get" action="/admin/segnalazioni">
+                <label for="oggetto">Oggetto segnalato</label>
         <select id="oggetto" name="oggetto">
             <option value="">Tutti</option>
             <option value="annuncio" {if ($filters.oggetto|default:'') == 'annuncio'}selected{/if}>Annuncio</option>
@@ -27,7 +25,7 @@
         </select>
 
         <button class="btn" type="submit">Filtra</button>
-        <a class="btn btn-secondary" href="index.php?route=admin-segnalazioni">Reset</a>
+        <a class="btn btn-secondary" href="/admin/segnalazioni">Reset</a>
     </form>
 </section>
 
@@ -46,7 +44,7 @@
                     <td>
                         {if !empty($s.id_annuncio)}
                             Annuncio: {if !empty($s.annuncio_titolo)}{$s.annuncio_titolo}{else}#{$s.id_annuncio}{/if}<br>
-                            <a class="btn btn-secondary u-admin-object-link" href="index.php?route=annuncio&id={$s.id_annuncio}" target="_blank">Vai all'oggetto</a>
+                            <a class="btn btn-secondary u-admin-object-link" href="/annuncio/show/{$s.id_annuncio}" target="_blank">Vai all'oggetto</a>
                         {elseif !empty($s.id_utente_segnalato)}
                             Utente: {if !empty($s.utente_segnalato_username)}{$s.utente_segnalato_username}{else}#{$s.id_utente_segnalato}{/if}
                         {elseif !empty($s.id_business)}
@@ -61,9 +59,9 @@
                     <td>{$s.data_segnalazione|default:''}</td>
                     <td>
                         {if ($s.stato|default:'') != 'Risolta'}
-                            <a class="btn" href="index.php?route=segnalazione-close&id={$s.id_segnalazione|default:0}">Chiudi</a>
+                            <a class="btn" href="/segnalazione/close/{$s.id_segnalazione|default:0}">Chiudi</a>
                         {/if}
-                        <a class="btn btn-danger" href="index.php?route=segnalazione-delete&id={$s.id_segnalazione|default:0}">Elimina</a>
+                        <a class="btn btn-danger" href="/segnalazione/delete/{$s.id_segnalazione|default:0}">Elimina</a>
                     </td>
                 </tr>
             {/foreach}

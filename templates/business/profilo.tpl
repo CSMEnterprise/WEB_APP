@@ -28,9 +28,8 @@
 
     <div id="indirizzoForm" class="card u-style-013">
         <h2>Indirizzo sede</h2>
-        <form method="post" action="index.php">
-            <input type="hidden" name="route" value="business-indirizzo-store">
-            <label for="via">Via / Corso / Piazza</label>
+        <form method="post" action="/business/indirizzo-store">
+                        <label for="via">Via / Corso / Piazza</label>
             <input type="text" id="via" name="via" value="{$business.via|default:''}" required>
 
             <label for="numero">Numero civico</label>
@@ -63,9 +62,9 @@
                         <td>{$annuncio.stato|default:''}</td>
                         <td>
                             {if ($annuncio.stato|default:'') == 'attivo'}
-                                <a class="btn btn-secondary" href="index.php?route=annuncio-edit&id={$annuncio.id_annuncio|default:0}">Modifica</a>
+                                <a class="btn btn-secondary" href="/annuncio/edit/{$annuncio.id_annuncio|default:0}">Modifica</a>
                             {/if}
-                            <a class="btn" href="index.php?route=annuncio&id={$annuncio.id_annuncio|default:0}">Dettagli</a>
+                            <a class="btn" href="/annuncio/show/{$annuncio.id_annuncio|default:0}">Dettagli</a>
                         </td>
                     </tr>
                 {/foreach}
@@ -75,7 +74,7 @@
         <p>Nessun annuncio pubblicato.</p>
     {/if}
 
-    <p><a class="btn" href="index.php?route=business-ordini">Ordini ricevuti</a></p>
+    <p><a class="btn" href="/business/ordini">Ordini ricevuti</a></p>
 
     <script>
     function toggleIndirizzoForm() {
@@ -86,7 +85,7 @@
 {else}
     <div class="card">
         <p>Non hai ancora un account business.</p>
-        <a class="btn" href="index.php?route=business-create">Crea account business</a>
+        <a class="btn" href="/business/create">Crea account business</a>
     </div>
 {/if}
 

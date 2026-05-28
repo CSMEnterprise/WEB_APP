@@ -28,14 +28,14 @@
 
         <details class="u-style-135">
             <summary class="u-style-136">Non hai ricevuto l'email?</summary>
-            <form class="u-style-137" method="post" action="index.php?route=reinvia-verifica">
+            <form class="u-style-137" method="post" action="/auth/reinvia-verifica">
                 <label for="reinvia_email">La tua email</label>
                 <input type="email" id="reinvia_email" name="email" value="{$email|default:''}" required placeholder="tuaemail@esempio.it">
                 <button type="submit" class="btn u-style-138">Reinvia email di verifica</button>
             </form>
         </details>
 
-        <p class="u-style-139"><a href="index.php?route=login" class="btn btn-secondary">Torna al login</a></p>
+        <p class="u-style-139"><a href="/auth/login" class="btn btn-secondary">Torna al login</a></p>
     </div>
 </div>
 

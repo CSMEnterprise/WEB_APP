@@ -72,7 +72,7 @@ class AdminController extends BaseController
         FPersistentManager::setUtenteBanState($idUtente, true);
         $this->registerAdminAction($idAdmin, 'Utente bannato', $idUtente);
 
-        header('Location: index.php?route=admin-utenti');
+        header('Location: /admin/utenti');
         exit;
     }
 
@@ -87,7 +87,7 @@ class AdminController extends BaseController
         FPersistentManager::setUtenteBanState($idUtente, false);
         $this->registerAdminAction($idAdmin, 'Utente sbloccato', $idUtente);
 
-        header('Location: index.php?route=admin-utenti');
+        header('Location: /admin/utenti');
         exit;
     }
 
@@ -105,7 +105,7 @@ class AdminController extends BaseController
             FPersistentManager::setAdminBanState($idAdminDaBannare, true);
             $this->registerAdminAction($idAdminCorrente, 'Admin bannato #' . $idAdminDaBannare);
 
-            header('Location: index.php?route=admin-utenti');
+            header('Location: /admin/utenti');
             exit;
         } catch (Exception $e) {
             http_response_code(403);
@@ -127,7 +127,7 @@ class AdminController extends BaseController
             FPersistentManager::setAdminBanState($idAdminDaSbloccare, false);
             $this->registerAdminAction($idAdminCorrente, 'Admin sbloccato #' . $idAdminDaSbloccare);
 
-            header('Location: index.php?route=admin-utenti');
+            header('Location: /admin/utenti');
             exit;
         } catch (Exception $e) {
             http_response_code(403);
@@ -160,7 +160,7 @@ class AdminController extends BaseController
         $this->registerAdminAction($idAdmin, 'Annuncio eliminato #' . $idAnnuncio);
         FPersistentManager::deleteAnnuncioByAdmin($idAnnuncio);
 
-        header('Location: index.php?route=annunci');
+        header('Location: /annuncio/list');
         exit;
     }
 }

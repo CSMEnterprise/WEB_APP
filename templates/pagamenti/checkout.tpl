@@ -10,7 +10,7 @@
             <p>{$annuncio.descrizione|default:''}</p>
             <p>
                 <strong>Venditore:</strong>
-                <a href="index.php?route=venditore&id={$annuncio.id_utente|default:0}">
+                <a href="/utente/venditore/{$annuncio.id_utente|default:0}">
                     <span class="seller-name-line">
                         {if !empty($annuncio.venditore_business_id)}
                             {$annuncio.venditore_nome_azienda|default:''} <span class="seller-pro-badge">PRO</span>
@@ -27,7 +27,7 @@
             <h2>Indirizzo di spedizione</h2>
 
             {if !empty($indirizziUtente)}
-                <form method="post" action="index.php?route=paypal-placeholder" class="cart-summary-actions">
+                <form method="post" action="/pagamento/paypal" class="cart-summary-actions">
                     <input type="hidden" name="id_annuncio" value="{$annuncio.id_annuncio|default:0}">
 
                     {foreach $indirizziUtente as $indirizzo}
@@ -50,7 +50,7 @@
                 </form>
             {else}
                 <div class="alert alert-error">Aggiungi un indirizzo di spedizione prima di procedere al pagamento.</div>
-                <a class="btn" href="index.php?route=profilo">Vai al profilo</a>
+                <a class="btn" href="/utente/profilo">Vai al profilo</a>
             {/if}
         </aside>
     </section>

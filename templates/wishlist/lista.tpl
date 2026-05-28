@@ -4,7 +4,7 @@
 <div class="u-style-007">
     <h1 class="u-style-008">Wishlist</h1>
     {if !empty($wishlist)}
-        <a class="btn btn-secondary" href="index.php?route=wishlist-clear">Svuota wishlist</a>
+        <a class="btn btn-secondary" href="/wishlist/clear">Svuota wishlist</a>
     {/if}
 </div>
 
@@ -17,7 +17,7 @@
 {else}
     <section class="card">
         <p>La tua wishlist e vuota.</p>
-        <a class="btn" href="index.php?route=home">Esplora annunci</a>
+        <a class="btn" href="/home/index">Esplora annunci</a>
     </section>
 {/if}
 

@@ -4,7 +4,7 @@
 <div class="u-style-007">
     <h1 class="u-style-008">Carrello</h1>
     {if !empty($carrello)}
-        <a class="btn btn-secondary" href="index.php?route=carrello-clear">Svuota carrello</a>
+        <a class="btn btn-secondary" href="/carrello/clear">Svuota carrello</a>
     {/if}
 </div>
 
@@ -26,8 +26,8 @@
                 {if !$isPurchasable}
                     <div class="alert alert-error">Questo prodotto non e acquistabile.</div>
                 {/if}
-                <a class="btn" href="index.php?route=annuncio&id={$item.id_annuncio|default:0}">Dettagli</a>
-                <a class="btn btn-secondary" href="index.php?route=carrello-remove&id={$item.id_annuncio|default:0}">Rimuovi</a>
+                <a class="btn" href="/annuncio/show/{$item.id_annuncio|default:0}">Dettagli</a>
+                <a class="btn btn-secondary" href="/carrello/remove/{$item.id_annuncio|default:0}">Rimuovi</a>
             </article>
         {/foreach}
     </div>
@@ -36,7 +36,7 @@
         <h2>Totale</h2>
         <p class="price">&euro; {$totale|default:0|number_format:2:",":"."}</p>
         {if !empty($purchasableItems)}
-            <a class="btn" href="index.php?route=checkout-carrello">Procedi al checkout</a>
+            <a class="btn" href="/pagamento/checkout-carrello">Procedi al checkout</a>
         {else}
             <p class="muted">Nessun articolo acquistabile nel carrello.</p>
         {/if}
@@ -44,7 +44,7 @@
 {else}
     <section class="card">
         <p>Il carrello e vuoto.</p>
-        <a class="btn" href="index.php?route=home">Esplora annunci</a>
+        <a class="btn" href="/home/index">Esplora annunci</a>
     </section>
 {/if}
 

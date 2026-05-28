@@ -12,7 +12,7 @@
         <div class="alert alert-error">{$errore}</div>
     {/if}
 
-    <form method="post" action="index.php?route=feedback-store">
+    <form method="post" action="/feedback/store">
         <input type="hidden" name="id_pagamento" value="{$idPagamento|default:$pagamento.id_pagamento|default:0}">
 
         <label>Valutazione</label>
@@ -31,7 +31,7 @@
         <textarea id="commento" name="commento" placeholder="Descrivi la tua esperienza...">{$post.commento|default:''}</textarea>
 
         <button class="btn" type="submit">Invia feedback</button>
-        <a class="btn btn-secondary" href="index.php?route=profilo">Annulla</a>
+        <a class="btn btn-secondary" href="/utente/profilo">Annulla</a>
     </form>
 </div>
 

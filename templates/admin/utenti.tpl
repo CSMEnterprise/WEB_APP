@@ -26,9 +26,9 @@
                                 {elseif ($admin.livello_sicurezza|default:1) != 1}
                                     <span class="muted">Non moderabile</span>
                                 {elseif !empty($admin.stato_ban)}
-                                    <a class="btn" href="index.php?route=admin-sblocca-admin&id={$admin.id_admin|default:0}">Sblocca</a>
+                                    <a class="btn" href="/admin/sblocca-admin/{$admin.id_admin|default:0}">Sblocca</a>
                                 {else}
-                                    <a class="btn btn-danger" href="index.php?route=admin-banna-admin&id={$admin.id_admin|default:0}">Banna</a>
+                                    <a class="btn btn-danger" href="/admin/banna-admin/{$admin.id_admin|default:0}">Banna</a>
                                 {/if}
                             </td>
                         </tr>
@@ -45,12 +45,11 @@
 
 <section class="card">
     <h3>Ricerca utenti registrati</h3>
-    <form method="get" action="index.php">
-        <input type="hidden" name="route" value="admin-utenti">
-        <label for="q_utente">Utente</label>
+    <form method="get" action="/admin/utenti">
+                <label for="q_utente">Utente</label>
         <input type="search" id="q_utente" name="q_utente" placeholder="Cerca per ID, username, email, nome o telefono" value="{$filters.q_utente|default:''}">
         <button class="btn" type="submit">Cerca</button>
-        <a class="btn btn-secondary" href="index.php?route=admin-utenti">Reset</a>
+        <a class="btn btn-secondary" href="/admin/utenti">Reset</a>
     </form>
 </section>
 
@@ -68,9 +67,9 @@
                     <td>{if !empty($utente.stato_ban)}Bannato{else}Attivo{/if}</td>
                     <td>
                         {if !empty($utente.stato_ban)}
-                            <a class="btn" href="index.php?route=admin-sblocca-utente&id={$utente.id_utente|default:0}">Sblocca</a>
+                            <a class="btn" href="/admin/sblocca-utente/{$utente.id_utente|default:0}">Sblocca</a>
                         {else}
-                            <a class="btn btn-danger" href="index.php?route=admin-banna-utente&id={$utente.id_utente|default:0}">Banna</a>
+                            <a class="btn btn-danger" href="/admin/banna-utente/{$utente.id_utente|default:0}">Banna</a>
                         {/if}
                     </td>
                 </tr>

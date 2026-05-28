@@ -21,7 +21,7 @@ abstract class BaseController
      */
     protected function entityToArray(?EBaseEntity $entity): ?array
     {
-        return $entity?->toArray();
+        return $entity ? $this->normalizePublicPaths($entity->toArray()) : null;
     }
 
     /**
@@ -30,9 +30,51 @@ abstract class BaseController
     protected function entitiesToArrays(array $entities): array
     {
         return array_map(
-            static fn($entity) => $entity instanceof EBaseEntity ? $entity->toArray() : (array) $entity,
+            fn($entity) => $this->normalizePublicPaths($entity instanceof EBaseEntity ? $entity->toArray() : (array) $entity),
             $entities
         );
+    }
+
+    /**
+     * Rende assoluti i path pubblici salvati nel DB, cosi funzionano anche con URL profondi.
+     */
+    protected function normalizePublicPaths(array $data): array
+    {
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $data[$key] = $this->normalizePublicPaths($value);
+                continue;
+            }
+
+            if (!is_string($value)) {
+                continue;
+            }
+
+            if (in_array($key, ['url', 'propic', 'immagine_principale'], true)) {
+                $data[$key] = $this->publicPath($value);
+            }
+        }
+
+        return $data;
+    }
+
+    protected function publicPath(string $path): string
+    {
+        $path = trim(str_replace('\\', '/', $path));
+
+        if ($path === ''
+            || str_starts_with($path, '/')
+            || preg_match('#^(https?:)?//#i', $path)
+            || str_starts_with($path, 'data:')
+        ) {
+            return $path;
+        }
+
+        if (str_starts_with($path, 'uploads/') || str_starts_with($path, 'assets/')) {
+            return '/' . $path;
+        }
+
+        return $path;
     }
 
     /**

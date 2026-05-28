@@ -18,7 +18,7 @@
                 <p><strong>Annuncio:</strong> {$annuncio.titolo|default:''}</p>
                 <p>
                     <strong>Venditore:</strong>
-                    <a href="index.php?route=venditore&id={$annuncio.id_utente|default:0}">
+                    <a href="/utente/venditore/{$annuncio.id_utente|default:0}">
                         {if !empty($annuncio.venditore_business_id)}
                             {$annuncio.venditore_nome_azienda|default:''} <span class="seller-pro-badge">PRO</span>
                         {else}
@@ -33,16 +33,16 @@
                 {/if}
             </div>
 
-            <form method="post" action="index.php?route=pagamento-conferma" class="paypal-actions">
+            <form method="post" action="/pagamento/conferma" class="paypal-actions">
                 <input type="hidden" name="id_annuncio" value="{$annuncio.id_annuncio|default:0}">
                 <input type="hidden" name="id_indirizzo" value="{$indirizzoSpedizione.id_indirizzo|default:0}">
                 <input type="hidden" name="paypal_transaction_id" value="{$paypalTransactionId|default:''}">
                 <button class="btn paypal-confirm-btn" type="submit">Paga con PayPal simulato</button>
-                <a class="btn btn-secondary" href="index.php?route=paypal-cancel">Annulla</a>
+                <a class="btn btn-secondary" href="/pagamento/cancel">Annulla</a>
             </form>
         {else}
             <div class="alert alert-error">Pagamento non disponibile.</div>
-            <a class="btn" href="index.php?route=carrello">Torna al carrello</a>
+            <a class="btn" href="/carrello/list">Torna al carrello</a>
         {/if}
     </div>
 </section>

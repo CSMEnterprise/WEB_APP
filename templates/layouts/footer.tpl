@@ -8,8 +8,8 @@
     <div class="container footer-inner">
 
         <div class="footer-brand">
-            <a class="logo" href="index.php?route=home" aria-label="NerdVault home">
-                <img class="logo-wordmark u-style-025" src="assets/img/nerdvault-wordmark.png" alt="NerdVault">
+            <a class="logo" href="/home/index" aria-label="NerdVault home">
+                <img class="logo-wordmark u-style-025" src="/assets/img/nerdvault-wordmark.png" alt="NerdVault">
             </a>
             <p class="footer-tagline">Il marketplace per appassionati di manga, action figure, gaming e collezionismo.</p>
             <div class="footer-social">
@@ -31,12 +31,12 @@
         <div class="footer-col">
             <h4 class="footer-col-title">Marketplace</h4>
             <ul class="footer-links">
-                <li><a href="index.php?route=annunci">Tutti gli annunci</a></li>
-                <li><a href="index.php?route=annunci&categoria=manga">Manga</a></li>
-                <li><a href="index.php?route=annunci&categoria=action-figure">Action Figure</a></li>
-                <li><a href="index.php?route=annunci&categoria=gaming">Gaming</a></li>
-                <li><a href="index.php?route=annunci&categoria=carte">Carte collezionabili</a></li>
-                <li><a href="index.php?route=annunci&categoria=modellismo">Modellismo</a></li>
+                <li><a href="/annuncio/list">Tutti gli annunci</a></li>
+                <li><a href="/annuncio/list?categoria=manga">Manga</a></li>
+                <li><a href="/annuncio/list?categoria=action-figure">Action Figure</a></li>
+                <li><a href="/annuncio/list?categoria=gaming">Gaming</a></li>
+                <li><a href="/annuncio/list?categoria=carte">Carte collezionabili</a></li>
+                <li><a href="/annuncio/list?categoria=modellismo">Modellismo</a></li>
             </ul>
         </div>
 
@@ -44,21 +44,21 @@
             <h4 class="footer-col-title">Account</h4>
             <ul class="footer-links">
                 {if $isLogged}
-                    <li><a href="index.php?route=profilo">Il mio profilo</a></li>
-                    <li><a href="index.php?route=annuncio-create">Vendi un oggetto</a></li>
+                    <li><a href="/utente/profilo">Il mio profilo</a></li>
+                    <li><a href="/annuncio/create">Vendi un oggetto</a></li>
                     {if !$isBusiness}
-                        <li><a href="index.php?route=wishlist">Wishlist</a></li>
-                        <li><a href="index.php?route=carrello">Carrello</a></li>
+                        <li><a href="/wishlist/list">Wishlist</a></li>
+                        <li><a href="/carrello/list">Carrello</a></li>
                     {else}
-                        <li><a href="index.php?route=business">Area business</a></li>
-                        <li><a href="index.php?route=business-ordini">Ordini ricevuti</a></li>
+                        <li><a href="/business/dashboard">Area business</a></li>
+                        <li><a href="/business/ordini">Ordini ricevuti</a></li>
                     {/if}
-                    <li><a href="index.php?route=feedback">I miei feedback</a></li>
-                    <li><a href="index.php?route=logout">Logout</a></li>
+                    <li><a href="/feedback/list">I miei feedback</a></li>
+                    <li><a href="/auth/logout">Logout</a></li>
                 {else}
-                    <li><a href="index.php?route=login">Accedi</a></li>
-                    <li><a href="index.php?route=register-user">Registrati</a></li>
-                    <li><a href="index.php?route=register-business">Account Business</a></li>
+                    <li><a href="/auth/login">Accedi</a></li>
+                    <li><a href="/auth/register-user">Registrati</a></li>
+                    <li><a href="/auth/register-business">Account Business</a></li>
                 {/if}
             </ul>
         </div>
@@ -84,9 +84,9 @@
         <div class="container footer-bottom-inner">
             <p class="footer-copy">&copy; {$year} <strong>NerdVault</strong> — Tutti i diritti riservati.</p>
             <div class="footer-bottom-links">
-                <a href="index.php?route=privacy">Privacy Policy</a>
-                <a href="index.php?route=termini">Termini di servizio</a>
-                <a href="index.php?route=cookie">Cookie</a>
+                <a href="/legale/privacy">Privacy Policy</a>
+                <a href="/legale/termini">Termini di servizio</a>
+                <a href="/legale/cookie">Cookie</a>
             </div>
         </div>
     </div>

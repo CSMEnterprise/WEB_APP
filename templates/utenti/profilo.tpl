@@ -31,9 +31,8 @@
 
         <section class="nv-profile-hero" aria-label="Riepilogo profilo">
             <div class="nv-profile-avatar-block">
-                <form class="nv-profile-avatar-form" method="post" action="index.php" enctype="multipart/form-data">
-                    <input type="hidden" name="route" value="profilo-propic-store">
-                    <label class="nv-profile-avatar" for="profileAvatarUpload" aria-label="Cambia foto profilo">
+                <form class="nv-profile-avatar-form" method="post" action="/utente/propic-store" enctype="multipart/form-data">
+                                        <label class="nv-profile-avatar" for="profileAvatarUpload" aria-label="Cambia foto profilo">
                         {if !empty($utente.propic)}
                             <img src="{$utente.propic}" alt="Foto profilo">
                         {else}
@@ -72,9 +71,8 @@
                 <div class="nv-profile-inline-actions">
                     <details class="nv-profile-action-details">
                         <summary class="nv-profile-small-btn"><span aria-hidden="true">✏️</span> Modifica dati</summary>
-                        <form class="nv-profile-popover-form" method="post" action="index.php">
-                            <input type="hidden" name="route" value="profilo-update">
-                            <label for="nome">Nome</label>
+                        <form class="nv-profile-popover-form" method="post" action="/utente/update">
+                                                        <label for="nome">Nome</label>
                             <input type="text" id="nome" name="nome" value="{$utente.nome|default:''}" required>
                             <label for="telefono">Telefono</label>
                             <input type="text" id="telefono" name="telefono" value="{$utente.telefono|default:''}">
@@ -84,9 +82,8 @@
 
                     <details class="nv-profile-action-details">
                         <summary class="nv-profile-small-btn">Cambia password <span aria-hidden="true">🔑</span></summary>
-                        <form class="nv-profile-popover-form" method="post" action="index.php">
-                            <input type="hidden" name="route" value="profilo-password">
-                            <label for="password_attuale">Password attuale</label>
+                        <form class="nv-profile-popover-form" method="post" action="/utente/password">
+                                                        <label for="password_attuale">Password attuale</label>
                             <input type="password" id="password_attuale" name="password_attuale" required>
                             <label for="nuova_password">Nuova password</label>
                             <input type="password" id="nuova_password" name="nuova_password" required>
@@ -100,10 +97,8 @@
                     {if !$isBusiness}
                         <details class="nv-profile-action-details nv-profile-address-details">
                             <summary class="nv-profile-small-btn">Aggiungi indirizzo di spedizione</summary>
-                            <form class="nv-profile-popover-form nv-profile-address-popover" method="post" action="index.php">
-                                <input type="hidden" name="route" value="profilo-indirizzo-store">
-
-                                <div class="nv-field nv-field-wide">
+                            <form class="nv-profile-popover-form nv-profile-address-popover" method="post" action="/utente/indirizzo-store">
+                                                                <div class="nv-field nv-field-wide">
                                     <label for="add_nome">Nome e cognome</label>
                                     <input type="text" id="add_nome" name="nome" value="{$utente.nome|default:''}" placeholder="Nome destinatario">
                                 </div>
@@ -141,9 +136,8 @@
                         {if !empty($editing)}
                             <details class="nv-profile-action-details nv-profile-address-details" open>
                                 <summary class="nv-profile-small-btn">Modifica indirizzo</summary>
-                                <form class="nv-profile-popover-form nv-profile-address-popover" method="post" action="index.php">
-                                    <input type="hidden" name="route" value="profilo-indirizzo-update">
-                                    <input type="hidden" name="id_indirizzo" value="{$editing.id_indirizzo|default:0}">
+                                <form class="nv-profile-popover-form nv-profile-address-popover" method="post" action="/utente/indirizzo-update">
+                                                                        <input type="hidden" name="id_indirizzo" value="{$editing.id_indirizzo|default:0}">
 
                                     <div class="nv-field nv-field-wide">
                                         <label for="edit_nome">Nome e cognome</label>
@@ -176,7 +170,7 @@
 
                                     <div class="nv-address-actions">
                                         <button class="btn" type="submit">Salva modifiche</button>
-                                        <a class="btn btn-secondary" href="index.php?route=profilo">Annulla</a>
+                                        <a class="btn btn-secondary" href="/utente/profilo">Annulla</a>
                                     </div>
                                 </form>
                             </details>
@@ -199,8 +193,8 @@
 
         {* Link rapidi sempre visibili sopra le sezioni principali *}
         <nav class="nv-profile-quick-actions" aria-label="Azioni profilo">
-            <a class="nv-profile-chip nv-profile-chip-gold" href="index.php?route=annuncio-create">Crea annuncio</a>
-            <a class="nv-profile-chip" href="index.php?route=feedback">I miei feedback</a>
+            <a class="nv-profile-chip nv-profile-chip-gold" href="/annuncio/create">Crea annuncio</a>
+            <a class="nv-profile-chip" href="/feedback/list">I miei feedback</a>
         </nav>
 
         {if !$isBusiness}
@@ -219,11 +213,11 @@
                                     {if !empty($indirizzo.predefinito)}<span class="seller-pro-badge">Predefinito</span>{/if}
                                 </p>
                                 <div>
-                                    <a class="btn btn-secondary" href="index.php?route=profilo-indirizzo-edit&id={$indirizzo.id_indirizzo|default:0}">Modifica</a>
+                                    <a class="btn btn-secondary" href="/utente/indirizzo-edit/{$indirizzo.id_indirizzo|default:0}">Modifica</a>
                                     {if empty($indirizzo.predefinito)}
-                                        <a class="btn btn-secondary" href="index.php?route=profilo-indirizzo-default&id={$indirizzo.id_indirizzo|default:0}">Predefinito</a>
+                                        <a class="btn btn-secondary" href="/utente/indirizzo-default/{$indirizzo.id_indirizzo|default:0}">Predefinito</a>
                                     {/if}
-                                    <a class="btn btn-danger" href="index.php?route=profilo-indirizzo-delete&id={$indirizzo.id_indirizzo|default:0}">Elimina</a>
+                                    <a class="btn btn-danger" href="/utente/indirizzo-delete/{$indirizzo.id_indirizzo|default:0}">Elimina</a>
                                 </div>
                             </article>
                         {/foreach}
@@ -242,8 +236,8 @@
                 </div>
                 <div class="nv-profile-tabs" aria-label="Mostra annunci">
                     <span>Mostra annunci</span>
-                    <a class="{if ($filtroAnnunci|default:'attivo') == 'attivo'}is-active{/if}" href="index.php?route=profilo-annunci-attivi">Annunci attivi</a>
-                    <a class="{if ($filtroAnnunci|default:'attivo') == 'venduto'}is-active{/if}" href="index.php?route=profilo-annunci-venduti">Annunci venduti</a>
+                    <a class="{if ($filtroAnnunci|default:'attivo') == 'attivo'}is-active{/if}" href="/utente/profilo">Annunci attivi</a>
+                    <a class="{if ($filtroAnnunci|default:'attivo') == 'venduto'}is-active{/if}" href="/utente/profilo-venduti">Annunci venduti</a>
                 </div>
             </div>
 
@@ -279,7 +273,7 @@
                                         <td>&euro; {$pagamento.importo_totale|default:0|number_format:2:",":"."}</td>
                                         <td>{$pagamento.stato|default:''}</td>
                                         <td>{$pagamento.data|default:$pagamento.data_pagamento|default:''}</td>
-                                        <td><a class="btn btn-secondary" href="index.php?route=feedback-create&id_pagamento={$pagamento.id_pagamento|default:0}">Feedback</a></td>
+                                        <td><a class="btn btn-secondary" href="/feedback/create/{$pagamento.id_pagamento|default:0}">Feedback</a></td>
                                     </tr>
                                 {/foreach}
                             </tbody>

@@ -18,15 +18,15 @@
                     <a class="u-debug-link" href="{$debugLink}">{$debugLink}</a>
                 </div>
             {/if}
-            <p class="u-style-088"><a href="index.php?route=login" class="btn btn-secondary">Torna al login</a></p>
+            <p class="u-style-088"><a href="/auth/login" class="btn btn-secondary">Torna al login</a></p>
         {else}
             {if !empty($errore)}<div class="alert alert-error">{$errore}</div>{/if}
-            <form method="post" action="index.php?route=recupero-password-post">
+            <form method="post" action="/auth/recupero-password">
                 <label for="email">La tua email</label>
                 <input type="email" id="email" name="email" value="{$post.email|default:''}" placeholder="tuaemail@esempio.it" required>
                 <button type="submit" class="btn u-style-089">Invia link di recupero</button>
             </form>
-            <p class="u-style-090"><a class="u-style-091" href="index.php?route=login">Torna al login</a></p>
+            <p class="u-style-090"><a class="u-style-091" href="/auth/login">Torna al login</a></p>
         {/if}
     </div>
 </div>

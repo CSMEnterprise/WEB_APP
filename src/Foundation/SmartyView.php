@@ -102,7 +102,7 @@ class SmartyView
         $this->smarty->assign('isBusiness',       $isBusiness);
         $this->smarty->assign('userId',           $userId);
         $this->smarty->assign('username',         (string)($_SESSION['username'] ?? ''));
-        $this->smarty->assign('propic',           (string)($_SESSION['propic']   ?? ''));
+        $this->smarty->assign('propic',           $this->publicPath((string)($_SESSION['propic'] ?? '')));
         $this->smarty->assign('livelloSicurezza', $livello);
 
         // ── Categorie per l'header ────────────────────────────────────────
@@ -149,5 +149,24 @@ class SmartyView
         if (!is_dir($path) && !mkdir($path, 0775, true) && !is_dir($path)) {
             throw new RuntimeException('Impossibile creare la cartella Smarty: ' . $path);
         }
+    }
+
+    private function publicPath(string $path): string
+    {
+        $path = trim(str_replace('\\', '/', $path));
+
+        if ($path === ''
+            || str_starts_with($path, '/')
+            || preg_match('#^(https?:)?//#i', $path)
+            || str_starts_with($path, 'data:')
+        ) {
+            return $path;
+        }
+
+        if (str_starts_with($path, 'uploads/') || str_starts_with($path, 'assets/')) {
+            return '/' . $path;
+        }
+
+        return $path;
     }
 }

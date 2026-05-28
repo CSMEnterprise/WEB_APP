@@ -6,7 +6,7 @@
     <section class="card">
         <h1>Compra e vendi articoli nerd in modo semplice.</h1>
         <p>NerdVault e un marketplace per videogiochi, fumetti, action figure, carte collezionabili, gadget e prodotti da collezione.</p>
-        <p><a class="btn btn-secondary" href="index.php?route=register">Crea account</a></p>
+        <p><a class="btn btn-secondary" href="/auth/register">Crea account</a></p>
     </section>
 {/if}
 
@@ -41,9 +41,8 @@
     </div>
 
     <div class="card home-filter-panel" id="homeFilterPanel" {if !$hasFiltriAvanzati}hidden{/if}>
-        <form class="home-filter-form" method="get" action="index.php">
-            <input type="hidden" name="route" value="home">
-            <input type="hidden" name="q" value="{$q|default:''}">
+        <form class="home-filter-form" method="get" action="/home/index">
+                        <input type="hidden" name="q" value="{$q|default:''}">
             {if $idCategoria > 0}
                 <input type="hidden" name="id_categoria" value="{$idCategoria}">
             {/if}

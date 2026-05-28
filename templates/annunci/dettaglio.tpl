@@ -15,7 +15,7 @@
         {if $canUseWishlist}
             <a
                 class="wishlist-heart {if $isInWishlist}wishlist-heart-active{/if}"
-                href="index.php?route=wishlist-toggle&id={$annuncioId}"
+                href="/wishlist/toggle/{$annuncioId}"
                 title="{if $isInWishlist}Rimuovi dalla wishlist{else}Aggiungi alla wishlist{/if}"
                 aria-label="{if $isInWishlist}Rimuovi dalla wishlist{else}Aggiungi alla wishlist{/if}">
                 &hearts;
@@ -67,7 +67,7 @@
 
         <p>
             <strong>Venditore:</strong>
-            <a href="index.php?route=venditore&id={$annuncioOwner}">
+            <a href="/utente/venditore/{$annuncioOwner}">
                 <span class="seller-name-line">
                     {if !empty($annuncio.venditore_business_id)}
                         {$annuncio.venditore_nome_azienda|default:'Venditore'} <span class="seller-pro-badge">PRO</span>
@@ -85,7 +85,7 @@
             {else}
                 <span class="muted u-style-005">Nessuna recensione</span>
             {/if}
-            <a class="btn btn-secondary u-small-inline-link" href="index.php?route=venditore&id={$annuncioOwner}">Vedi profilo</a>
+            <a class="btn btn-secondary u-small-inline-link" href="/utente/venditore/{$annuncioOwner}">Vedi profilo</a>
         </p>
 
         {if $isLogged}
@@ -93,21 +93,21 @@
                 <div class="alert alert-success">Accesso admin: carrello, wishlist e acquisto sono disattivati.</div>
             {elseif $isBusiness && !$isOwner}
                 <div class="alert alert-success">Account business: puoi vendere prodotti, ma carrello, wishlist e acquisto sono disattivati.</div>
-                <a class="btn btn-secondary" href="index.php?route=segnalazione-create&id_annuncio={$annuncioId}">Segnala</a>
+                <a class="btn btn-secondary" href="/segnalazione/create/{$annuncioId}">Segnala</a>
             {elseif $isOwner}
                 <div class="alert alert-success">Questo e un tuo annuncio: carrello e acquisto sono disattivati.</div>
                 {if ($annuncio.stato|default:'') == 'attivo'}
-                    <a class="btn" href="index.php?route=annuncio-edit&id={$annuncioId}">Modifica</a>
-                    <a class="btn btn-danger" href="index.php?route=annuncio-delete&id={$annuncioId}">Elimina</a>
+                    <a class="btn" href="/annuncio/edit/{$annuncioId}">Modifica</a>
+                    <a class="btn btn-danger" href="/annuncio/delete/{$annuncioId}">Elimina</a>
                 {/if}
             {else}
                 {if $isInCart}
                     <span class="btn btn-secondary u-style-006">Nel carrello</span>
                 {else}
-                    <a class="btn" href="index.php?route=carrello-add&id={$annuncioId}">Aggiungi al carrello</a>
+                    <a class="btn" href="/carrello/add/{$annuncioId}">Aggiungi al carrello</a>
                 {/if}
-                <a class="btn btn-secondary" href="index.php?route=checkout&id={$annuncioId}">Acquista</a>
-                <a class="btn btn-secondary" href="index.php?route=segnalazione-create&id_annuncio={$annuncioId}">Segnala</a>
+                <a class="btn btn-secondary" href="/pagamento/checkout/{$annuncioId}">Acquista</a>
+                <a class="btn btn-secondary" href="/segnalazione/create/{$annuncioId}">Segnala</a>
             {/if}
         {/if}
     </article>

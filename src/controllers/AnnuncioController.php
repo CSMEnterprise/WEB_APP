@@ -62,7 +62,7 @@ class AnnuncioController extends BaseController
             return;
         }
 
-        $annuncio = $annuncioEntity->toArray();
+        $annuncio = $this->entityToArray($annuncioEntity);
         $idVenditore = (int) ($annuncioEntity->getIdUtente() ?? 0);
         $feedbackVenditore = $idVenditore > 0
             ? $this->entitiesToArrays(FPersistentManager::feedbackByVenditore($idVenditore))
@@ -116,7 +116,7 @@ class AnnuncioController extends BaseController
         try {
             $idAnnuncio = $this->createAnnuncio($data, $idUtente, $files);
 
-            header('Location: index.php?route=annuncio&id=' . $idAnnuncio);
+            header('Location: /annuncio/show/' . $idAnnuncio);
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
@@ -136,13 +136,13 @@ class AnnuncioController extends BaseController
         try {
             $this->updateAnnuncio($idAnnuncio, $idUtente, $data, $files);
 
-            header('Location: index.php?route=annuncio&id=' . $idAnnuncio);
+            header('Location: /annuncio/show/' . $idAnnuncio);
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
             $categorie = $this->entitiesToArrays(FPersistentManager::categorie());
             $annuncioEntity = $idAnnuncio > 0 ? FPersistentManager::annuncioById($idAnnuncio) : null;
-            $annuncio = $annuncioEntity ? $annuncioEntity->toArray() : $data;
+            $annuncio = $annuncioEntity ? $this->entityToArray($annuncioEntity) : $data;
             $isEdit = true;
 
             $this->view('annunci/form.tpl', compact('errore', 'categorie', 'annuncio', 'isEdit'), 'Modifica annuncio');
@@ -157,7 +157,7 @@ class AnnuncioController extends BaseController
         try {
             $idAnnuncio = $this->deleteImage((int)($data['id_immagine'] ?? 0), $idUtente);
 
-            header('Location: index.php?route=annuncio-edit&id=' . $idAnnuncio);
+            header('Location: /annuncio/edit/' . $idAnnuncio);
             exit;
         } catch (Exception $e) {
             $this->renderError($e->getMessage(), 403);
@@ -177,7 +177,7 @@ class AnnuncioController extends BaseController
                 throw new ServiceException('Non puoi eliminare questo annuncio.');
             }
 
-            header('Location: index.php?route=annunci');
+            header('Location: /annuncio/list');
             exit;
         } catch (Exception $e) {
             $this->renderError($e->getMessage(), 403);
@@ -349,7 +349,7 @@ class AnnuncioController extends BaseController
         $maxSize = 3 * 1024 * 1024;
         $allowedMime = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
         $uploadDir = __DIR__ . '/../../public/uploads/annunci/' . $idAnnuncio;
-        $publicDir = 'uploads/annunci/' . $idAnnuncio;
+        $publicDir = '/uploads/annunci/' . $idAnnuncio;
 
         if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true)) {
             throw new ServiceException('Impossibile creare la cartella per le immagini.');
