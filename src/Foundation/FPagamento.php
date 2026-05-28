@@ -4,8 +4,14 @@ namespace App\Foundation;
 
 use App\Entity\EPagamento;
 
+/**
+ * Repository dei pagamenti completati o simulati.
+ */
 class FPagamento extends FBaseTable
 {
+    /**
+     * Metadati usati da FBaseTable per CRUD generico.
+     */
     protected function tableName(): string { return 'pagamento'; }
     protected function primaryKey(): string { return 'id_pagamento'; }
     protected function entityClass(): string { return EPagamento::class; }
@@ -25,6 +31,7 @@ class FPagamento extends FBaseTable
 
     public function create(EPagamento $pagamento): int
     {
+        // Inserisce il pagamento; la data viene lasciata al default del database.
         return $this->insert([
             'id_annuncio' => $pagamento->getIdAnnuncio(),
             'id_acquirente' => $pagamento->getIdAcquirente(),
@@ -37,6 +44,7 @@ class FPagamento extends FBaseTable
 
     public function chronologyByUser(int $idUtente): array
     {
+        // Cronologia acquisti con dati venditore e feedback gia presente, se esiste.
         return $this->fetchEntities("
             SELECT
                 p.*,
@@ -57,6 +65,7 @@ class FPagamento extends FBaseTable
 
     public function findWithAnnuncioTitle(int $idPagamento): ?EPagamento
     {
+        // Recupero puntuale usato per aprire il form feedback.
         $entity = $this->fetchEntity("
             SELECT p.*, a.`titolo`
             FROM `pagamento` p
@@ -70,6 +79,7 @@ class FPagamento extends FBaseTable
 
     public function receivedBySellerUser(int $idUtente): array
     {
+        // Ordini ricevuti da un venditore/business sui propri annunci.
         return $this->fetchEntities("
             SELECT p.*, a.`titolo`
             FROM `pagamento` p

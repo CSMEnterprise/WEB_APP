@@ -4,10 +4,17 @@ namespace App\Foundation;
 
 use App\Entity\EAnnuncio;
 
+/**
+ * Repository degli annunci.
+ * Qui vivono le query piu ricche per lista, dettaglio, ricerca e suggerimenti.
+ */
 class FAnnuncio extends FBaseTable
 {
     private FImmagine $immagini;
 
+    /**
+     * Crea anche il repository immagini per arricchire il dettaglio annuncio.
+     */
     public function __construct(\PDO $db)
     {
         parent::__construct($db);
@@ -49,6 +56,7 @@ class FAnnuncio extends FBaseTable
 
     public function attivi(int $idCategoria = 0): array
     {
+        // Lista pubblica degli annunci acquistabili, eventualmente filtrata per categoria.
         $whereCategoria = '';
         $params = [];
 
@@ -66,6 +74,7 @@ class FAnnuncio extends FBaseTable
 
     public function casuali(int $limit = 8, ?int $excludeUserId = null, array $excludeAnnuncioIds = []): array
     {
+        // Limita il numero di risultati per evitare query RAND troppo pesanti.
         $limit = max(1, min($limit, 24));
         $whereUtente = '';
         $whereAnnunci = '';
@@ -94,6 +103,7 @@ class FAnnuncio extends FBaseTable
 
     public function perInteressiUtente(int $idUtente, int $limit = 8): array
     {
+        // Suggerimenti basati sulle categorie viste in wishlist, carrello e acquisti.
         $limit = max(1, min($limit, 24));
         $categorie = $this->categorieInteresseUtente($idUtente);
 
@@ -116,6 +126,7 @@ class FAnnuncio extends FBaseTable
             return $annunci;
         }
 
+        // Se gli interessi non bastano, completa con annunci casuali non duplicati.
         $annunciIds = array_map(static fn(EAnnuncio $annuncio) => (int) ($annuncio->getIdAnnuncio() ?? 0), $annunci);
         $fallback = $this->casuali($limit - count($annunci), $idUtente, $annunciIds);
 
@@ -124,6 +135,7 @@ class FAnnuncio extends FBaseTable
 
     public function findWithDetails(int $idAnnuncio): ?EAnnuncio
     {
+        // Il dettaglio include dati venditore/categoria e poi tutte le immagini.
         $entity = $this->fetchEntity($this->selectWithDetails() . '
             WHERE a.`id_annuncio` = ?
             LIMIT 1
@@ -140,6 +152,7 @@ class FAnnuncio extends FBaseTable
 
     public function byUserIdAndStato(int $idUtente, ?string $stato = 'attivo'): array
     {
+        // Con stato null restituisce tutti gli annunci dell'utente.
         $whereStato = '';
         $params = [$idUtente];
 
@@ -156,6 +169,7 @@ class FAnnuncio extends FBaseTable
 
     public function createForUser(EAnnuncio $annuncio, int $idUtente): int
     {
+        // Forza il proprietario ricevuto dal controller invece di fidarsi del form.
         $row = $annuncio->toArray();
         $row['id_utente'] = $idUtente;
         $row['id_business'] = null;
@@ -168,6 +182,7 @@ class FAnnuncio extends FBaseTable
 
     public function updateForUser(int $idAnnuncio, int $idUtente, EAnnuncio $annuncio): bool
     {
+        // Aggiorna solo campi modificabili e solo se l'annuncio e ancora attivo.
         $row = $annuncio->toArray();
         $params = [
             (int) $row['id_categoria'],
@@ -194,6 +209,7 @@ class FAnnuncio extends FBaseTable
 
     public function deleteForUser(int $idAnnuncio, int $idUtente): bool
     {
+        // La clausola id_utente impedisce cancellazioni di annunci altrui.
         return $this->execute(
             'DELETE FROM `annuncio` WHERE `id_annuncio` = ? AND `id_utente` = ?',
             [$idAnnuncio, $idUtente]
@@ -202,11 +218,13 @@ class FAnnuncio extends FBaseTable
 
     public function deleteByAdmin(int $idAnnuncio): void
     {
+        // Azione amministrativa: non applica il vincolo sul proprietario.
         $this->deleteById($idAnnuncio);
     }
 
     public function markSold(int $idAnnuncio): void
     {
+        // Stato usato dopo un pagamento completato.
         $this->execute(
             "UPDATE `annuncio` SET `stato` = 'venduto' WHERE `id_annuncio` = ?",
             [$idAnnuncio]
@@ -223,6 +241,7 @@ class FAnnuncio extends FBaseTable
         int $offset = 0,
         ?int $excludeUserId = null
     ): array {
+        // Costruisce WHERE e ORDER BY da filtri gia validati a livello controller.
         [$whereSql, $params] = $this->buildSearchWhere($keywords, $idCategoria, $prezzoMin, $prezzoMax, $excludeUserId);
         $orderBy = match ($ordinamento) {
             'prezzo_asc' => 'a.`prezzo` ASC, a.`data_creazione` DESC',
@@ -247,6 +266,7 @@ class FAnnuncio extends FBaseTable
 
     public function countSearch(string $keywords, int $idCategoria = 0, ?float $prezzoMin = null, ?float $prezzoMax = null, ?int $excludeUserId = null): int
     {
+        // Usa gli stessi filtri della search per mantenere coerente la paginazione.
         [$whereSql, $params] = $this->buildSearchWhere($keywords, $idCategoria, $prezzoMin, $prezzoMax, $excludeUserId);
 
         return (int) $this->fetchColumn("
@@ -258,6 +278,7 @@ class FAnnuncio extends FBaseTable
 
     private function selectWithDetails(): string
     {
+        // Select comune: ogni lista annuncio riceve categoria, venditore e immagine principale.
         return "
             SELECT
                 a.*,
@@ -281,6 +302,7 @@ class FAnnuncio extends FBaseTable
 
     private function buildSearchWhere(string $keywords, int $idCategoria = 0, ?float $prezzoMin = null, ?float $prezzoMax = null, ?int $excludeUserId = null): array
     {
+        // Produce SQL parametrizzato e parametri separati per evitare concatenazioni rischiose.
         $keywords = trim($keywords);
         $where = ["a.`stato` = 'attivo'"];
         $params = [];
@@ -319,6 +341,7 @@ class FAnnuncio extends FBaseTable
 
     private function categorieInteresseUtente(int $idUtente): array
     {
+        // Calcola le categorie piu frequenti tra preferiti, carrello e pagamenti.
         $rows = $this->fetchRows("
             SELECT `id_categoria`
             FROM (

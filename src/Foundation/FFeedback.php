@@ -4,8 +4,14 @@ namespace App\Foundation;
 
 use App\Entity\EFeedback;
 
+/**
+ * Repository dei feedback lasciati dopo un pagamento.
+ */
 class FFeedback extends FBaseTable
 {
+    /**
+     * Metadati usati da FBaseTable per CRUD generico.
+     */
     protected function tableName(): string { return 'feedback'; }
     protected function primaryKey(): string { return 'id_feedback'; }
     protected function entityClass(): string { return EFeedback::class; }
@@ -16,6 +22,7 @@ class FFeedback extends FBaseTable
 
     public function create(EFeedback $feedback): int
     {
+        // Salva solo autore, pagamento, valutazione e commento: la data e gestita dal DB.
         return $this->insert([
             'id_autore' => $feedback->getIdAutore(),
             'id_pagamento' => $feedback->getIdPagamento(),
@@ -26,6 +33,7 @@ class FFeedback extends FBaseTable
 
     public function byPagamento(int $idPagamento): array
     {
+        // Feedback collegati a un pagamento specifico con username dell'autore.
         return $this->fetchEntities("
             SELECT f.*, u.`username` AS autore
             FROM `feedback` f
@@ -37,6 +45,7 @@ class FFeedback extends FBaseTable
 
     public function byUser(int $idUtente): array
     {
+        // Include feedback dove l'utente e acquirente oppure venditore dell'annuncio.
         return $this->fetchEntities("
             SELECT f.*, u.`username` AS autore, p.`id_acquirente`, a.`id_utente` AS venditore_id, a.`titolo`
             FROM `feedback` f
@@ -50,6 +59,7 @@ class FFeedback extends FBaseTable
 
     public function byVenditore(int $idVenditore): array
     {
+        // Feedback pubblici ricevuti dal venditore sui suoi annunci venduti.
         return $this->fetchEntities("
             SELECT
                 f.*,
@@ -67,6 +77,7 @@ class FFeedback extends FBaseTable
 
     public function existsForPagamentoAndAutore(int $idPagamento, int $idAutore): bool
     {
+        // Impedisce recensioni duplicate sullo stesso pagamento.
         return (int) $this->fetchColumn(
             'SELECT COUNT(*) FROM `feedback` WHERE `id_pagamento` = ? AND `id_autore` = ?',
             [$idPagamento, $idAutore]
@@ -75,6 +86,7 @@ class FFeedback extends FBaseTable
 
     public function averageForVenditore(int $idUtente): float
     {
+        // Media voto mostrata su dettaglio annuncio e profilo venditore.
         return (float) $this->fetchColumn("
             SELECT AVG(f.`valutazione`)
             FROM `feedback` f

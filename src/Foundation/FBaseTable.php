@@ -5,11 +5,18 @@ namespace App\Foundation;
 use App\Entity\EBaseEntity;
 use PDO;
 
+/**
+ * Classe base per tutte le classi Foundation che rappresentano una tabella.
+ * Offre CRUD generico, query helper e idratazione delle righe SQL nelle Entity.
+ */
 abstract class FBaseTable
 {
     protected PDO $db;
     private array $columnCache = [];
 
+    /**
+     * Riceve la connessione PDO condivisa e imposta errori/fetch mode coerenti.
+     */
     public function __construct(PDO $db)
     {
         $this->db = $db;
@@ -17,14 +24,29 @@ abstract class FBaseTable
         $this->db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Nome fisico della tabella nel database.
+     */
     abstract protected function tableName(): string;
 
+    /**
+     * Nome della chiave primaria della tabella.
+     */
     abstract protected function primaryKey(): string;
 
+    /**
+     * Classe Entity usata per trasformare le righe SQL in oggetti applicativi.
+     */
     abstract protected function entityClass(): string;
 
+    /**
+     * Lista bianca delle colonne scrivibili con insert/update generici.
+     */
     abstract protected function columns(): array;
 
+    /**
+     * Cerca un record per chiave primaria.
+     */
     public function find(int $id): ?EBaseEntity
     {
         return $this->fetchEntity(
@@ -33,6 +55,9 @@ abstract class FBaseTable
         );
     }
 
+    /**
+     * Restituisce tutti i record, con ordinamento opzionale controllato dal chiamante.
+     */
     public function all(string $orderBy = ''): array
     {
         $sql = 'SELECT * FROM ' . $this->table();
@@ -44,6 +69,9 @@ abstract class FBaseTable
         return $this->fetchEntities($sql);
     }
 
+    /**
+     * Carica record tramite campo arbitrario: null, singola entity o lista di entity.
+     */
     public function loadByField(string $field, mixed $value): mixed
     {
         $entities = $this->fetchEntities(
@@ -58,6 +86,9 @@ abstract class FBaseTable
         };
     }
 
+    /**
+     * Verifica l'esistenza di almeno un record per campo/valore.
+     */
     public function existByField(string $field, mixed $value): bool
     {
         return (int) $this->fetchColumn(
@@ -66,6 +97,9 @@ abstract class FBaseTable
         ) > 0;
     }
 
+    /**
+     * Cancella record filtrando per campo/valore.
+     */
     public function deleteByField(string $field, mixed $value): bool
     {
         return $this->execute(
@@ -74,6 +108,9 @@ abstract class FBaseTable
         ) > 0;
     }
 
+    /**
+     * Aggiorna un singolo campo usando un altro campo come filtro.
+     */
     public function updateFieldBy(string $field, mixed $newValue, string $pk, mixed $value): bool
     {
         return $this->execute(
@@ -82,6 +119,9 @@ abstract class FBaseTable
         ) > 0;
     }
 
+    /**
+     * Inserisce una entity o array limitando i dati alle sole colonne ammesse.
+     */
     public function insert(EBaseEntity|array $source): int
     {
         $row = $this->writableRow($source);
@@ -106,6 +146,9 @@ abstract class FBaseTable
         return (int) $this->db->lastInsertId();
     }
 
+    /**
+     * Aggiorna un record per primary key usando solo colonne scrivibili.
+     */
     public function updateById(int $id, EBaseEntity|array $source): bool
     {
         $row = $this->writableRow($source);
@@ -133,6 +176,9 @@ abstract class FBaseTable
         return $this->execute($sql, $params) > 0;
     }
 
+    /**
+     * Elimina un record per primary key.
+     */
     public function deleteById(int $id): bool
     {
         return $this->execute(
@@ -141,6 +187,9 @@ abstract class FBaseTable
         ) > 0;
     }
 
+    /**
+     * Esegue una SELECT che deve restituire al massimo una entity.
+     */
     protected function fetchEntity(string $sql, array $params = []): ?EBaseEntity
     {
         $stmt = $this->db->prepare($sql);
@@ -150,6 +199,9 @@ abstract class FBaseTable
         return $row ? $this->hydrate($row) : null;
     }
 
+    /**
+     * Esegue una SELECT e converte tutte le righe nella entity della tabella.
+     */
     protected function fetchEntities(string $sql, array $params = []): array
     {
         $stmt = $this->db->prepare($sql);
@@ -158,6 +210,9 @@ abstract class FBaseTable
         return array_map(fn(array $row) => $this->hydrate($row), $stmt->fetchAll());
     }
 
+    /**
+     * Esegue una SELECT lasciando le righe come array associativi.
+     */
     protected function fetchRows(string $sql, array $params = []): array
     {
         $stmt = $this->db->prepare($sql);
@@ -166,6 +221,9 @@ abstract class FBaseTable
         return $stmt->fetchAll();
     }
 
+    /**
+     * Recupera una singola colonna, utile per count, exists e medie.
+     */
     protected function fetchColumn(string $sql, array $params = []): mixed
     {
         $stmt = $this->db->prepare($sql);
@@ -174,6 +232,9 @@ abstract class FBaseTable
         return $stmt->fetchColumn();
     }
 
+    /**
+     * Esegue INSERT/UPDATE/DELETE e restituisce le righe impattate.
+     */
     protected function execute(string $sql, array $params = []): int
     {
         $stmt = $this->db->prepare($sql);
@@ -182,6 +243,9 @@ abstract class FBaseTable
         return $stmt->rowCount();
     }
 
+    /**
+     * Crea la entity concreta partendo dalla riga del database.
+     */
     protected function hydrate(array $row): EBaseEntity
     {
         $class = $this->entityClass();
@@ -189,6 +253,9 @@ abstract class FBaseTable
         return $class::fromArray($row);
     }
 
+    /**
+     * Filtra una entity/array togliendo campi non presenti nella tabella.
+     */
     protected function writableRow(EBaseEntity|array $source): array
     {
         $row = $source instanceof EBaseEntity ? $source->toArray() : $source;
@@ -197,11 +264,17 @@ abstract class FBaseTable
         return array_intersect_key($row, $allowed);
     }
 
+    /**
+     * Nome tabella quotato per SQL.
+     */
     protected function table(): string
     {
         return $this->column($this->tableName());
     }
 
+    /**
+     * Quota identificatori SQL validando che non contengano caratteri pericolosi.
+     */
     protected function column(string $identifier): string
     {
         if (!preg_match('/^[a-zA-Z0-9_]+$/', $identifier)) {
@@ -211,6 +284,9 @@ abstract class FBaseTable
         return '`' . $identifier . '`';
     }
 
+    /**
+     * Controlla una colonna reale nel database e memorizza il risultato per tabella.
+     */
     protected function hasColumn(string $column): bool
     {
         $table = $this->tableName();

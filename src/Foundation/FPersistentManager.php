@@ -16,8 +16,15 @@ use App\Entity\ESegnalazione;
 use App\Entity\EUtenteRegistrato;
 use RuntimeException;
 
+/**
+ * Facade statica usata dai controller per accedere al layer Foundation.
+ * Nasconde quale classe tabella usare e mantiene i controller liberi da query SQL.
+ */
 class FPersistentManager
 {
+    /**
+     * Salvataggio generico di una entity; gli annunci richiedono anche il proprietario.
+     */
     public static function store(EBaseEntity $entity): int
     {
         $table = self::tableForEntity($entity);
@@ -35,6 +42,9 @@ class FPersistentManager
         return $table->insert($entity);
     }
 
+    /**
+     * Metodi generici usati quando basta una singola operazione CRUD su una tabella.
+     */
     public static function load(string $field, mixed $value, string $foundationClass): mixed
     {
         return self::table($foundationClass)->loadByField($field, $value);
@@ -115,6 +125,7 @@ class FPersistentManager
         int $offset = 0,
         ?int $excludeUserId = null
     ): array {
+        // Search rimane nel repository annunci: qui si inoltrano solo i criteri.
         return self::annunci()->search(
             $keywords,
             $idCategoria,
@@ -436,6 +447,7 @@ class FPersistentManager
     {
         $db = FDataBase::getInstance();
 
+        // Numeri sintetici mostrati nella dashboard admin.
         return [
             'totUtenti' => $db->count('utente_registrato'),
             'totAnnunci' => $db->count('annuncio'),
@@ -466,6 +478,7 @@ class FPersistentManager
 
     private static function tableForEntity(EBaseEntity $entity): object
     {
+        // Convenzione: App\Entity\EAnnuncio -> App\Foundation\FAnnuncio.
         $entityClass = $entity::class;
         $foundationClass = __NAMESPACE__ . '\\F' . substr(strrchr($entityClass, '\\') ?: $entityClass, 2);
 
@@ -474,6 +487,7 @@ class FPersistentManager
 
     private static function table(string $foundationClass): object
     {
+        // Accetta sia class name completo sia nome breve dentro App\Foundation.
         if (!str_contains($foundationClass, '\\')) {
             $foundationClass = __NAMESPACE__ . '\\' . $foundationClass;
         }
@@ -483,6 +497,7 @@ class FPersistentManager
 
     private static function annunci(): FAnnuncio
     {
+        // Helper tipizzati: migliorano autocompletamento e tengono compatto il facade.
         return self::table(FAnnuncio::class);
     }
 

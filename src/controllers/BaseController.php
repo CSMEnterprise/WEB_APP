@@ -36,7 +36,7 @@ abstract class BaseController
     }
 
     /**
-     * Verifica che un identificativo ricevuto da rotta/form sia valido.
+     * Verifica che un identificativo ricevuto da route/form sia valido.
      */
     protected function requirePositiveId(int $id, string $fieldName = 'ID'): void
     {
@@ -78,7 +78,7 @@ abstract class BaseController
     }
 
     /**
-     * Sanitizzazione minima usata prima di validazioni e salvataggi.
+     * pulizia  minima usata prima di validazioni e salvataggi.
      */
     protected function clean(?string $value): string
     {

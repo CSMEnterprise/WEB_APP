@@ -4,8 +4,14 @@ namespace App\Foundation;
 
 use App\Entity\ECategoria;
 
+/**
+ * Repository delle categorie usate per filtri, header e annunci.
+ */
 class FCategoria extends FBaseTable
 {
+    /**
+     * Nome tabella categorie.
+     */
     protected function tableName(): string
     {
         return 'categoria';
@@ -28,6 +34,7 @@ class FCategoria extends FBaseTable
 
     public function allOrdered(): array
     {
+        // L'header e i form mostrano sempre le categorie in ordine alfabetico.
         return $this->all('`nome` ASC');
     }
 }

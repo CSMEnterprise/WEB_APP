@@ -4,8 +4,14 @@ namespace App\Foundation;
 
 use App\Entity\EModera;
 
+/**
+ * Repository dello storico delle azioni di moderazione.
+ */
 class FModera extends FBaseTable
 {
+    /**
+     * Metadati usati da FBaseTable per CRUD generico.
+     */
     protected function tableName(): string { return 'modera'; }
     protected function primaryKey(): string { return 'id_moderazione'; }
     protected function entityClass(): string { return EModera::class; }
@@ -25,6 +31,7 @@ class FModera extends FBaseTable
 
     public function create(EModera $moderazione): int
     {
+        // Registra quale admin ha compiuto l'azione e su quale eventuale oggetto.
         return $this->insert([
             'id_admin' => $moderazione->getIdAdmin(),
             'id_utente' => $moderazione->getIdUtente(),
@@ -37,6 +44,7 @@ class FModera extends FBaseTable
 
     public function byAdmin(int $idAdmin): array
     {
+        // Storico personale mostrato nella dashboard dell'admin.
         return $this->fetchEntities(
             'SELECT * FROM `modera` WHERE `id_admin` = ? ORDER BY `data_azione` DESC, `id_moderazione` DESC',
             [$idAdmin]
@@ -45,6 +53,7 @@ class FModera extends FBaseTable
 
     public function withAdminDetails(array $filters = []): array
     {
+        // Vista di audit: arricchisce l'azione con email e livello sicurezza admin.
         $adminSearch = trim((string) ($filters['admin'] ?? ''));
         $where = [];
         $params = [];

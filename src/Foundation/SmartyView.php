@@ -5,10 +5,17 @@ namespace App\Foundation;
 use RuntimeException;
 use Smarty\Smarty;
 
+/**
+ * Wrapper di Smarty usato dai controller per renderizzare i template.
+ * Configura directory, plugin e variabili globali disponibili in ogni pagina.
+ */
 class SmartyView
 {
     private Smarty $smarty;
 
+    /**
+     * Prepara Smarty e registra modifier utili nei template .tpl.
+     */
     public function __construct()
     {
         $root          = dirname(__DIR__, 2);
@@ -65,6 +72,7 @@ class SmartyView
 
     public static function make(): self
     {
+        // Factory breve usata da BaseController::view().
         return new self();
     }
 
@@ -122,6 +130,7 @@ class SmartyView
                 $stmt->execute([$userId]);
                 $cartItemCount = (int)$stmt->fetchColumn();
             } catch (\Throwable $ignored) {
+                // Il rendering non deve fallire solo per il badge carrello.
             }
         }
         $this->smarty->assign('cartItemCount', $cartItemCount);
@@ -136,6 +145,7 @@ class SmartyView
 
     private function ensureDirectory(string $path): void
     {
+        // Smarty deve poter scrivere template compilati e cache.
         if (!is_dir($path) && !mkdir($path, 0775, true) && !is_dir($path)) {
             throw new RuntimeException('Impossibile creare la cartella Smarty: ' . $path);
         }

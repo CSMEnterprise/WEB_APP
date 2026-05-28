@@ -5,6 +5,9 @@ namespace App\Foundation;
 use App\Entity\EAnnuncio;
 use App\Entity\EPreferito;
 
+/**
+ * Repository della wishlist/preferiti degli utenti.
+ */
 class FPreferito extends FBaseTable
 {
     protected function tableName(): string
@@ -29,6 +32,7 @@ class FPreferito extends FBaseTable
 
     public function annunciByUser(int $idUtente): array
     {
+        // Restituisce annunci preferiti gia arricchiti con dati categoria/venditore/immagine.
         return $this->fetchEntities("
             SELECT
                 p.`data_aggiunta` AS data_aggiunta_wishlist,
@@ -57,6 +61,7 @@ class FPreferito extends FBaseTable
 
     public function preferitiByUser(int $idUtente): array
     {
+        // Lista grezza dei record preferito, utile quando non servono dati annuncio.
         return $this->fetchEntities(
             'SELECT `id_utente`, `id_annuncio`, `data_aggiunta` FROM `preferito` WHERE `id_utente` = ? ORDER BY `data_aggiunta` DESC',
             [$idUtente]
@@ -65,6 +70,7 @@ class FPreferito extends FBaseTable
 
     public function idsByUser(int $idUtente): array
     {
+        // Elenco compatto per segnare i bottoni "preferito" nella UI.
         $rows = $this->fetchRows('SELECT `id_annuncio` FROM `preferito` WHERE `id_utente` = ?', [$idUtente]);
 
         return array_map('intval', array_column($rows, 'id_annuncio'));
@@ -72,6 +78,7 @@ class FPreferito extends FBaseTable
 
     public function add(EPreferito $preferito): void
     {
+        // INSERT IGNORE evita errore se l'utente aggiunge due volte lo stesso annuncio.
         $this->execute(
             'INSERT IGNORE INTO `preferito` (`id_utente`, `id_annuncio`) VALUES (?, ?)',
             [$preferito->getIdUtente(), $preferito->getIdAnnuncio()]
@@ -80,6 +87,7 @@ class FPreferito extends FBaseTable
 
     public function remove(int $idUtente, int $idAnnuncio): void
     {
+        // Rimozione puntuale da wishlist.
         $this->execute(
             'DELETE FROM `preferito` WHERE `id_utente` = ? AND `id_annuncio` = ?',
             [$idUtente, $idAnnuncio]
@@ -88,11 +96,13 @@ class FPreferito extends FBaseTable
 
     public function removeByAnnuncio(int $idAnnuncio): void
     {
+        // Usato quando un annuncio viene venduto o rimosso.
         $this->execute('DELETE FROM `preferito` WHERE `id_annuncio` = ?', [$idAnnuncio]);
     }
 
     public function existsForUser(int $idUtente, int $idAnnuncio): bool
     {
+        // Supporta il toggle preferito senza caricare tutta la wishlist.
         return (bool) $this->fetchColumn(
             'SELECT 1 FROM `preferito` WHERE `id_utente` = ? AND `id_annuncio` = ? LIMIT 1',
             [$idUtente, $idAnnuncio]
@@ -101,11 +111,13 @@ class FPreferito extends FBaseTable
 
     public function clearForUser(int $idUtente): void
     {
+        // Svuota la wishlist dell'utente.
         $this->execute('DELETE FROM `preferito` WHERE `id_utente` = ?', [$idUtente]);
     }
 
     public function removeUnavailableForUser(int $idUtente): void
     {
+        // Pulisce preferiti collegati ad annunci non piu attivi.
         $this->execute("
             DELETE p
             FROM `preferito` p

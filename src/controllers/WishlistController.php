@@ -24,7 +24,7 @@ class WishlistController extends BaseController
     }
 
     /**
-     * Mostra la wishlist pulendo prima eventuali annunci non piu disponibili.
+     * Mostra la wishlist rimuovendo  prima eventuali annunci non piu disponibili.
      */
     public function lista(int $idUtente): void
     {

@@ -25,7 +25,7 @@ class BusinessController extends BaseController
     }
 
     /**
-     * Mostra profilo business e tutti gli annunci associati all'utente venditore.
+     * Mostra profilo business e tutti gli annunci associati all'utente business
      */
     public function dashboard(int $idUtente): void
     {
@@ -38,7 +38,7 @@ class BusinessController extends BaseController
     }
 
     /**
-     * Mostra il form per trasformare un utente in account business.
+     * Mostra il form per creare un utente in account business.
      */
     public function formCreazione(): void
     {

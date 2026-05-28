@@ -4,8 +4,14 @@ namespace App\Foundation;
 
 use App\Entity\EAdmin;
 
+/**
+ * Repository degli amministratori e dei dati necessari alla moderazione.
+ */
 class FAdmin extends FBaseTable
 {
+    /**
+     * Metadati usati da FBaseTable per costruire query generiche.
+     */
     protected function tableName(): string { return 'admin'; }
     protected function primaryKey(): string { return 'id_admin'; }
     protected function entityClass(): string { return EAdmin::class; }
@@ -16,6 +22,7 @@ class FAdmin extends FBaseTable
 
     public function allOrdered(): array
     {
+        // Compatibilita: se la colonna stato_ban manca, la query espone comunque 0.
         $statoBanSelect = $this->hasColumn('stato_ban') ? '`stato_ban`' : '0 AS stato_ban';
 
         return $this->fetchEntities("
@@ -27,6 +34,7 @@ class FAdmin extends FBaseTable
 
     public function findForModeration(int $idAdmin): ?EAdmin
     {
+        // Recupera solo i campi utili a verificare privilegi e stato ban.
         $statoBanSelect = $this->hasColumn('stato_ban') ? '`stato_ban`' : '0 AS stato_ban';
 
         $entity = $this->fetchEntity("
@@ -41,6 +49,7 @@ class FAdmin extends FBaseTable
 
     public function setBanState(int $idAdmin, bool $banned): void
     {
+        // Su database non aggiornati la colonna puo non esistere: in quel caso non fa nulla.
         if (!$this->hasColumn('stato_ban')) {
             return;
         }

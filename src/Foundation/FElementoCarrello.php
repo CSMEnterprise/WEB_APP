@@ -4,6 +4,9 @@ namespace App\Foundation;
 
 use App\Entity\EElementoCarrello;
 
+/**
+ * Repository delle righe del carrello, cioe il legame carrello-annuncio.
+ */
 class FElementoCarrello extends FBaseTable
 {
     protected function tableName(): string
@@ -28,6 +31,7 @@ class FElementoCarrello extends FBaseTable
 
     public function elementiAcquistabili(int $idCarrello): array
     {
+        // Restituisce direttamente dati annuncio arricchiti, pronti per la view carrello.
         return $this->fetchEntities("
             SELECT
                 e.`id_elemento_carrello`,
@@ -58,6 +62,7 @@ class FElementoCarrello extends FBaseTable
 
     public function activeAnnuncioIdsByUser(int $idUtente): array
     {
+        // Usato per evidenziare nella UI gli annunci gia presenti nel carrello.
         $rows = $this->fetchRows("
             SELECT e.`id_annuncio`
             FROM `elemento_carrello` e
@@ -72,6 +77,7 @@ class FElementoCarrello extends FBaseTable
 
     public function add(EElementoCarrello $elemento): void
     {
+        // INSERT IGNORE rende l'aggiunta idempotente se l'articolo e gia nel carrello.
         $this->execute(
             'INSERT IGNORE INTO `elemento_carrello` (`id_carrello`, `id_annuncio`) VALUES (?, ?)',
             [$elemento->getIdCarrello(), $elemento->getIdAnnuncio()]
@@ -80,6 +86,7 @@ class FElementoCarrello extends FBaseTable
 
     public function remove(int $idCarrello, int $idAnnuncio): void
     {
+        // Rimozione puntuale di un annuncio dal carrello specifico.
         $this->execute(
             'DELETE FROM `elemento_carrello` WHERE `id_carrello` = ? AND `id_annuncio` = ?',
             [$idCarrello, $idAnnuncio]
@@ -88,11 +95,13 @@ class FElementoCarrello extends FBaseTable
 
     public function removeFromAllCarts(int $idAnnuncio): void
     {
+        // Dopo una vendita l'annuncio sparisce da tutti i carrelli.
         $this->execute('DELETE FROM `elemento_carrello` WHERE `id_annuncio` = ?', [$idAnnuncio]);
     }
 
     public function unavailableByCart(int $idCarrello): array
     {
+        // Righe non piu attive, mostrate per avvisare l'utente della pulizia carrello.
         return $this->fetchRows("
             SELECT a.`id_annuncio`, a.`titolo`, a.`stato`
             FROM `elemento_carrello` e
@@ -104,6 +113,7 @@ class FElementoCarrello extends FBaseTable
 
     public function removeUnavailableByCart(int $idCarrello): void
     {
+        // Pulizia automatica degli articoli venduti/eliminati.
         $this->execute("
             DELETE e
             FROM `elemento_carrello` e
@@ -115,6 +125,7 @@ class FElementoCarrello extends FBaseTable
 
     public function clearCart(int $idCarrello): void
     {
+        // Svuota tutte le righe del carrello.
         $this->execute('DELETE FROM `elemento_carrello` WHERE `id_carrello` = ?', [$idCarrello]);
     }
 }

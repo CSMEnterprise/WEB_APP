@@ -594,7 +594,6 @@ class UtenteController extends BaseController
 
         return (int) $this->db->lastInsertId();
     }
-
     /**
      * Crea i dati aziendali collegati a un utente gia registrato.
      */

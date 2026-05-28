@@ -4,8 +4,14 @@ namespace App\Foundation;
 
 use App\Entity\EAccountBusiness;
 
+/**
+ * Repository dell'account business collegato a un utente registrato.
+ */
 class FAccountBusiness extends FBaseTable
 {
+    /**
+     * Metadati usati da FBaseTable per costruire query generiche.
+     */
     protected function tableName(): string { return 'account_business'; }
     protected function primaryKey(): string { return 'id_acc_business'; }
     protected function entityClass(): string { return EAccountBusiness::class; }
@@ -30,6 +36,7 @@ class FAccountBusiness extends FBaseTable
 
     public function findByUserWithAddress(int $idUtente): ?EAccountBusiness
     {
+        // Carica il business insieme alla sede predefinita per la pagina profilo.
         $entity = $this->fetchEntity("
             SELECT ab.*, i.`via`, i.`numero`, i.`cap`, i.`citta`, i.`provincia`, i.`paese`
             FROM `account_business` ab
@@ -43,6 +50,7 @@ class FAccountBusiness extends FBaseTable
 
     public function create(EAccountBusiness $business): int
     {
+        // Inserisce solo i campi minimi richiesti alla creazione dell'account.
         return $this->insert([
             'id_utente' => $business->getIdUtente(),
             'p_iva' => $business->getPIva(),

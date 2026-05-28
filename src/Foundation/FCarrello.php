@@ -4,6 +4,9 @@ namespace App\Foundation;
 
 use App\Entity\ECarrello;
 
+/**
+ * Repository del carrello: un utente normale ha un solo carrello attivo.
+ */
 class FCarrello extends FBaseTable
 {
     protected function tableName(): string
@@ -28,6 +31,7 @@ class FCarrello extends FBaseTable
 
     public function findByUser(int $idUtente): ?ECarrello
     {
+        // Cerca il carrello associato all'utente, se e gia stato creato.
         $entity = $this->fetchEntity(
             'SELECT * FROM `carrello` WHERE `id_utente` = ? LIMIT 1',
             [$idUtente]
@@ -38,6 +42,7 @@ class FCarrello extends FBaseTable
 
     public function getOrCreateIdByUser(int $idUtente): int
     {
+        // Pattern get-or-create: evita di creare carrelli duplicati a ogni visita.
         $carrello = $this->findByUser($idUtente);
 
         if ($carrello) {
@@ -49,6 +54,7 @@ class FCarrello extends FBaseTable
 
     public function findCart(int $idCarrello): ?ECarrello
     {
+        // Wrapper tipizzato attorno al find generico della classe base.
         $entity = $this->find($idCarrello);
 
         return $entity instanceof ECarrello ? $entity : null;

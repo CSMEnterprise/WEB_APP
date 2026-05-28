@@ -5,6 +5,9 @@ namespace App\Foundation;
 use App\Entity\EBaseEntity;
 use App\Entity\EImmagine;
 
+/**
+ * Repository delle immagini collegate agli annunci.
+ */
 class FImmagine extends FBaseTable
 {
     protected function tableName(): string
@@ -29,6 +32,7 @@ class FImmagine extends FBaseTable
 
     public function byAnnuncio(int $idAnnuncio): array
     {
+        // Le immagini sono ordinate prima dal campo ordine, poi dall'id come fallback stabile.
         return $this->fetchEntities(
             'SELECT * FROM `immagine` WHERE `id_annuncio` = ? ORDER BY `ordine` ASC, `id_immagine` ASC',
             [$idAnnuncio]
@@ -37,6 +41,7 @@ class FImmagine extends FBaseTable
 
     public function countByAnnuncio(int $idAnnuncio): int
     {
+        // Usato per rispettare il limite massimo di foto per annuncio.
         return (int) $this->fetchColumn(
             'SELECT COUNT(*) FROM `immagine` WHERE `id_annuncio` = ?',
             [$idAnnuncio]
@@ -45,6 +50,7 @@ class FImmagine extends FBaseTable
 
     public function addForAnnuncio(int $idAnnuncio, string $url, int $ordine = 0): int
     {
+        // Salva solo il path pubblico; il file fisico viene gestito dal controller.
         return $this->insert([
             'id_annuncio' => $idAnnuncio,
             'url' => $url,
@@ -54,6 +60,7 @@ class FImmagine extends FBaseTable
 
     public function findOwnedByUser(int $idImmagine, int $idUtente): ?EImmagine
     {
+        // La join con annuncio impedisce a un utente di cancellare immagini altrui.
         $entity = $this->fetchEntity(
             "SELECT i.*
              FROM `immagine` i

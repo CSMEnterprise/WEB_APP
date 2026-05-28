@@ -4,8 +4,14 @@ namespace App\Foundation;
 
 use App\Entity\ESegnalazione;
 
+/**
+ * Repository delle segnalazioni utente e del loro stato di lavorazione.
+ */
 class FSegnalazione extends FBaseTable
 {
+    /**
+     * Metadati usati da FBaseTable per CRUD generico.
+     */
     protected function tableName(): string { return 'segnalazione'; }
     protected function primaryKey(): string { return 'id_segnalazione'; }
     protected function entityClass(): string { return ESegnalazione::class; }
@@ -29,6 +35,7 @@ class FSegnalazione extends FBaseTable
 
     public function create(ESegnalazione $segnalazione): int
     {
+        // Salva il target scelto e lo stato iniziale della segnalazione.
         return $this->insert([
             'id_segnalante' => $segnalazione->getIdSegnalante(),
             'id_annuncio' => $segnalazione->getIdAnnuncio(),
@@ -43,6 +50,7 @@ class FSegnalazione extends FBaseTable
 
     public function allWithDetails(array $filters = []): array
     {
+        // Costruisce filtri whitelistati per oggetto segnalato e tipologia.
         $oggetto = trim((string) ($filters['oggetto'] ?? ''));
         $tipologia = trim((string) ($filters['tipologia'] ?? ''));
         $where = [];
@@ -66,6 +74,7 @@ class FSegnalazione extends FBaseTable
 
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
+        // Le join opzionali risolvono il nome/titolo dell'oggetto segnalato.
         return $this->fetchEntities("
             SELECT
                 s.*,
@@ -87,6 +96,7 @@ class FSegnalazione extends FBaseTable
 
     public function close(int $idSegnalazione, int $idAdmin): void
     {
+        // Chiusura amministrativa: registra admin e timestamp di risoluzione.
         $this->execute("
             UPDATE `segnalazione`
             SET `stato` = 'Risolta',

@@ -4,6 +4,10 @@ namespace App\Foundation;
 
 use App\Entity\EUtenteRegistrato;
 
+/**
+ * Repository degli utenti registrati.
+ * Include ricerche pubbliche, profilo e strumenti di moderazione admin.
+ */
 class FUtenteRegistrato extends FBaseTable
 {
     protected function tableName(): string
@@ -41,6 +45,7 @@ class FUtenteRegistrato extends FBaseTable
 
     public function findWithDefaultAddress(int $idUtente): ?EUtenteRegistrato
     {
+        // Il profilo utente include l'indirizzo predefinito tramite LEFT JOIN.
         $entity = $this->fetchEntity("
             SELECT u.`id_utente`, u.`email`, u.`email_verificata`, u.`token_verifica`, u.`token_scadenza`,
                    u.`username`, u.`password_hash`, u.`nome`, u.`telefono`, u.`propic`,
@@ -57,6 +62,7 @@ class FUtenteRegistrato extends FBaseTable
 
     public function updateProfile(int $idUtente, string $nome, ?string $telefono): void
     {
+        // Aggiorna solo dati anagrafici modificabili dal profilo.
         $this->execute(
             'UPDATE `utente_registrato` SET `nome` = ?, `telefono` = ? WHERE `id_utente` = ?',
             [$nome, $telefono, $idUtente]
@@ -65,6 +71,7 @@ class FUtenteRegistrato extends FBaseTable
 
     public function updatePropic(int $idUtente, string $url): void
     {
+        // Salva nel DB il path pubblico della nuova foto profilo.
         $this->execute(
             'UPDATE `utente_registrato` SET `propic` = ? WHERE `id_utente` = ?',
             [$url, $idUtente]
@@ -73,6 +80,7 @@ class FUtenteRegistrato extends FBaseTable
 
     public function updateName(int $idUtente, string $nome): void
     {
+        // Usato quando l'indirizzo di spedizione fornisce anche il nome destinatario.
         $this->execute(
             'UPDATE `utente_registrato` SET `nome` = ? WHERE `id_utente` = ?',
             [$nome, $idUtente]
@@ -81,6 +89,7 @@ class FUtenteRegistrato extends FBaseTable
 
     public function searchPublic(string $q): array
     {
+        // La ricerca pubblica non mostra account bannati e limita i risultati.
         if ($q === '') {
             return [];
         }
@@ -98,6 +107,7 @@ class FUtenteRegistrato extends FBaseTable
 
     public function allForAdmin(string $q = ''): array
     {
+        // Ricerca ampia per pannello admin: id, email, username, nome o telefono.
         $where = '';
         $params = [];
 
@@ -123,6 +133,7 @@ class FUtenteRegistrato extends FBaseTable
 
     public function setBanState(int $idUtente, bool $banned): void
     {
+        // Flag usato dai middleware/login per bloccare accesso e visibilita pubblica.
         $this->execute(
             'UPDATE `utente_registrato` SET `stato_ban` = ? WHERE `id_utente` = ?',
             [$banned ? 1 : 0, $idUtente]

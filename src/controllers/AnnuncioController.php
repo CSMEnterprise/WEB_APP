@@ -51,7 +51,7 @@ class AnnuncioController extends BaseController
     }
 
     /**
-     * Mostra un annuncio con dati del venditore e stato wishlist/carrello dell'utente.
+     * Mostra dettagli annuncio con dati del venditore e stato wishlist/carrello dell'utente.
      */
     public function dettaglio(int $idAnnuncio): void
     {
@@ -313,7 +313,7 @@ class AnnuncioController extends BaseController
     }
 
     /**
-     * Cancella il file solo se il path resta dentro public, evitando path traversal.
+     * Cancella il file solo se il path resta dentro public.
      */
     private function deleteImageFile(string $url): void
     {
