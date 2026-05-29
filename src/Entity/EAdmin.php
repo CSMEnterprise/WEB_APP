@@ -2,12 +2,22 @@
 
 namespace App\Entity;
 
+/**
+ * Rappresenta un amministratore della piattaforma.
+ *
+ * Corrisponde alla tabella `admin`.
+ * Il livello di sicurezza determina i permessi: livello 1 = moderatore base,
+ * livelli superiori hanno accesso a funzionalità più sensibili (es. verifica business).
+ */
 class EAdmin extends EBaseEntity
 {
     private $idAdmin;
     private $email;
+    /** Hash bcrypt della password */
     private $passwordHash;
+    /** Livello di privilegio dell'admin (1 = base, valori maggiori = più permessi) */
     private $livelloSicurezza;
+    /** true se l'admin è stato disabilitato */
     private $statoBan;
     private $dataCreazione;
 
@@ -25,6 +35,7 @@ class EAdmin extends EBaseEntity
         $this->dataCreazione = $dataCreazione;
     }
 
+    /** Costruisce l'entity da un array associativo (riga DB o payload form). */
     public static function fromArray(array $data): self
     {
         $admin = new self(
@@ -96,11 +107,13 @@ class EAdmin extends EBaseEntity
         $this->statoBan = $statoBan;
     }
 
+    /** Disabilita l'account admin. */
     public function banna(): void
     {
         $this->statoBan = true;
     }
 
+    /** Riabilita l'account admin. */
     public function sblocca(): void
     {
         $this->statoBan = false;
@@ -119,12 +132,12 @@ class EAdmin extends EBaseEntity
     public function toArray(): array
     {
         return $this->withExtra([
-            'id_admin' => $this->idAdmin,
-            'email' => $this->email,
-            'password_hash' => $this->passwordHash,
+            'id_admin'          => $this->idAdmin,
+            'email'             => $this->email,
+            'password_hash'     => $this->passwordHash,
             'livello_sicurezza' => $this->livelloSicurezza,
-            'stato_ban' => self::boolToDb($this->statoBan),
-            'data_creazione' => $this->dataCreazione,
+            'stato_ban'         => self::boolToDb($this->statoBan),
+            'data_creazione'    => $this->dataCreazione,
         ]);
     }
 

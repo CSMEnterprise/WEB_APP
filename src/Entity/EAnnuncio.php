@@ -2,20 +2,36 @@
 
 namespace App\Entity;
 
+/**
+ * Rappresenta un annuncio di vendita pubblicato sulla piattaforma.
+ *
+ * Corrisponde alla tabella `annuncio`.
+ * Un annuncio può essere creato da un utente privato (idUtente) o da un account
+ * business (idBusiness); solo uno dei due deve essere valorizzato.
+ * Contiene una lista di EImmagine associate, popolata tramite fromArray() o addImmagine().
+ *
+ * Stati possibili: 'attivo', 'venduto', 'scaduto', 'rimosso'.
+ */
 class EAnnuncio extends EBaseEntity
 {
     private $idAnnuncio;
+    /** ID utente privato autore, null se l'annuncio è di un business */
     private $idUtente;
+    /** ID account business autore, null se l'annuncio è di un privato */
     private $idBusiness;
     private $idCategoria;
     private $titolo;
     private $descrizione;
+    /** Es. 'Nuovo', 'Ottimo', 'Buono', 'Accettabile', 'Da restaurare' */
     private $statoConservazione;
     private $prezzo;
+    /** Es. 'Consegna', 'Ritiro', 'Entrambi' */
     private $modalitaConsegna;
+    /** Stato corrente dell'annuncio: 'attivo' | 'venduto' | 'scaduto' | 'rimosso' */
     private $stato;
     private $dataCreazione;
     private $dataScadenza;
+    /** @var EImmagine[] Immagini allegate, ordinate per campo `ordine` */
     private $immagini;
 
     public function __construct(
@@ -35,6 +51,7 @@ class EAnnuncio extends EBaseEntity
         $this->immagini = [];
     }
 
+    /** Costruisce l'entity da un array associativo (riga DB o payload form). */
     public static function fromArray(array $data): self
     {
         $annuncio = new self(
@@ -58,7 +75,6 @@ class EAnnuncio extends EBaseEntity
         }
 
         $annuncio->rememberExtra($data, array_keys($annuncio->toArray()));
-
 
         return $annuncio;
     }
@@ -110,11 +126,13 @@ class EAnnuncio extends EBaseEntity
         $this->stato = 'venduto';
     }
 
+    /** Aggiunge un'immagine alla lista. L'ordine è determinato dall'indice dell'array. */
     public function addImmagine(EImmagine $immagine): void
     {
         $this->immagini[] = $immagine;
     }
 
+    /** Rimuove l'immagine alla posizione $pos e ricompatta l'array. */
     public function removeImmagine(int $pos): void
     {
         unset($this->immagini[$pos]);
@@ -124,19 +142,22 @@ class EAnnuncio extends EBaseEntity
     public function toArray(): array
     {
         return $this->withExtra([
-            'id_annuncio' => $this->idAnnuncio,
-            'id_utente' => $this->idUtente,
-            'id_business' => $this->idBusiness,
-            'id_categoria' => $this->idCategoria,
-            'titolo' => $this->titolo,
-            'descrizione' => $this->descrizione,
-            'stato_conservazione' => $this->statoConservazione,
-            'prezzo' => $this->prezzo,
-            'modalita_consegna' => $this->modalitaConsegna,
-            'stato' => $this->stato,
-            'data_creazione' => $this->dataCreazione,
-            'data_scadenza' => $this->dataScadenza,
-            'immagini' => array_map(static fn($immagine) => $immagine instanceof EImmagine ? $immagine->toArray() : $immagine, $this->immagini),
+            'id_annuncio'        => $this->idAnnuncio,
+            'id_utente'          => $this->idUtente,
+            'id_business'        => $this->idBusiness,
+            'id_categoria'       => $this->idCategoria,
+            'titolo'             => $this->titolo,
+            'descrizione'        => $this->descrizione,
+            'stato_conservazione'=> $this->statoConservazione,
+            'prezzo'             => $this->prezzo,
+            'modalita_consegna'  => $this->modalitaConsegna,
+            'stato'              => $this->stato,
+            'data_creazione'     => $this->dataCreazione,
+            'data_scadenza'      => $this->dataScadenza,
+            'immagini'           => array_map(
+                static fn($immagine) => $immagine instanceof EImmagine ? $immagine->toArray() : $immagine,
+                $this->immagini
+            ),
         ]);
     }
 

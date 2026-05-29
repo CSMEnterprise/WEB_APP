@@ -2,20 +2,34 @@
 
 namespace App\Entity;
 
+/**
+ * Rappresenta il profilo business di un utente registrato.
+ *
+ * Corrisponde alla tabella `account_business`.
+ * Un account business è sempre collegato a un EUtenteRegistrato tramite idUtente
+ * e deve essere verificato da un admin prima di poter pubblicare annunci aziendali.
+ */
 class EAccountBusiness extends EBaseEntity
 {
     private $idAccBusiness;
+    /** ID dell'utente proprietario del profilo business */
     private $idUtente;
+    /** Partita IVA dell'azienda */
     private $pIva;
     private $nomeAzienda;
+    /** Percorso relativo al logo aziendale, null se non caricato */
     private $logo;
     private $descrizione;
     private $telefono;
     private $emailAziendale;
+    /** URL del profilo social (es. Instagram, Facebook), opzionale */
     private $linkSocial;
+    /** true se un admin ha verificato la validità del profilo business */
     private $verificato;
     private $dataRegistrazione;
+    /** ID dell'admin che ha effettuato la verifica, null se non ancora verificato */
     private $idAdminVerifica;
+    /** Data in cui è avvenuta la verifica, null se non ancora verificato */
     private $dataVerifica;
 
     public function __construct(
@@ -38,6 +52,7 @@ class EAccountBusiness extends EBaseEntity
         $this->dataVerifica = null;
     }
 
+    /** Costruisce l'entity da un array associativo (riga DB o payload form). */
     public static function fromArray(array $data): self
     {
         $business = new self(
@@ -58,7 +73,6 @@ class EAccountBusiness extends EBaseEntity
         $business->setDataVerifica(self::read($data, 'data_verifica', 'dataVerifica'));
 
         $business->rememberExtra($data, array_keys($business->toArray()));
-
 
         return $business;
     }
@@ -91,6 +105,10 @@ class EAccountBusiness extends EBaseEntity
     public function getDataVerifica(): ?string { return $this->dataVerifica; }
     public function setDataVerifica(?string $dataVerifica): void { $this->dataVerifica = $dataVerifica; }
 
+    /**
+     * Segna il business come verificato, registrando l'admin responsabile e la data.
+     * Passare null per entrambi se la verifica è automatica.
+     */
     public function verifica(?int $idAdminVerifica = null, ?string $dataVerifica = null): void
     {
         $this->verificato = true;
@@ -101,19 +119,19 @@ class EAccountBusiness extends EBaseEntity
     public function toArray(): array
     {
         return $this->withExtra([
-            'id_acc_business' => $this->idAccBusiness,
-            'id_utente' => $this->idUtente,
-            'p_iva' => $this->pIva,
-            'nome_azienda' => $this->nomeAzienda,
-            'logo' => $this->logo,
-            'descrizione' => $this->descrizione,
-            'telefono' => $this->telefono,
-            'email_aziendale' => $this->emailAziendale,
-            'link_social' => $this->linkSocial,
-            'verificato' => self::boolToDb($this->verificato),
-            'data_registrazione' => $this->dataRegistrazione,
+            'id_acc_business'   => $this->idAccBusiness,
+            'id_utente'         => $this->idUtente,
+            'p_iva'             => $this->pIva,
+            'nome_azienda'      => $this->nomeAzienda,
+            'logo'              => $this->logo,
+            'descrizione'       => $this->descrizione,
+            'telefono'          => $this->telefono,
+            'email_aziendale'   => $this->emailAziendale,
+            'link_social'       => $this->linkSocial,
+            'verificato'        => self::boolToDb($this->verificato),
+            'data_registrazione'=> $this->dataRegistrazione,
             'id_admin_verifica' => $this->idAdminVerifica,
-            'data_verifica' => $this->dataVerifica,
+            'data_verifica'     => $this->dataVerifica,
         ]);
     }
 

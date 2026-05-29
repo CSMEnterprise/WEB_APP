@@ -2,12 +2,24 @@
 
 namespace App\Entity;
 
+/**
+ * Rappresenta un feedback (recensione) lasciato dopo una transazione completata.
+ *
+ * Corrisponde alla tabella `feedback`.
+ * Un feedback è sempre collegato a un pagamento completato (idPagamento)
+ * e viene scritto dall'acquirente (idAutore) verso il venditore.
+ * La valutazione va da 1 (minima) a 5 (massima).
+ */
 class EFeedback extends EBaseEntity
 {
     private $idFeedback;
+    /** ID dell'utente che ha scritto il feedback (l'acquirente) */
     private $idAutore;
+    /** ID del pagamento a cui si riferisce il feedback */
     private $idPagamento;
+    /** Voto da 1 a 5 stelle */
     private $valutazione;
+    /** Testo opzionale del feedback */
     private $commento;
     private $dataFeedback;
 
@@ -20,6 +32,7 @@ class EFeedback extends EBaseEntity
         $this->dataFeedback = null;
     }
 
+    /** Costruisce l'entity da un array associativo (riga DB o payload form). */
     public static function fromArray(array $data): self
     {
         $feedback = new self(
@@ -51,12 +64,12 @@ class EFeedback extends EBaseEntity
     public function toArray(): array
     {
         return $this->withExtra([
-            'id_feedback' => $this->idFeedback,
-            'id_autore' => $this->idAutore,
+            'id_feedback'  => $this->idFeedback,
+            'id_autore'    => $this->idAutore,
             'id_pagamento' => $this->idPagamento,
-            'valutazione' => $this->valutazione,
-            'commento' => $this->commento,
-            'data_feedback' => $this->dataFeedback,
+            'valutazione'  => $this->valutazione,
+            'commento'     => $this->commento,
+            'data_feedback'=> $this->dataFeedback,
         ]);
     }
 

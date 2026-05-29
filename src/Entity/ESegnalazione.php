@@ -2,19 +2,40 @@
 
 namespace App\Entity;
 
+/**
+ * Rappresenta una segnalazione inviata da un utente alla piattaforma.
+ *
+ * Corrisponde alla tabella `segnalazione`.
+ * Una segnalazione può riguardare un annuncio, un utente, un business o un feedback;
+ * i campi relativi sono opzionali e mutuamente esclusivi (solo uno viene valorizzato).
+ * Viene gestita da un admin che la chiude con una risoluzione.
+ *
+ * Stati possibili: 'Aperta', 'Risolta', 'Ignorata'.
+ * Tipologie comuni: 'Contenuto inappropriato', 'Truffa', 'Spam', 'Altro'.
+ */
 class ESegnalazione extends EBaseEntity
 {
     private $idSegnalazione;
+    /** ID dell'utente che ha inviato la segnalazione */
     private $idSegnalante;
+    /** ID dell'annuncio segnalato, null se non applicabile */
     private $idAnnuncio;
+    /** ID dell'utente segnalato, null se non applicabile */
     private $idUtenteSegnalato;
+    /** ID del business segnalato, null se non applicabile */
     private $idBusiness;
+    /** ID del feedback segnalato, null se non applicabile */
     private $idFeedback;
+    /** Categoria della segnalazione (es. 'Truffa', 'Spam', 'Altro') */
     private $tipologia;
+    /** Testo descrittivo opzionale fornito dal segnalante */
     private $descrizione;
+    /** Stato attuale: 'Aperta' | 'Risolta' | 'Ignorata' */
     private $stato;
     private $dataSegnalazione;
+    /** ID dell'admin che ha gestito la segnalazione, null se ancora aperta */
     private $idAdmin;
+    /** Data di chiusura della segnalazione, null se ancora aperta */
     private $dataRisoluzione;
 
     public function __construct(int $idSegnalante = 0, string $tipologia = 'Altro', ?string $descrizione = null)
@@ -25,6 +46,7 @@ class ESegnalazione extends EBaseEntity
         $this->stato = 'Aperta';
     }
 
+    /** Costruisce l'entity da un array associativo (riga DB o payload form). */
     public static function fromArray(array $data): self
     {
         $segnalazione = new self(
@@ -44,7 +66,6 @@ class ESegnalazione extends EBaseEntity
         $segnalazione->setDataRisoluzione(self::read($data, 'data_risoluzione', 'dataRisoluzione'));
 
         $segnalazione->rememberExtra($data, array_keys($segnalazione->toArray()));
-
 
         return $segnalazione;
     }
@@ -79,6 +100,10 @@ class ESegnalazione extends EBaseEntity
         return $this->stato === 'Aperta';
     }
 
+    /**
+     * Chiude la segnalazione impostando lo stato a 'Risolta' e registrando
+     * l'admin responsabile e la data di risoluzione.
+     */
     public function chiudi(?int $idAdmin = null, ?string $dataRisoluzione = null): void
     {
         $this->stato = 'Risolta';
@@ -89,18 +114,18 @@ class ESegnalazione extends EBaseEntity
     public function toArray(): array
     {
         return $this->withExtra([
-            'id_segnalazione' => $this->idSegnalazione,
-            'id_segnalante' => $this->idSegnalante,
-            'id_annuncio' => $this->idAnnuncio,
-            'id_utente_segnalato' => $this->idUtenteSegnalato,
-            'id_business' => $this->idBusiness,
-            'id_feedback' => $this->idFeedback,
-            'tipologia' => $this->tipologia,
-            'descrizione' => $this->descrizione,
-            'stato' => $this->stato,
-            'data_segnalazione' => $this->dataSegnalazione,
-            'id_admin' => $this->idAdmin,
-            'data_risoluzione' => $this->dataRisoluzione,
+            'id_segnalazione'    => $this->idSegnalazione,
+            'id_segnalante'      => $this->idSegnalante,
+            'id_annuncio'        => $this->idAnnuncio,
+            'id_utente_segnalato'=> $this->idUtenteSegnalato,
+            'id_business'        => $this->idBusiness,
+            'id_feedback'        => $this->idFeedback,
+            'tipologia'          => $this->tipologia,
+            'descrizione'        => $this->descrizione,
+            'stato'              => $this->stato,
+            'data_segnalazione'  => $this->dataSegnalazione,
+            'id_admin'           => $this->idAdmin,
+            'data_risoluzione'   => $this->dataRisoluzione,
         ]);
     }
 

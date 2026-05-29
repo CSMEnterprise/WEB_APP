@@ -2,11 +2,24 @@
 
 namespace App\Entity;
 
+/**
+ * Rappresenta una categoria di annunci (struttura ad albero).
+ *
+ * Corrisponde alla tabella `categoria`.
+ * Le categorie sono organizzate in gerarchia padre-figlio tramite idPadre:
+ * - se idPadre è null, la categoria è di primo livello (es. "Manga", "TCG Cards")
+ * - altrimenti è una sottocategoria (es. "Shonen" sotto "Manga")
+ *
+ * La lista $figli non viene persistita direttamente su DB, ma è popolata
+ * lato applicazione per costruire l'albero di navigazione.
+ */
 class ECategoria extends EBaseEntity
 {
     private $idCategoria;
     private $nome;
+    /** ID della categoria padre, null se categoria radice */
     private $idPadre;
+    /** @var ECategoria[] Sottocategorie figlie, popolate lato applicazione (non su DB) */
     private $figli;
 
     public function __construct(string $nome = '', ?int $idPadre = null)
@@ -16,6 +29,7 @@ class ECategoria extends EBaseEntity
         $this->figli = [];
     }
 
+    /** Costruisce l'entity da un array associativo (riga DB o payload form). */
     public static function fromArray(array $data): self
     {
         $categoria = new self(
@@ -63,11 +77,13 @@ class ECategoria extends EBaseEntity
         return $this->figli;
     }
 
+    /** Aggiunge una sottocategoria figlia. */
     public function addFiglio(ECategoria $categoria): void
     {
         $this->figli[] = $categoria;
     }
 
+    /** Rimuove la sottocategoria alla posizione $pos e ricompatta l'array. */
     public function removeFiglio(int $pos): void
     {
         unset($this->figli[$pos]);
@@ -78,9 +94,12 @@ class ECategoria extends EBaseEntity
     {
         return $this->withExtra([
             'id_categoria' => $this->idCategoria,
-            'nome' => $this->nome,
-            'id_padre' => $this->idPadre,
-            'figli' => array_map(static fn($figlio) => $figlio instanceof ECategoria ? $figlio->toArray() : $figlio, $this->figli),
+            'nome'         => $this->nome,
+            'id_padre'     => $this->idPadre,
+            'figli'        => array_map(
+                static fn($figlio) => $figlio instanceof ECategoria ? $figlio->toArray() : $figlio,
+                $this->figli
+            ),
         ]);
     }
 

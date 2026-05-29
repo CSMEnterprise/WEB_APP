@@ -2,10 +2,18 @@
 
 namespace App\Entity;
 
+/**
+ * Rappresenta un annuncio salvato nei preferiti da un utente.
+ *
+ * Corrisponde alla tabella `preferito`.
+ * La chiave primaria è composta da (idUtente, idAnnuncio),
+ * quindi ogni annuncio può essere messo nei preferiti una sola volta per utente.
+ */
 class EPreferito extends EBaseEntity
 {
     private $idUtente;
     private $idAnnuncio;
+    /** Data e ora in cui l'annuncio è stato aggiunto ai preferiti */
     private $dataAggiunta;
 
     public function __construct(int $idUtente = 0, int $idAnnuncio = 0)
@@ -15,6 +23,7 @@ class EPreferito extends EBaseEntity
         $this->dataAggiunta = null;
     }
 
+    /** Costruisce l'entity da un array associativo (riga DB o payload form). */
     public static function fromArray(array $data): self
     {
         $preferito = new self(
@@ -37,9 +46,9 @@ class EPreferito extends EBaseEntity
     public function toArray(): array
     {
         return $this->withExtra([
-            'id_utente' => $this->idUtente,
+            'id_utente'   => $this->idUtente,
             'id_annuncio' => $this->idAnnuncio,
-            'data_aggiunta' => $this->dataAggiunta,
+            'data_aggiunta'=> $this->dataAggiunta,
         ]);
     }
 

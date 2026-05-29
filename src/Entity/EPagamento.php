@@ -2,15 +2,30 @@
 
 namespace App\Entity;
 
+/**
+ * Rappresenta un pagamento effettuato per l'acquisto di un annuncio.
+ *
+ * Corrisponde alla tabella `pagamento`.
+ * Il pagamento viene creato quando l'acquirente avvia il checkout e
+ * completato dopo la conferma da parte di PayPal.
+ * L'indirizzo di spedizione scelto viene bloccato al momento del pagamento.
+ *
+ * Stati possibili: 'In_attesa', 'Completato', 'Annullato'.
+ */
 class EPagamento extends EBaseEntity
 {
     private $idPagamento;
     private $idAnnuncio;
+    /** ID dell'utente acquirente */
     private $idAcquirente;
+    /** ID dell'indirizzo scelto per la spedizione al momento del pagamento */
     private $idIndirizzoSpedizione;
     private $importoTotale;
+    /** Stato del pagamento: 'In_attesa' | 'Completato' | 'Annullato' */
     private $stato;
+    /** ID transazione restituito da PayPal dopo la conferma */
     private $paypalTransactionId;
+    /** Data e ora del pagamento */
     private $data;
 
     public function __construct(int $idAnnuncio = 0, int $idAcquirente = 0, int $idIndirizzoSpedizione = 0, float $importoTotale = 0.0)
@@ -24,6 +39,7 @@ class EPagamento extends EBaseEntity
         $this->data = null;
     }
 
+    /** Costruisce l'entity da un array associativo (riga DB o payload form). */
     public static function fromArray(array $data): self
     {
         $pagamento = new self(
@@ -63,11 +79,13 @@ class EPagamento extends EBaseEntity
         return $this->stato === 'Completato';
     }
 
+    /** Porta il pagamento allo stato 'Completato'. */
     public function completa(): void
     {
         $this->stato = 'Completato';
     }
 
+    /** Porta il pagamento allo stato 'Annullato'. */
     public function annulla(): void
     {
         $this->stato = 'Annullato';
@@ -76,14 +94,14 @@ class EPagamento extends EBaseEntity
     public function toArray(): array
     {
         return $this->withExtra([
-            'id_pagamento' => $this->idPagamento,
-            'id_annuncio' => $this->idAnnuncio,
-            'id_acquirente' => $this->idAcquirente,
-            'id_indirizzo_spedizione' => $this->idIndirizzoSpedizione,
-            'importo_totale' => $this->importoTotale,
-            'stato' => $this->stato,
-            'paypal_transaction_id' => $this->paypalTransactionId,
-            'data' => $this->data,
+            'id_pagamento'           => $this->idPagamento,
+            'id_annuncio'            => $this->idAnnuncio,
+            'id_acquirente'          => $this->idAcquirente,
+            'id_indirizzo_spedizione'=> $this->idIndirizzoSpedizione,
+            'importo_totale'         => $this->importoTotale,
+            'stato'                  => $this->stato,
+            'paypal_transaction_id'  => $this->paypalTransactionId,
+            'data'                   => $this->data,
         ]);
     }
 

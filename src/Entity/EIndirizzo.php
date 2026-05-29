@@ -2,18 +2,33 @@
 
 namespace App\Entity;
 
+/**
+ * Rappresenta un indirizzo fisico associato a un utente o a un account business.
+ *
+ * Corrisponde alla tabella `indirizzo`.
+ * Un indirizzo appartiene esclusivamente a un utente (idUtente) oppure
+ * a un business (idBusiness); i due campi sono mutuamente esclusivi.
+ * Il campo `predefinito` indica l'indirizzo usato di default per la spedizione.
+ *
+ * Tipi supportati: 'casa', 'lavoro', 'altro'.
+ */
 class EIndirizzo extends EBaseEntity
 {
     private $idIndirizzo;
+    /** ID utente proprietario, null se l'indirizzo appartiene a un business */
     private $idUtente;
+    /** ID business proprietario, null se l'indirizzo appartiene a un utente */
     private $idBusiness;
+    /** Tipo di indirizzo: 'casa' | 'lavoro' | 'altro' */
     private $tipo;
     private $via;
+    /** Numero civico, opzionale */
     private $numero;
     private $cap;
     private $citta;
     private $provincia;
     private $paese;
+    /** true se è l'indirizzo predefinito per la spedizione */
     private $predefinito;
 
     public function __construct(?int $idUtente = null, ?int $idBusiness = null, string $via = '', string $citta = '')
@@ -30,6 +45,7 @@ class EIndirizzo extends EBaseEntity
         $this->predefinito = false;
     }
 
+    /** Costruisce l'entity da un array associativo (riga DB o payload form). */
     public static function fromArray(array $data): self
     {
         $indirizzo = new self(
@@ -48,7 +64,6 @@ class EIndirizzo extends EBaseEntity
         $indirizzo->setPredefinito(self::boolFromDb(self::read($data, 'predefinito', 'predefinito', false)));
 
         $indirizzo->rememberExtra($data, array_keys($indirizzo->toArray()));
-
 
         return $indirizzo;
     }
@@ -81,16 +96,16 @@ class EIndirizzo extends EBaseEntity
     {
         return $this->withExtra([
             'id_indirizzo' => $this->idIndirizzo,
-            'id_utente' => $this->idUtente,
-            'id_business' => $this->idBusiness,
-            'tipo' => $this->tipo,
-            'via' => $this->via,
-            'numero' => $this->numero,
-            'cap' => $this->cap,
-            'citta' => $this->citta,
-            'provincia' => $this->provincia,
-            'paese' => $this->paese,
-            'predefinito' => self::boolToDb($this->predefinito),
+            'id_utente'    => $this->idUtente,
+            'id_business'  => $this->idBusiness,
+            'tipo'         => $this->tipo,
+            'via'          => $this->via,
+            'numero'       => $this->numero,
+            'cap'          => $this->cap,
+            'citta'        => $this->citta,
+            'provincia'    => $this->provincia,
+            'paese'        => $this->paese,
+            'predefinito'  => self::boolToDb($this->predefinito),
         ]);
     }
 

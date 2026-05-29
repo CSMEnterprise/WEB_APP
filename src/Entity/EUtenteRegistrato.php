@@ -2,18 +2,31 @@
 
 namespace App\Entity;
 
+/**
+ * Rappresenta un utente registrato sulla piattaforma.
+ *
+ * Corrisponde alla tabella `utente_registrato`.
+ * Un utente può avere un account business associato (EAccountBusiness)
+ * e deve verificare la propria email prima di poter operare pienamente.
+ */
 class EUtenteRegistrato extends EBaseEntity
 {
     private $idUtente;
     private $email;
+    /** @var bool true se l'utente ha cliccato il link di verifica email */
     private $emailVerificata;
+    /** Token UUID inviato via email per la verifica dell'account */
     private $tokenVerifica;
+    /** Timestamp di scadenza del token di verifica (formato stringa dal DB) */
     private $tokenScadenza;
     private $username;
+    /** Hash bcrypt della password */
     private $passwordHash;
     private $nome;
     private $telefono;
+    /** Percorso relativo alla foto profilo, null se non impostata */
     private $propic;
+    /** true se l'utente è stato bannato da un admin */
     private $statoBan;
     private $dataRegistrazione;
 
@@ -37,6 +50,7 @@ class EUtenteRegistrato extends EBaseEntity
         $this->dataRegistrazione = null;
     }
 
+    /** Costruisce l'entity da un array associativo (riga DB o payload form). */
     public static function fromArray(array $data): self
     {
         $utente = new self(
@@ -56,7 +70,6 @@ class EUtenteRegistrato extends EBaseEntity
         $utente->setDataRegistrazione(self::read($data, 'data_registrazione', 'dataRegistrazione'));
 
         $utente->rememberExtra($data, array_keys($utente->toArray()));
-
 
         return $utente;
     }
@@ -181,11 +194,13 @@ class EUtenteRegistrato extends EBaseEntity
         $this->statoBan = $statoBan;
     }
 
+    /** Imposta statoBan a true. */
     public function banna(): void
     {
         $this->statoBan = true;
     }
 
+    /** Rimuove il ban dall'utente. */
     public function sblocca(): void
     {
         $this->statoBan = false;
@@ -204,17 +219,17 @@ class EUtenteRegistrato extends EBaseEntity
     public function toArray(): array
     {
         return $this->withExtra([
-            'id_utente' => $this->idUtente,
-            'email' => $this->email,
-            'email_verificata' => self::boolToDb($this->emailVerificata),
-            'token_verifica' => $this->tokenVerifica,
-            'token_scadenza' => $this->tokenScadenza,
-            'username' => $this->username,
-            'password_hash' => $this->passwordHash,
-            'nome' => $this->nome,
-            'telefono' => $this->telefono,
-            'propic' => $this->propic,
-            'stato_ban' => self::boolToDb($this->statoBan),
+            'id_utente'          => $this->idUtente,
+            'email'              => $this->email,
+            'email_verificata'   => self::boolToDb($this->emailVerificata),
+            'token_verifica'     => $this->tokenVerifica,
+            'token_scadenza'     => $this->tokenScadenza,
+            'username'           => $this->username,
+            'password_hash'      => $this->passwordHash,
+            'nome'               => $this->nome,
+            'telefono'           => $this->telefono,
+            'propic'             => $this->propic,
+            'stato_ban'          => self::boolToDb($this->statoBan),
             'data_registrazione' => $this->dataRegistrazione,
         ]);
     }

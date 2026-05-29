@@ -2,11 +2,21 @@
 
 namespace App\Entity;
 
+/**
+ * Rappresenta un'immagine allegata a un annuncio.
+ *
+ * Corrisponde alla tabella `immagine`.
+ * Ogni annuncio può avere più immagini; il campo `ordine` determina
+ * la sequenza di visualizzazione (0 = immagine principale/copertina).
+ * Il campo `url` contiene il percorso relativo al file salvato sul server.
+ */
 class EImmagine extends EBaseEntity
 {
     private $idImmagine;
     private $idAnnuncio;
+    /** Percorso relativo al file immagine (es. 'uploads/annunci/foto.jpg') */
     private $url;
+    /** Posizione nella galleria: 0 = copertina, valori crescenti = ordine successivo */
     private $ordine;
 
     public function __construct(int $idAnnuncio = 0, string $url = '', int $ordine = 0)
@@ -16,6 +26,7 @@ class EImmagine extends EBaseEntity
         $this->ordine = $ordine;
     }
 
+    /** Costruisce l'entity da un array associativo (riga DB o payload form). */
     public static function fromArray(array $data): self
     {
         $immagine = new self(
@@ -43,8 +54,8 @@ class EImmagine extends EBaseEntity
         return $this->withExtra([
             'id_immagine' => $this->idImmagine,
             'id_annuncio' => $this->idAnnuncio,
-            'url' => $this->url,
-            'ordine' => $this->ordine,
+            'url'         => $this->url,
+            'ordine'      => $this->ordine,
         ]);
     }
 

@@ -2,14 +2,29 @@
 
 namespace App\Entity;
 
+/**
+ * Rappresenta un'azione di moderazione compiuta da un admin.
+ *
+ * Corrisponde alla tabella `modera`.
+ * Traccia ogni intervento di un admin sulla piattaforma (ban utente,
+ * rimozione annuncio, verifica business, ecc.).
+ * I campi idUtente, idFeedback, idAnnuncio e idBusiness sono mutuamente
+ * opzionali: solo quello relativo all'oggetto moderato viene valorizzato.
+ */
 class EModera extends EBaseEntity
 {
     private $idModerazione;
+    /** ID dell'admin che ha compiuto l'azione */
     private $idAdmin;
+    /** ID dell'utente coinvolto nella moderazione, null se non applicabile */
     private $idUtente;
+    /** ID del feedback coinvolto, null se non applicabile */
     private $idFeedback;
+    /** ID dell'annuncio coinvolto, null se non applicabile */
     private $idAnnuncio;
+    /** ID del business coinvolto, null se non applicabile */
     private $idBusiness;
+    /** Descrizione testuale dell'azione (es. 'Ban utente', 'Rimozione annuncio') */
     private $azioneCompiuta;
     private $dataAzione;
 
@@ -20,6 +35,7 @@ class EModera extends EBaseEntity
         $this->dataAzione = null;
     }
 
+    /** Costruisce l'entity da un array associativo (riga DB o payload form). */
     public static function fromArray(array $data): self
     {
         $modera = new self(
@@ -58,13 +74,13 @@ class EModera extends EBaseEntity
     {
         return $this->withExtra([
             'id_moderazione' => $this->idModerazione,
-            'id_admin' => $this->idAdmin,
-            'id_utente' => $this->idUtente,
-            'id_feedback' => $this->idFeedback,
-            'id_annuncio' => $this->idAnnuncio,
-            'id_business' => $this->idBusiness,
-            'azione_compiuta' => $this->azioneCompiuta,
-            'data_azione' => $this->dataAzione,
+            'id_admin'       => $this->idAdmin,
+            'id_utente'      => $this->idUtente,
+            'id_feedback'    => $this->idFeedback,
+            'id_annuncio'    => $this->idAnnuncio,
+            'id_business'    => $this->idBusiness,
+            'azione_compiuta'=> $this->azioneCompiuta,
+            'data_azione'    => $this->dataAzione,
         ]);
     }
 
