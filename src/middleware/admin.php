@@ -2,6 +2,11 @@
 
 namespace App\Middleware;
 
+/**
+ * Verifica che l'utente loggato sia un amministratore.
+ * Chiama prima requireAuth(), poi controlla `is_admin` in sessione.
+ * In caso negativo risponde 403 e termina.
+ */
 function requireAdmin(): void
 {
     requireAuth();
@@ -13,6 +18,11 @@ function requireAdmin(): void
     }
 }
 
+/**
+ * Verifica che l'admin loggato abbia livello di sicurezza 2 (privilegio massimo).
+ * Usare per route particolarmente sensibili (es. gestione altri admin, verifica business).
+ * Chiama requireAdmin() internamente, quindi verifica anche l'autenticazione base.
+ */
 function requireAdminLivello2(): void
 {
     requireAdmin();
@@ -24,6 +34,11 @@ function requireAdminLivello2(): void
     }
 }
 
+/**
+ * Blocca l'accesso agli amministratori a funzionalità riservate agli utenti normali.
+ * Usare sulle route di carrello, wishlist e acquisto per impedire che un admin operi
+ * come compratore (separazione dei ruoli).
+ */
 function denyAdmin(): void
 {
     if (!empty($_SESSION['is_admin'])) {
@@ -32,4 +47,3 @@ function denyAdmin(): void
         exit;
     }
 }
-

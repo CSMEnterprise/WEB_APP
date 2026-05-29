@@ -6,6 +6,12 @@ use App\Foundation\FDataBase;
 use App\Foundation\FPersistentManager;
 use PDO;
 
+/**
+ * Verifica che l'utente loggato abbia un account business attivo.
+ * Prima controlla l'autenticazione (requireAuth), poi cerca il profilo business
+ * associato all'utente nel DB. Se non esiste, reindirizza alla pagina di creazione.
+ * Usare sulle route riservate ai venditori business (es. gestione annunci aziendali).
+ */
 function requireBusiness(PDO $pdo): void
 {
     requireAuth();
@@ -19,6 +25,11 @@ function requireBusiness(PDO $pdo): void
     }
 }
 
+/**
+ * Blocca l'accesso agli account business alle funzionalità riservate agli utenti privati.
+ * Gli account business sono abilitati solo alla vendita: carrello, wishlist e acquisto
+ * non sono disponibili per loro (separazione dei ruoli compratore/venditore).
+ */
 function denyBusiness(): void
 {
     if (!empty($_SESSION['is_business'])) {
