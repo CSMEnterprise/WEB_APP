@@ -1,8 +1,52 @@
-vendor/
-var/cache/
-cache/
-templates_c/
-src/config/mail.php
-public/uploads/
+# Composer / dipendenze locali
+/vendor/
+/composer.phar
+
+# Configurazioni locali e segreti
+.env
+.env.*
+!.env.example
+/src/config/mail.php
+/src/config/*.local.php
+/config/*.local.php
+
+# Cache e file generati a runtime
+/cache/
+/var/cache/
+/var/log/
+/logs/
+/templates_c/
+/_cc_tmp/
+*.log
+php_errors.log
+
+# Upload e contenuti generati dagli utenti
+/public/uploads/
+
+# Dump database e database locali
 *.sql
+!/database/nerdvault.sql
+*.sqlite
+*.sqlite3
+*.db
+
+# Tooling e report locali
+/.phpunit.result.cache
+/coverage/
+/build/
+/dist/
+/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# File di sistema/editor
 .DS_Store
+._*
+.AppleDouble
+.LSOverride
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo

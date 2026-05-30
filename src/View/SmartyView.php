@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Foundation;
+namespace App\View;
 
+use App\Foundation\FDataBase;
+use App\Foundation\FPersistentManager;
 use RuntimeException;
 use Smarty\Smarty;
 
@@ -31,6 +33,9 @@ class SmartyView
         $this->smarty->setCompileDir($compilePath);
         $this->smarty->setCacheDir($cachePath);
         $this->smarty->setCaching(false);
+        $this->smarty->setCompileCheck(Smarty::COMPILECHECK_ON);
+        $this->smarty->setCompileId($this->smartyCompileId($root));
+        $this->smarty->setForceCompile($this->envFlag('SMARTY_FORCE_COMPILE'));
         $this->smarty->setEscapeHtml(true);
 
         // ── Modificatori PHP utili nei template ──────────────────────────
@@ -151,6 +156,31 @@ class SmartyView
         if (!is_dir($path) && !mkdir($path, 0775, true) && !is_dir($path)) {
             throw new RuntimeException('Impossibile creare la cartella Smarty: ' . $path);
         }
+    }
+
+    private function smartyCompileId(string $root): string
+    {
+        $headPath = $root . '/.git/HEAD';
+        if (!is_file($headPath)) {
+            return 'default';
+        }
+
+        $head = trim((string) file_get_contents($headPath));
+        if (str_starts_with($head, 'ref: ')) {
+            $refPath = $root . '/.git/' . substr($head, 5);
+            if (is_file($refPath)) {
+                $head = trim((string) file_get_contents($refPath));
+            }
+        }
+
+        return 'git_' . substr(hash('sha256', $head), 0, 12);
+    }
+
+    private function envFlag(string $name): bool
+    {
+        $value = $_ENV[$name] ?? $_SERVER[$name] ?? getenv($name);
+
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
     }
 
     private function publicPath(string $path): string

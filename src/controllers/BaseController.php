@@ -8,10 +8,10 @@ use App\Entity\{
     EModera
 };
 use App\Foundation\{
-    FPersistentManager,
-    SmartyView
+    FPersistentManager
 };
 use App\Services\ServiceException;
+use App\View\SmartyView;
 use PDO;
 
 /**

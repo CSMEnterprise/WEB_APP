@@ -67,7 +67,8 @@ WEB_APP/
 - `src/config/`: contiene la configurazione dell'applicazione, inclusa la connessione al database.
 - `src/controllers/`: riceve le richieste dal router e coordina servizi e viste.
 - `src/Entity/`: contiene le classi Entity con proprieta private, getter, setter e metodi di utilita.
-- `src/Foundation/`: contiene classi infrastrutturali e mapper tabella/Entity. La persistenza segue la logica `FDataBase` + `FPersistentManager` + classi `F...`, mentre `SmartyView` gestisce il rendering Smarty.
+- `src/Foundation/`: contiene classi infrastrutturali e mapper tabella/Entity. La persistenza segue la logica `FDataBase` + `FPersistentManager` + classi `F...`.
+- `src/View/`: contiene il wrapper della view layer, incluso `SmartyView` per il rendering Smarty.
 - `src/services/`: contiene la logica applicativa e le query al database tramite PDO.
 - `templates/`: contiene i template Smarty usati per renderizzare le pagine.
 - `src/middleware/`: contiene i controlli di accesso per utenti autenticati, admin, business e guest.
@@ -86,6 +87,7 @@ Namespace principali:
 - `App\Services\` -> `src/services/`
 - `App\Entity\` -> `src/Entity/`
 - `App\Foundation\` -> `src/Foundation/`
+- `App\View\` -> `src/View/`
 
 Il bootstrap `public/index.php` carica `vendor/autoload.php`; da li in poi controller, service, entity e foundation vengono caricati automaticamente. Le funzioni helper e middleware vengono caricate tramite la sezione `autoload.files` di `composer.json`.
 
@@ -242,7 +244,7 @@ http://localhost/WEB_APP/public/
 
 Smarty gestisce la parte View:
 
-- `src/Foundation/SmartyView.php` configura Smarty;
+- `src/View/SmartyView.php` configura Smarty;
 - `templates/` contiene i template `.tpl`;
 - i controller renderizzano le pagine tramite `BaseController::view()`.
 
