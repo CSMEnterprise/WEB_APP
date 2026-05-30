@@ -24,7 +24,7 @@
         </div>
 
         <div class="vd-summary">
-            <span class="pg-pill" data-tone="gold">Account venditore</span>
+            <span class="pg-pill" data-tone="gold">Account PRO</span>
             <h1 class="pg-h1">{$displayName}</h1>
             <p class="pg-sub">Visualizza reputazione, feedback e annunci attualmente disponibili da questo venditore.</p>
 

@@ -88,6 +88,32 @@ class BusinessController extends BaseController
     }
 
     /**
+     * Aggiorna le informazioni pubbliche della vetrina business.
+     */
+    public function salvaInfo(array $data, int $idUtente): void
+    {
+        $businessEntity = FPersistentManager::businessByUser($idUtente);
+
+        if (!$businessEntity) {
+            header('Location: /business/dashboard');
+            exit;
+        }
+
+        try {
+            $this->updateBusinessInfo((int) ($businessEntity->getIdAccBusiness() ?? 0), $data);
+
+            header('Location: /business/dashboard');
+            exit;
+        } catch (Exception $e) {
+            $errore = $e->getMessage();
+            $business = $this->entityToArray($businessEntity);
+            $annunci = $this->entitiesToArrays(FPersistentManager::annunciByUserIdAndStato($idUtente, null));
+
+            $this->view('business/profilo.tpl', compact('errore', 'business', 'annunci'), 'Area business');
+        }
+    }
+
+    /**
      * Mostra gli ordini ricevuti come venditore.
      */
     public function ordini(int $idUtente): void
@@ -180,6 +206,49 @@ class BusinessController extends BaseController
             'paese' => $paese,
             'predefinito' => 1,
         ]));
+    }
+
+    private function updateBusinessInfo(int $idBusiness, array $data): void
+    {
+        $this->requirePositiveId($idBusiness, 'Business');
+
+        $nomeAzienda = $this->clean($data['nome_azienda'] ?? '');
+        $descrizione = $this->clean($data['descrizione'] ?? '');
+        $emailAziendale = $this->clean($data['email_aziendale'] ?? '');
+        $telefono = $this->clean($data['telefono'] ?? '');
+        $linkSocial = $this->clean($data['link_social'] ?? '');
+
+        if ($nomeAzienda === '' || $emailAziendale === '') {
+            throw new ServiceException('Nome azienda ed email aziendale sono obbligatori.');
+        }
+
+        if (!preg_match('/^[\p{L}0-9 .&\'-]{2,80}$/u', $nomeAzienda)) {
+            throw new ServiceException('Il nome azienda deve contenere 2-80 caratteri validi.');
+        }
+
+        if ($descrizione !== '' && mb_strlen($descrizione) > 500) {
+            throw new ServiceException('La descrizione vetrina deve restare entro 500 caratteri.');
+        }
+
+        if (!filter_var($emailAziendale, FILTER_VALIDATE_EMAIL)) {
+            throw new ServiceException('Email aziendale non valida.');
+        }
+
+        if ($telefono !== '' && !preg_match('/^\+?[0-9 ]{8,15}$/', $telefono)) {
+            throw new ServiceException('Il telefono deve contenere 8-15 cifre e puo iniziare con +.');
+        }
+
+        if ($linkSocial !== '' && !filter_var($linkSocial, FILTER_VALIDATE_URL)) {
+            throw new ServiceException('Il link social deve essere un URL valido.');
+        }
+
+        FPersistentManager::updateBusinessInfo($idBusiness, [
+            'nome_azienda' => $nomeAzienda,
+            'descrizione' => $descrizione !== '' ? $descrizione : null,
+            'email_aziendale' => $emailAziendale,
+            'telefono' => $telefono !== '' ? $telefono : null,
+            'link_social' => $linkSocial !== '' ? $linkSocial : null,
+        ]);
     }
 
     /**

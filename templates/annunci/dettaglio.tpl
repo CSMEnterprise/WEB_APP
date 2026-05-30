@@ -68,7 +68,6 @@
             <div class="pg-meta-row dt-meta-row">
                 <span class="pg-pill" data-tone="success"><span class="dt-dot"></span> Disponibile</span>
                 {if !empty($annuncio.categoria_nome)}<span class="dt-cat">{$annuncio.categoria_nome}</span>{/if}
-                <span class="dt-id">#{$annuncioId|string_format:"%05d"}</span>
             </div>
 
             <h1 class="dt-title">{$annuncio.titolo|default:''}</h1>
@@ -81,7 +80,6 @@
                 <div class="dt-attr"><span class="dt-attr-label">Condizione</span><span class="dt-attr-value">{$annuncio.stato_conservazione|default:'Non specificato'}</span></div>
                 <div class="dt-attr"><span class="dt-attr-label">Categoria</span><span class="dt-attr-value">{$annuncio.categoria_nome|default:'Senza categoria'}</span></div>
                 <div class="dt-attr"><span class="dt-attr-label">Stato vendita</span><span class="dt-attr-value">{$annuncio.stato|default:''|ucfirst}</span></div>
-                <div class="dt-attr"><span class="dt-attr-label">Annuncio</span><span class="dt-attr-value">#{$annuncioId|string_format:"%05d"}</span></div>
             </div>
 
             {if $isLogged}

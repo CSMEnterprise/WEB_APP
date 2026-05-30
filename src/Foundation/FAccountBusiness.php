@@ -59,4 +59,15 @@ class FAccountBusiness extends FBaseTable
             'telefono' => $business->getTelefono(),
         ]);
     }
+
+    public function updateInfo(int $idBusiness, array $data): bool
+    {
+        return $this->updateById($idBusiness, [
+            'nome_azienda' => $data['nome_azienda'] ?? '',
+            'descrizione' => $data['descrizione'] ?? null,
+            'email_aziendale' => $data['email_aziendale'] ?? '',
+            'telefono' => $data['telefono'] ?? null,
+            'link_social' => $data['link_social'] ?? null,
+        ]);
+    }
 }

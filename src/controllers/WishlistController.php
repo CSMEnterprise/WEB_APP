@@ -38,8 +38,9 @@ class WishlistController extends BaseController
                 static fn(array $annuncio): int => (int) ($annuncio['id_annuncio'] ?? 0),
                 $wishlist
             );
+            $carrelloIds = FPersistentManager::carrelloAnnuncioIdsByUser($idUtente);
 
-            $this->view('wishlist/lista.tpl', compact('wishlist', 'wishlistIds'), 'Wishlist');
+            $this->view('wishlist/lista.tpl', compact('wishlist', 'wishlistIds', 'carrelloIds'), 'Wishlist');
         } catch (Exception $e) {
             $this->renderError($e->getMessage(), 400);
         }
