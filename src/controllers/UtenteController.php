@@ -31,6 +31,16 @@ class UtenteController extends BaseController
         $this->db = $db;
     }
 
+    public function loginFormOrSubmit(array $data = []): void
+    {
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+            $this->login($data);
+            return;
+        }
+
+        $this->showLogin();
+    }
+
     /**
      * Mostra la pagina di accesso.
      */
@@ -83,6 +93,16 @@ class UtenteController extends BaseController
         $this->view('utenti/registrazione_utente.tpl', [], 'Registrazione utente');
     }
 
+    public function registerUserFormOrSubmit(array $data = []): void
+    {
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+            $this->register($data);
+            return;
+        }
+
+        $this->showRegisterUser();
+    }
+
     /**
      * Registra un utente normale e avvia il flusso di verifica email.
      */
@@ -118,6 +138,16 @@ class UtenteController extends BaseController
     public function showRegisterBusiness(): void
     {
         $this->view('utenti/registrazione_business.tpl', [], 'Registrazione business');
+    }
+
+    public function registerBusinessFormOrSubmit(array $data = []): void
+    {
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+            $this->registerBusiness($data);
+            return;
+        }
+
+        $this->showRegisterBusiness();
     }
 
     /**
@@ -177,6 +207,16 @@ class UtenteController extends BaseController
     public function profilo(int $idUtente, string $filtroAnnunci = 'attivo'): void
     {
         $this->renderProfilo($this->loadProfiloData($idUtente, $filtroAnnunci));
+    }
+
+    public function profiloCorrente(int $idUtente, string $filtroAnnunci = 'attivo'): void
+    {
+        if (!empty($_SESSION['is_admin'])) {
+            (new AdminController($this->db))->dashboard($idUtente);
+            return;
+        }
+
+        $this->profilo($idUtente, $filtroAnnunci);
     }
 
     /**
@@ -417,6 +457,16 @@ class UtenteController extends BaseController
         $this->view('utenti/recupero_password.tpl', [], 'Recupero password');
     }
 
+    public function passwordRecoveryFormOrSubmit(array $data = []): void
+    {
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+            $this->inviaResetPassword($data);
+            return;
+        }
+
+        $this->showRecuperoPassword();
+    }
+
     /**
      * Invia email di reset mostrando sempre una risposta generica.
      */
@@ -462,6 +512,16 @@ class UtenteController extends BaseController
             $idUtente = $this->getResetTokenUserId($token);
             $this->view('utenti/reset_password.tpl', compact('token', 'idUtente', 'errore'), 'Reset password');
         }
+    }
+
+    public function passwordResetFormOrSubmit(array $data = [], string $token = ''): void
+    {
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+            $this->resetPassword($data);
+            return;
+        }
+
+        $this->showResetPassword($token);
     }
 
     /**

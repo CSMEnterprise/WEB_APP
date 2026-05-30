@@ -9,6 +9,7 @@ use App\Controllers\BusinessController;
 use App\Controllers\CarrelloController;
 use App\Controllers\FeedbackController;
 use App\Controllers\HomeController;
+use App\Controllers\LegalController;
 use App\Controllers\PagamentoController;
 use App\Controllers\SegnalazioneController;
 use App\Controllers\UtenteController;
@@ -63,11 +64,6 @@ class FrontController extends BaseController
 
         foreach ($route['middleware'] ?? [] as $middleware) {
             $middleware();
-        }
-
-        if (isset($route['handler'])) {
-            $route['handler']($params);
-            return true;
         }
 
         $arguments = isset($route['params']) ? $route['params']($params) : $params;
@@ -130,7 +126,12 @@ class FrontController extends BaseController
                 'params' => fn(array $params) => [$this->id($params), currentUserId()],
             ],
 
-            'auth/login' => ['handler' => fn() => $this->login()],
+            'auth/login' => [
+                'middleware' => [fn() => requireGuest()],
+                'controller' => UtenteController::class,
+                'action' => 'loginFormOrSubmit',
+                'params' => fn() => [$_POST],
+            ],
             'auth/logout' => [
                 'middleware' => [fn() => requireAuth()],
                 'controller' => UtenteController::class,
@@ -141,8 +142,18 @@ class FrontController extends BaseController
                 'controller' => UtenteController::class,
                 'action' => 'showRegister',
             ],
-            'auth/register-user' => ['handler' => fn() => $this->registerUser()],
-            'auth/register-business' => ['handler' => fn() => $this->registerBusiness()],
+            'auth/register-user' => [
+                'middleware' => [fn() => requireGuest()],
+                'controller' => UtenteController::class,
+                'action' => 'registerUserFormOrSubmit',
+                'params' => fn() => [$_POST],
+            ],
+            'auth/register-business' => [
+                'middleware' => [fn() => requireGuest()],
+                'controller' => UtenteController::class,
+                'action' => 'registerBusinessFormOrSubmit',
+                'params' => fn() => [$_POST],
+            ],
             'auth/verifica-email-attesa' => [
                 'controller' => UtenteController::class,
                 'action' => 'verificaEmailAttesa',
@@ -158,14 +169,32 @@ class FrontController extends BaseController
                 'action' => 'reinviaVerifica',
                 'params' => fn() => [$_POST],
             ],
-            'auth/recupero-password' => ['handler' => fn() => $this->passwordRecovery()],
+            'auth/recupero-password' => [
+                'middleware' => [fn() => requireGuest()],
+                'controller' => UtenteController::class,
+                'action' => 'passwordRecoveryFormOrSubmit',
+                'params' => fn() => [$_POST],
+            ],
             'auth/reset-password' => [
                 'urlParams' => true,
-                'handler' => fn(array $params) => $this->passwordReset($params),
+                'middleware' => [fn() => requireGuest()],
+                'controller' => UtenteController::class,
+                'action' => 'passwordResetFormOrSubmit',
+                'params' => fn(array $params) => [$_POST, $params[0] ?? ''],
             ],
 
-            'utente/profilo' => ['handler' => fn() => $this->profile('attivo')],
-            'utente/profilo-venduti' => ['handler' => fn() => $this->profile('venduto')],
+            'utente/profilo' => [
+                'middleware' => [fn() => requireAuth()],
+                'controller' => UtenteController::class,
+                'action' => 'profiloCorrente',
+                'params' => fn() => [currentUserId(), 'attivo'],
+            ],
+            'utente/profilo-venduti' => [
+                'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
+                'controller' => UtenteController::class,
+                'action' => 'profilo',
+                'params' => fn() => [currentUserId(), 'venduto'],
+            ],
             'utente/venditore' => [
                 'urlParams' => true,
                 'controller' => UtenteController::class,
@@ -339,7 +368,12 @@ class FrontController extends BaseController
                 'action' => 'esito',
             ],
 
-            'business/dashboard' => ['handler' => fn() => $this->businessDashboard()],
+            'business/dashboard' => [
+                'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
+                'controller' => BusinessController::class,
+                'action' => 'dashboard',
+                'params' => fn() => [currentUserId()],
+            ],
             'business/create' => [
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
                 'controller' => BusinessController::class,
@@ -471,9 +505,18 @@ class FrontController extends BaseController
                 'params' => fn() => [$_GET],
             ],
 
-            'legale/privacy' => ['handler' => fn() => $this->view('legale/privacy.tpl', [], 'Privacy Policy')],
-            'legale/termini' => ['handler' => fn() => $this->view('legale/termini.tpl', [], 'Termini di servizio')],
-            'legale/cookie' => ['handler' => fn() => $this->view('legale/cookie.tpl', [], 'Cookie')],
+            'legale/privacy' => [
+                'controller' => LegalController::class,
+                'action' => 'privacy',
+            ],
+            'legale/termini' => [
+                'controller' => LegalController::class,
+                'action' => 'termini',
+            ],
+            'legale/cookie' => [
+                'controller' => LegalController::class,
+                'action' => 'cookie',
+            ],
         ];
     }
 
@@ -558,71 +601,5 @@ class FrontController extends BaseController
     private function id(array $params = []): int
     {
         return (int) ($params[0] ?? 0);
-    }
-
-    private function login(): void
-    {
-        requireGuest();
-        $action = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' ? 'login' : 'showLogin';
-        $params = $action === 'login' ? [$_POST] : [];
-        $this->callController(UtenteController::class, $action, $params);
-    }
-
-    private function registerUser(): void
-    {
-        requireGuest();
-        $action = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' ? 'register' : 'showRegisterUser';
-        $params = $action === 'register' ? [$_POST] : [];
-        $this->callController(UtenteController::class, $action, $params);
-    }
-
-    private function registerBusiness(): void
-    {
-        requireGuest();
-        $action = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' ? 'registerBusiness' : 'showRegisterBusiness';
-        $params = $action === 'registerBusiness' ? [$_POST] : [];
-        $this->callController(UtenteController::class, $action, $params);
-    }
-
-    private function passwordRecovery(): void
-    {
-        requireGuest();
-        $action = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' ? 'inviaResetPassword' : 'showRecuperoPassword';
-        $params = $action === 'inviaResetPassword' ? [$_POST] : [];
-        $this->callController(UtenteController::class, $action, $params);
-    }
-
-    private function passwordReset(array $params = []): void
-    {
-        requireGuest();
-        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
-            $this->callController(UtenteController::class, 'resetPassword', [$_POST]);
-            return;
-        }
-
-        $this->callController(UtenteController::class, 'showResetPassword', [$params[0] ?? '']);
-    }
-
-    private function profile(string $filter): void
-    {
-        requireAuth();
-
-        if (!empty($_SESSION['is_admin'])) {
-            $this->callController(AdminController::class, 'dashboard', [currentUserId()]);
-            return;
-        }
-
-        if ($filter === 'venduto') {
-            denyAdmin();
-        }
-
-        $this->callController(UtenteController::class, 'profilo', [currentUserId(), $filter]);
-    }
-
-    private function businessDashboard(): void
-    {
-        requireAuth();
-        denyAdmin();
-        $this->callController(BusinessController::class, 'dashboard', [currentUserId()]);
     }
 }
