@@ -2,29 +2,33 @@
 
 namespace App\Core;
 
-use App\Controllers\AdminController;
-use App\Controllers\AnnuncioController;
-use App\Controllers\BaseController;
-use App\Controllers\BusinessController;
-use App\Controllers\CarrelloController;
-use App\Controllers\FeedbackController;
-use App\Controllers\HomeController;
-use App\Controllers\LegalController;
-use App\Controllers\PagamentoController;
-use App\Controllers\SegnalazioneController;
-use App\Controllers\UtenteController;
-use App\Controllers\WishlistController;
+use App\Controllers\{
+    AdminController,
+    AnnuncioController,
+    BaseController,
+    BusinessController,
+    CarrelloController,
+    FeedbackController,
+    HomeController,
+    LegalController,
+    PagamentoController,
+    SegnalazioneController,
+    UtenteController,
+    WishlistController
+};
 use PDO;
 use ReflectionMethod;
 use Throwable;
-use function App\Middleware\currentUserId;
-use function App\Middleware\denyAdmin;
-use function App\Middleware\denyBusiness;
-use function App\Middleware\requireAdmin;
-use function App\Middleware\requireAdminLivello2;
-use function App\Middleware\requireAuth;
-use function App\Middleware\requireBusiness;
-use function App\Middleware\requireGuest;
+use function App\Middleware\{
+    currentUserId,
+    denyAdmin,
+    denyBusiness,
+    requireAdmin,
+    requireAdminLivello2,
+    requireAuth,
+    requireBusiness,
+    requireGuest
+};
 
 /**
  * Front Controller: normalizza l'URL e delega a controller/action.

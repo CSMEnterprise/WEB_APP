@@ -2,8 +2,10 @@
 
 namespace App\Controllers;
 
-use App\Entity\EAnnuncio;
-use App\Entity\EElementoCarrello;
+use App\Entity\{
+    EAnnuncio,
+    EElementoCarrello
+};
 use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
 use Exception;

@@ -2,11 +2,15 @@
 
 namespace App\Controllers;
 
-use App\Entity\EAccountBusiness;
-use App\Entity\EIndirizzo;
+use App\Entity\{
+    EAccountBusiness,
+    EIndirizzo
+};
 use App\Foundation\FPersistentManager;
-use App\Services\MailService;
-use App\Services\ServiceException;
+use App\Services\{
+    MailService,
+    ServiceException
+};
 use Exception;
 use finfo;
 use PDO;

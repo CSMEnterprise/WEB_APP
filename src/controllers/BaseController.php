@@ -2,11 +2,15 @@
 
 namespace App\Controllers;
 
-use App\Entity\EBaseEntity;
-use App\Entity\EAdmin;
-use App\Entity\EModera;
-use App\Foundation\FPersistentManager;
-use App\Foundation\SmartyView;
+use App\Entity\{
+    EAdmin,
+    EBaseEntity,
+    EModera
+};
+use App\Foundation\{
+    FPersistentManager,
+    SmartyView
+};
 use App\Services\ServiceException;
 use PDO;
 

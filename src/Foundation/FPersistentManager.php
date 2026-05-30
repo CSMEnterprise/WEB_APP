@@ -2,18 +2,20 @@
 
 namespace App\Foundation;
 
-use App\Entity\EAnnuncio;
-use App\Entity\EAccountBusiness;
-use App\Entity\EBaseEntity;
-use App\Entity\ECarrello;
-use App\Entity\EElementoCarrello;
-use App\Entity\EFeedback;
-use App\Entity\EIndirizzo;
-use App\Entity\EModera;
-use App\Entity\EPagamento;
-use App\Entity\EPreferito;
-use App\Entity\ESegnalazione;
-use App\Entity\EUtenteRegistrato;
+use App\Entity\{
+    EAccountBusiness,
+    EAnnuncio,
+    EBaseEntity,
+    ECarrello,
+    EElementoCarrello,
+    EFeedback,
+    EIndirizzo,
+    EModera,
+    EPagamento,
+    EPreferito,
+    ESegnalazione,
+    EUtenteRegistrato
+};
 use RuntimeException;
 
 /**

@@ -2,8 +2,10 @@
 
 namespace App\Controllers;
 
-use App\Entity\EAnnuncio;
-use App\Entity\EPagamento;
+use App\Entity\{
+    EAnnuncio,
+    EPagamento
+};
 use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
 use Exception;

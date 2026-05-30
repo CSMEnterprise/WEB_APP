@@ -2,8 +2,10 @@
 
 namespace App\Foundation;
 
-use App\Entity\EBaseEntity;
-use App\Entity\EImmagine;
+use App\Entity\{
+    EBaseEntity,
+    EImmagine
+};
 
 /**
  * Repository delle immagini collegate agli annunci.

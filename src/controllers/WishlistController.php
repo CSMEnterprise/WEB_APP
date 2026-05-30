@@ -2,8 +2,10 @@
 
 namespace App\Controllers;
 
-use App\Entity\EAnnuncio;
-use App\Entity\EPreferito;
+use App\Entity\{
+    EAnnuncio,
+    EPreferito
+};
 use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
 use Exception;

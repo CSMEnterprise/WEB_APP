@@ -2,8 +2,10 @@
 
 namespace App\Foundation;
 
-use App\Entity\EAnnuncio;
-use App\Entity\EPreferito;
+use App\Entity\{
+    EAnnuncio,
+    EPreferito
+};
 
 /**
  * Repository della wishlist/preferiti degli utenti.

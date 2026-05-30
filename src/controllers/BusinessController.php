@@ -2,8 +2,10 @@
 
 namespace App\Controllers;
 
-use App\Entity\EAccountBusiness;
-use App\Entity\EIndirizzo;
+use App\Entity\{
+    EAccountBusiness,
+    EIndirizzo
+};
 use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
 use Exception;
