@@ -32,14 +32,19 @@ class FPagamento extends FBaseTable
     public function create(EPagamento $pagamento): int
     {
         // Inserisce il pagamento; la data viene lasciata al default del database.
-        return $this->insert([
+        $row = [
             'id_annuncio' => $pagamento->getIdAnnuncio(),
             'id_acquirente' => $pagamento->getIdAcquirente(),
-            'id_indirizzo_spedizione' => $pagamento->getIdIndirizzoSpedizione(),
             'importo_totale' => $pagamento->getImportoTotale(),
             'stato' => $pagamento->getStato(),
             'paypal_transaction_id' => $pagamento->getPaypalTransactionId(),
-        ]);
+        ];
+
+        if ($this->hasColumn('id_indirizzo_spedizione')) {
+            $row['id_indirizzo_spedizione'] = $pagamento->getIdIndirizzoSpedizione();
+        }
+
+        return $this->insert($row);
     }
 
     public function chronologyByUser(int $idUtente): array
@@ -81,9 +86,20 @@ class FPagamento extends FBaseTable
     {
         // Ordini ricevuti da un venditore/business sui propri annunci.
         return $this->fetchEntities("
-            SELECT p.*, a.`titolo`
+            SELECT
+                p.*,
+                a.`titolo`,
+                u.`username` AS acquirente_username,
+                (
+                    SELECT i.`url`
+                    FROM `immagine` i
+                    WHERE i.`id_annuncio` = a.`id_annuncio`
+                    ORDER BY i.`ordine` ASC, i.`id_immagine` ASC
+                    LIMIT 1
+                ) AS immagine_principale
             FROM `pagamento` p
             JOIN `annuncio` a ON a.`id_annuncio` = p.`id_annuncio`
+            JOIN `utente_registrato` u ON u.`id_utente` = p.`id_acquirente`
             WHERE a.`id_utente` = ?
             ORDER BY p.`data` DESC
         ", [$idUtente]);

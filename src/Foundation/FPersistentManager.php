@@ -468,6 +468,11 @@ class FPersistentManager
         return self::business()->create($business);
     }
 
+    public static function updateBusinessInfo(int $idBusiness, array $data): bool
+    {
+        return self::business()->updateInfo($idBusiness, $data);
+    }
+
     public static function createIndirizzoForBusiness(EIndirizzo $indirizzo): int
     {
         return self::indirizzi()->createForBusiness($indirizzo);

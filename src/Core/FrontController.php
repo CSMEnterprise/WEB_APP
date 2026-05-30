@@ -395,6 +395,12 @@ class FrontController extends BaseController
                 'action' => 'ordini',
                 'params' => fn() => [currentUserId()],
             ],
+            'business/info-store' => [
+                'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => requireBusiness($this->pdo)],
+                'controller' => BusinessController::class,
+                'action' => 'salvaInfo',
+                'params' => fn() => [$_POST, currentUserId()],
+            ],
             'business/indirizzo-store' => [
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => requireBusiness()],
                 'controller' => BusinessController::class,

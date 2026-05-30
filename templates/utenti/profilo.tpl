@@ -50,7 +50,7 @@
             </form>
 
             <div class="pf-id">
-                <span class="pg-pill">{if $isBusiness}Account business{else}Account personale{/if}</span>
+                <span class="pg-pill">{if $isBusiness}Account PRO{else}Account personale{/if}</span>
                 <h1 class="pf-name">{$displayName}</h1>
                 <p class="pg-sub">{if !empty($utente.nome)}{$utente.nome}{else}@{$displayName}{/if} &middot; {if $isBusiness}Area venditore{else}Membro NerdVault{/if}</p>
 
@@ -116,6 +116,7 @@
             <div class="pf-stat"><strong>{$pagamentiCount}</strong><span>{if $isBusiness}Vendite{else}Acquisti{/if}</span></div>
             <div class="pf-stat"><strong class="pf-stat-gold">{$indirizziCount}</strong><span>Indirizzi</span></div>
             <a class="btn btn-gold" data-size="sm" href="/annuncio/create">Crea annuncio</a>
+            <a class="btn btn-secondary" data-size="sm" href="/feedback/list">I miei feedback</a>
         </div>
     </section>
 

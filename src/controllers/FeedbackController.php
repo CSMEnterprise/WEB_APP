@@ -73,8 +73,9 @@ class FeedbackController extends BaseController
 
         $feedback = $this->entitiesToArrays(FPersistentManager::feedbackByVenditore($idVenditore));
         $media = FPersistentManager::mediaFeedbackVenditore($idVenditore);
+        $venditore = $this->entityToArray(FPersistentManager::utenteById($idVenditore));
 
-        $this->view('feedback/lista_venditore.tpl', compact('feedback', 'media'), 'Feedback venditore');
+        $this->view('feedback/lista_venditore.tpl', compact('feedback', 'media', 'venditore'), 'Feedback venditore');
     }
 
     /**

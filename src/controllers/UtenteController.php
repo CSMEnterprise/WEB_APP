@@ -241,6 +241,16 @@ class UtenteController extends BaseController
             return;
         }
 
+        $businessEntity = FPersistentManager::businessByUser($idVenditore);
+        if ($businessEntity) {
+            $business = $this->entityToArray($businessEntity);
+            $annunci = $this->entitiesToArrays(FPersistentManager::annunciByUserIdAndStato($idVenditore, 'attivo'));
+            $isPublicVetrina = true;
+
+            $this->view('business/profilo.tpl', compact('business', 'annunci', 'isPublicVetrina'), 'Vetrina ' . ($business['nome_azienda'] ?? 'PRO'));
+            return;
+        }
+
         $annunciVenditore = $this->entitiesToArrays(FPersistentManager::annunciByUserIdAndStato($idVenditore, 'attivo'));
         $feedbackVenditore = $this->entitiesToArrays(FPersistentManager::feedbackByVenditore($idVenditore));
         $mediaVenditore = FPersistentManager::mediaFeedbackVenditore($idVenditore);
