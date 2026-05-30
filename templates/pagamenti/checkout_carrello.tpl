@@ -1,63 +1,126 @@
-{* Checkout carrello: lista di tutti gli articoli selezionati, totale, selezione indirizzo di spedizione e conferma per il pagamento multiplo PayPal simulato. *}
+{* Checkout carrello in stile NerdVault Pages.html: articoli, indirizzo e riepilogo sticky. *}
 {include file="layouts/header.tpl"}
 
-<h1>Checkout</h1>
+<nav class="pg-breadcrumb">
+    <a href="/home/index">Home</a>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    <a href="/carrello/list">Carrello</a>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    <span class="current">Checkout</span>
+</nav>
 
-<section class="cart-layout">
+<div class="pg-head cr-head">
     <div>
-        {foreach $items as $item}
-            <article class="card u-style-036">
-                {if !empty($item.immagine_principale)}
-                    <img class="u-checkout-thumb" src="{$item.immagine_principale}" alt="Foto">
-                {/if}
-                <div>
-                    <strong>{$item.titolo|default:''}</strong>
-                    <p class="price u-style-037">&euro; {$item.prezzo|default:0|number_format:2:",":"."}</p>
-                    <p class="muted u-style-019">
-                        Venditore:
-                        {if !empty($item.venditore_business_id)}
-                            {$item.venditore_nome_azienda|default:''} <span class="seller-pro-badge">PRO</span>
-                        {else}
-                            {$item.venditore_username|default:''}
-                        {/if}
-                    </p>
-                </div>
-            </article>
-        {/foreach}
+        <h1 class="pg-h1">Checkout</h1>
+        <p class="pg-sub">{$items|count_items} {if $items|count_items == 1}articolo{else}articoli{/if} pronti per il pagamento protetto.</p>
+    </div>
+    <div class="cr-steps">
+        <span class="cr-step is-active"><span class="cr-step-num">1</span> Carrello</span>
+        <span class="cr-step-line"></span>
+        <span class="cr-step is-active"><span class="cr-step-num">2</span> Checkout</span>
+        <span class="cr-step-line"></span>
+        <span class="cr-step"><span class="cr-step-num">3</span> Conferma</span>
+    </div>
+</div>
+
+<section class="cr-layout">
+    <div class="cr-checkout">
+        <section class="pg-card co-card">
+            <h2 class="pg-card-title">Articoli nell'ordine</h2>
+            <div class="co-lines">
+                {foreach $items as $item}
+                    <article class="co-line">
+                        <a class="co-line-img" href="/annuncio/show/{$item.id_annuncio|default:0}">
+                            {if !empty($item.immagine_principale)}
+                                <img src="{$item.immagine_principale}" alt="Foto annuncio">
+                            {else}
+                                <span>Nessuna foto</span>
+                            {/if}
+                        </a>
+                        <div class="co-line-body">
+                            <strong>{$item.titolo|default:'Annuncio'}</strong>
+                            <span>
+                                Venditore:
+                                {if !empty($item.venditore_business_id)}
+                                    {$item.venditore_nome_azienda|default:'Venditore'} PRO
+                                {else}
+                                    {$item.venditore_username|default:'Venditore'}
+                                {/if}
+                            </span>
+                        </div>
+                        <span class="co-line-price">&euro; {$item.prezzo|default:0|number_format:2:",":"."}</span>
+                    </article>
+                {/foreach}
+            </div>
+        </section>
+
+        <section class="pg-card co-card">
+            <h2 class="pg-card-title">Indirizzo di spedizione</h2>
+            <p class="pg-card-sub">Un unico indirizzo per tutti gli articoli del carrello.</p>
+
+            {if !empty($indirizziUtente)}
+                <form method="post" action="/pagamento/paypal-carrello" class="co-form">
+                    <div class="co-address-list">
+                        {foreach $indirizziUtente as $indirizzo}
+                            <label class="co-address {if !empty($indirizzo.predefinito)}is-default{/if}">
+                                <input
+                                    type="radio"
+                                    name="id_indirizzo"
+                                    value="{$indirizzo.id_indirizzo|default:0}"
+                                    {if !empty($indirizzo.predefinito)}checked{/if}
+                                    required>
+                                <span class="co-radio" aria-hidden="true"><span></span></span>
+                                <span class="co-address-body">
+                                    <strong>{$indirizzo.via|default:''} {$indirizzo.numero|default:''}</strong>
+                                    <span>{$indirizzo.cap|default:''} {$indirizzo.citta|default:''}{if !empty($indirizzo.provincia)} ({$indirizzo.provincia}){/if}, {$indirizzo.paese|default:'Italia'}</span>
+                                    {if !empty($indirizzo.predefinito)}<em>Predefinito</em>{/if}
+                                </span>
+                            </label>
+                        {/foreach}
+                    </div>
+
+                    <div class="cr-pay-options co-pay-options">
+                        <div class="cr-pay-opt is-on">
+                            <span class="cr-pay-radio"><span class="cr-pay-radio-dot"></span></span>
+                            <span class="cr-pay-body"><strong>PayPal</strong><span>Pagamento multiplo simulato</span></span>
+                        </div>
+                    </div>
+
+                    <button class="btn co-mobile-submit" data-size="lg" type="submit">Continua con PayPal</button>
+                </form>
+            {else}
+                <div class="pg-alert" data-tone="danger">Aggiungi un indirizzo di spedizione prima di procedere al pagamento.</div>
+                <a class="btn" href="/utente/profilo">Vai al profilo</a>
+            {/if}
+        </section>
     </div>
 
-    <aside class="card cart-summary">
-        <h2>Totale</h2>
-        <p class="price">&euro; {$totale|default:0|number_format:2:",":"."}</p>
-        <p class="muted">{$items|count_items} {if $items|count_items == 1}articolo{else}articoli{/if}</p>
-
-        <h2 class="u-style-038">Indirizzo di spedizione</h2>
-
-        {if !empty($indirizziUtente)}
-            <form method="post" action="/pagamento/paypal-carrello" class="cart-summary-actions">
-                                {foreach $indirizziUtente as $indirizzo}
-                    <label class="u-style-039">
-                        <input
-                            type="radio"
-                            name="id_indirizzo"
-                            value="{$indirizzo.id_indirizzo|default:0}"
-                            {if !empty($indirizzo.predefinito)}checked{/if}
-                            required
-                            class="u-radio-compact">
-                        <span>
-                            {$indirizzo.via|default:''} {$indirizzo.numero|default:''}, {$indirizzo.cap|default:''} {$indirizzo.citta|default:''}{if !empty($indirizzo.provincia)} ({$indirizzo.provincia}){/if}, {$indirizzo.paese|default:'Italia'}
-                            {if !empty($indirizzo.predefinito)}<span class="seller-pro-badge u-style-035">Predefinito</span>{/if}
-                        </span>
-                    </label>
-                {/foreach}
-
-                <button class="btn" type="submit">Continua con PayPal</button>
-            </form>
-        {else}
-            <div class="alert alert-error">Aggiungi un indirizzo di spedizione prima di procedere al pagamento.</div>
-            <a class="btn" href="/utente/profilo">Vai al profilo</a>
-        {/if}
+    <aside class="cr-summary-wrap">
+        <div class="pg-card cr-summary co-summary">
+            <h2 class="pg-card-title">Riepilogo ordine</h2>
+            <div class="cr-summary-row"><span>Subtotale ({$items|count_items})</span><span>&euro; {$totale|default:0|number_format:2:",":"."}</span></div>
+            <div class="cr-summary-row"><span>Spedizione</span><span>Calcolata dopo il pagamento</span></div>
+            <hr class="pg-divider pg-divider-dashed">
+            <div class="cr-summary-total"><span>Totale</span><span>&euro; {$totale|default:0|number_format:2:",":"."}</span></div>
+            {if !empty($indirizziUtente)}
+                <button class="btn btn-block co-submit-proxy" data-size="lg" type="button" data-submit-checkout>Continua con PayPal</button>
+            {/if}
+            <div class="cr-summary-trust">
+                <div><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"></path></svg> Pagamento protetto</div>
+                <div><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"></path></svg> Feedback verificato</div>
+                <div><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"></path></svg> Supporto NerdVault</div>
+            </div>
+        </div>
     </aside>
 </section>
+
+<script>
+document.querySelectorAll('[data-submit-checkout]').forEach(function (button) {
+    button.addEventListener('click', function () {
+        const form = document.querySelector('.co-form');
+        if (form) form.requestSubmit();
+    });
+});
+</script>
 
 {include file="layouts/footer.tpl"}
