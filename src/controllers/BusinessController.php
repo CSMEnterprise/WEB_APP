@@ -4,11 +4,9 @@ namespace App\Controllers;
 
 use App\Entity\EAccountBusiness;
 use App\Entity\EIndirizzo;
-use App\Foundation\FDataBase;
 use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
 use Exception;
-use PDO;
 use PDOException;
 
 /**
@@ -16,14 +14,6 @@ use PDOException;
  */
 class BusinessController extends BaseController
 {
-    /**
-     * Inizializza il layer persistence con la connessione corrente.
-     */
-    public function __construct(PDO $db)
-    {
-        FDataBase::init($db);
-    }
-
     /**
      * Mostra profilo business e tutti gli annunci associati all'utente business
      */

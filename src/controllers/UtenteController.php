@@ -4,7 +4,6 @@ namespace App\Controllers;
 
 use App\Entity\EAccountBusiness;
 use App\Entity\EIndirizzo;
-use App\Foundation\FDataBase;
 use App\Foundation\FPersistentManager;
 use App\Services\MailService;
 use App\Services\ServiceException;
@@ -25,12 +24,11 @@ class UtenteController extends BaseController
     private string $lastRegistrationNome = '';
 
     /**
-     * Mantiene PDO per query dirette e inizializza il layer persistence.
+     * Mantiene PDO per query dirette e transazioni.
      */
     public function __construct(PDO $db)
     {
         $this->db = $db;
-        FDataBase::init($db);
     }
 
     /**

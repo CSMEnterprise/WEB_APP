@@ -2,24 +2,14 @@
 
 namespace App\Controllers;
 
-use App\Foundation\FDataBase;
 use App\Foundation\FPersistentManager;
 use Exception;
-use PDO;
 
 /**
  * Gestisce dashboard e azioni di moderazione disponibili agli amministratori.
  */
 class AdminController extends BaseController
 {
-    /**
-     * Inizializza il layer persistence con la connessione corrente.
-     */
-    public function __construct(PDO $db)
-    {
-        FDataBase::init($db);
-    }
-
     /**
      * Dashboard personale dell'admin con statistiche e storico delle sue azioni.
      */

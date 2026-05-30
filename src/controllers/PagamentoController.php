@@ -4,7 +4,6 @@ namespace App\Controllers;
 
 use App\Entity\EAnnuncio;
 use App\Entity\EPagamento;
-use App\Foundation\FDataBase;
 use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
 use Exception;
@@ -24,7 +23,6 @@ class PagamentoController extends BaseController
     public function __construct(PDO $db)
     {
         $this->db = $db;
-        FDataBase::init($db);
     }
 
     /**

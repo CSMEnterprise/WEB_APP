@@ -107,20 +107,22 @@ class SmartyView
 
         // ── Categorie per l'header ────────────────────────────────────────
         $categorieHeader = [];
-        if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof \PDO) {
-            FDataBase::init($GLOBALS['pdo']);
+        $pdo = null;
+        try {
+            $pdo = FDataBase::getInstance()->getConnection();
             $categorieHeader = array_map(
                 static fn($c) => $c->toArray(),
                 FPersistentManager::categorie()
             );
+        } catch (RuntimeException) {
         }
         $this->smarty->assign('categorieHeader', $categorieHeader);
 
         // ── Contatore carrello (solo utente normale) ──────────────────────
         $cartItemCount = 0;
-        if ($isLogged && !$isAdmin && !$isBusiness && isset($GLOBALS['pdo'])) {
+        if ($isLogged && !$isAdmin && !$isBusiness && $pdo instanceof \PDO) {
             try {
-                $stmt = $GLOBALS['pdo']->prepare("
+                $stmt = $pdo->prepare("
                     SELECT COUNT(*)
                     FROM carrello c
                     JOIN elemento_carrello e ON e.id_carrello = c.id_carrello

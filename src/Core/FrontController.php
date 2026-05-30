@@ -13,7 +13,6 @@ use App\Controllers\PagamentoController;
 use App\Controllers\SegnalazioneController;
 use App\Controllers\UtenteController;
 use App\Controllers\WishlistController;
-use App\Foundation\FDataBase;
 use PDO;
 use ReflectionMethod;
 use Throwable;
@@ -36,8 +35,6 @@ class FrontController extends BaseController
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
-        $GLOBALS['pdo'] = $pdo;
-        FDataBase::init($pdo);
     }
 
     public function handle(): void
@@ -355,13 +352,13 @@ class FrontController extends BaseController
                 'params' => fn() => [$_POST, currentUserId()],
             ],
             'business/ordini' => [
-                'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => requireBusiness($this->pdo)],
+                'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => requireBusiness()],
                 'controller' => BusinessController::class,
                 'action' => 'ordini',
                 'params' => fn() => [currentUserId()],
             ],
             'business/indirizzo-store' => [
-                'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => requireBusiness($this->pdo)],
+                'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => requireBusiness()],
                 'controller' => BusinessController::class,
                 'action' => 'salvaIndirizzo',
                 'params' => fn() => [$_POST, currentUserId()],

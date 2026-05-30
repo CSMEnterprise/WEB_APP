@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Entity\EAnnuncio;
-use App\Foundation\FDataBase;
 use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
 use Exception;
@@ -18,12 +17,11 @@ class AnnuncioController extends BaseController
     private PDO $db;
 
     /**
-     * Mantiene PDO per transazioni e inizializza il livello persistence.
+     * Mantiene PDO per transazioni e query dirette.
      */
     public function __construct(PDO $db)
     {
         $this->db = $db;
-        FDataBase::init($db);
     }
 
     /**

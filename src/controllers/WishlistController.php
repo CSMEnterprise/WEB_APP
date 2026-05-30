@@ -4,25 +4,15 @@ namespace App\Controllers;
 
 use App\Entity\EAnnuncio;
 use App\Entity\EPreferito;
-use App\Foundation\FDataBase;
 use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
 use Exception;
-use PDO;
 
 /**
  * Gestisce la wishlist dell'utente e le azioni rapide dai dettagli/lista annunci.
  */
 class WishlistController extends BaseController
 {
-    /**
-     * Inizializza il layer persistence con la connessione corrente.
-     */
-    public function __construct(PDO $db)
-    {
-        FDataBase::init($db);
-    }
-
     /**
      * Mostra la wishlist rimuovendo  prima eventuali annunci non piu disponibili.
      */

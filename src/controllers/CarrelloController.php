@@ -4,25 +4,15 @@ namespace App\Controllers;
 
 use App\Entity\EAnnuncio;
 use App\Entity\EElementoCarrello;
-use App\Foundation\FDataBase;
 use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
 use Exception;
-use PDO;
 
 /**
  * Gestisce carrello acquisti: lista, aggiunta, rimozione e svuotamento.
  */
 class CarrelloController extends BaseController
 {
-    /**
-     * Inizializza il layer persistence con la connessione corrente.
-     */
-    public function __construct(PDO $db)
-    {
-        FDataBase::init($db);
-    }
-
     /**
      * Mostra il carrello pulendo prima eventuali articoli non piu acquistabili.
      */

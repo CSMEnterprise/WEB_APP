@@ -3,25 +3,15 @@
 namespace App\Controllers;
 
 use App\Entity\EFeedback;
-use App\Foundation\FDataBase;
 use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
 use Exception;
-use PDO;
 
 /**
  * Gestisce creazione e consultazione dei feedback post-acquisto.
  */
 class FeedbackController extends BaseController
 {
-    /**
-     * Inizializza il layer persistence con la connessione corrente.
-     */
-    public function __construct(PDO $db)
-    {
-        FDataBase::init($db);
-    }
-
     /**
      * Mostra il form solo all'acquirente del pagamento e solo se non ha gia recensito.
      */

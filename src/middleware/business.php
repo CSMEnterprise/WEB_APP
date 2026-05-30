@@ -2,9 +2,7 @@
 
 namespace App\Middleware;
 
-use App\Foundation\FDataBase;
 use App\Foundation\FPersistentManager;
-use PDO;
 
 /**
  * Verifica che l'utente loggato abbia un account business attivo.
@@ -12,11 +10,10 @@ use PDO;
  * associato all'utente nel DB. Se non esiste, reindirizza alla pagina di creazione.
  * Usare sulle route riservate ai venditori business (es. gestione annunci aziendali).
  */
-function requireBusiness(PDO $pdo): void
+function requireBusiness(): void
 {
     requireAuth();
 
-    FDataBase::init($pdo);
     $business = FPersistentManager::businessByUser(currentUserId());
 
     if (!$business) {

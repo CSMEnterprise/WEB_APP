@@ -8,6 +8,7 @@ use App\Entity\EModera;
 use App\Foundation\FPersistentManager;
 use App\Foundation\SmartyView;
 use App\Services\ServiceException;
+use PDO;
 
 /**
  * Classe base condivisa da tutti i controller.
@@ -16,6 +17,10 @@ use App\Services\ServiceException;
  */
 abstract class BaseController
 {
+    public function __construct(?PDO $db = null)
+    {
+    }
+
     /**
      * Converte una singola entity in array per passarla facilmente ai template.
      */

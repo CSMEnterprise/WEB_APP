@@ -3,25 +3,15 @@
 namespace App\Controllers;
 
 use App\Entity\ESegnalazione;
-use App\Foundation\FDataBase;
 use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
 use Exception;
-use PDO;
 
 /**
  * Gestisce segnalazioni create dagli utenti e lavorate dagli admin.
  */
 class SegnalazioneController extends BaseController
 {
-    /**
-     * Inizializza il layer persistence con la connessione corrente.
-     */
-    public function __construct(PDO $db)
-    {
-        FDataBase::init($db);
-    }
-
     /**
      * Mostra il form di apertura segnalazione.
      */

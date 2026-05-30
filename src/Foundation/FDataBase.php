@@ -35,16 +35,12 @@ class FDataBase
     }
 
     /**
-     * Restituisce l'istanza gia inizializzata o la crea dal PDO globale.
+     * Restituisce l'istanza gia inizializzata dall'entry point.
      */
     public static function getInstance(): self
     {
         if (self::$instance === null) {
-            if (!isset($GLOBALS['pdo']) || !$GLOBALS['pdo'] instanceof PDO) {
-                throw new RuntimeException('FDataBase non inizializzato.');
-            }
-
-            self::init($GLOBALS['pdo']);
+            throw new RuntimeException('FDataBase non inizializzato.');
         }
 
         return self::$instance;

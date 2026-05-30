@@ -2,9 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Foundation\FDataBase;
 use App\Foundation\FPersistentManager;
-use PDO;
 use function App\Middleware\currentUserId;
 
 /**
@@ -12,11 +10,6 @@ use function App\Middleware\currentUserId;
  */
 class HomeController extends BaseController
 {
-    public function __construct(PDO $db)
-    {
-        FDataBase::init($db);
-    }
-
     public function index(): void
     {
         $q = trim($_GET['q'] ?? '');
