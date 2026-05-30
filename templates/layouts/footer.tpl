@@ -9,7 +9,8 @@
 
         <div class="footer-brand">
             <a class="logo" href="/home/index" aria-label="NerdVault home">
-                <img class="logo-wordmark u-style-025" src="/assets/img/nerdvault-wordmark.png" alt="NerdVault">
+                <span class="logo-mark" aria-hidden="true"><span class="logo-mark-inner">NV</span></span>
+                <span class="logo-text">Nerd<span class="logo-accent">Vault</span></span>
             </a>
             <p class="footer-tagline">Il marketplace per appassionati di manga, action figure, gaming e collezionismo.</p>
             <div class="footer-social">

@@ -1,51 +1,93 @@
-{* Lista carrello: mostra gli articoli aggiunti con immagine, prezzo e pulsante rimozione. Gli articoli non acquistabili (venduti o propri) mostrano un avviso. Il checkout è abilitato solo se ci sono articoli acquistabili. *}
+{* Lista carrello: mostra gli articoli aggiunti con immagine, prezzo e pulsante rimozione. *}
 {include file="layouts/header.tpl"}
 
-<div class="u-style-007">
-    <h1 class="u-style-008">Carrello</h1>
-    {if !empty($carrello)}
-        <a class="btn btn-secondary" href="/carrello/clear">Svuota carrello</a>
-    {/if}
+<nav class="pg-breadcrumb">
+    <a href="/home/index">Home</a>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    <span class="current">Carrello</span>
+</nav>
+
+<div class="pg-head cr-head">
+    <div>
+        <h1 class="pg-h1">Il tuo carrello</h1>
+        <p class="pg-sub">{if !empty($carrello)}{$carrello|count_items} articol{if $carrello|count_items == 1}o{else}i{/if} pronti per il checkout{else}Il carrello e vuoto{/if}</p>
+    </div>
+    <div class="cr-steps">
+        <span class="cr-step is-active"><span class="cr-step-num">1</span> Carrello</span>
+        <span class="cr-step-line"></span>
+        <span class="cr-step"><span class="cr-step-num">2</span> Checkout</span>
+        <span class="cr-step-line"></span>
+        <span class="cr-step"><span class="cr-step-num">3</span> Conferma</span>
+    </div>
 </div>
 
 {if !empty($annunciRimossi)}
-    <div class="alert alert-success">Alcuni prodotti non disponibili sono stati rimossi dal carrello.</div>
+    <div class="pg-alert" data-tone="gold">Alcuni prodotti non disponibili sono stati rimossi dal carrello.</div>
 {/if}
 
 {if !empty($carrello)}
-    <div class="grid">
-        {foreach $carrello as $item}
-            {assign var=isPurchasable value=($item.stato|default:'') == 'attivo' && ($item.id_utente|default:0) != $userId}
-            <article class="card">
-                {if !empty($item.immagine_principale)}
-                    <img class="annuncio-card-img" src="{$item.immagine_principale}" alt="Foto annuncio">
-                {/if}
-                <h2>{$item.titolo|default:'Annuncio'}</h2>
-                <p class="muted">{$item.categoria_nome|default:'Senza categoria'}</p>
-                <p class="price">&euro; {$item.prezzo|default:0|number_format:2:",":"."}</p>
-                {if !$isPurchasable}
-                    <div class="alert alert-error">Questo prodotto non e acquistabile.</div>
-                {/if}
-                <a class="btn" href="/annuncio/show/{$item.id_annuncio|default:0}">Dettagli</a>
-                <a class="btn btn-secondary" href="/carrello/remove/{$item.id_annuncio|default:0}">Rimuovi</a>
-            </article>
-        {/foreach}
-    </div>
+    <div class="cr-layout">
+        <section class="cr-items">
+            {foreach $carrello as $item}
+                {assign var=isPurchasable value=($item.stato|default:'') == 'attivo' && ($item.id_utente|default:0) != $userId}
+                <article class="cr-item">
+                    <a class="cr-item-img" href="/annuncio/show/{$item.id_annuncio|default:0}">
+                        {if !empty($item.immagine_principale)}
+                            <img src="{$item.immagine_principale}" alt="Foto annuncio">
+                        {else}
+                            <span>Nessuna foto</span>
+                        {/if}
+                    </a>
+                    <div class="cr-item-body">
+                        <div class="annuncio-card-meta">
+                            <span class="annuncio-card-cat">{$item.categoria_nome|default:'Senza categoria'}</span>
+                            <span>&middot; {$item.stato_conservazione|default:'Non specificato'}</span>
+                        </div>
+                        <h3 class="cr-item-title"><a href="/annuncio/show/{$item.id_annuncio|default:0}">{$item.titolo|default:'Annuncio'}</a></h3>
+                        {if !$isPurchasable}<span class="pg-pill" data-tone="danger">Non acquistabile</span>{/if}
+                    </div>
+                    <div class="cr-item-controls">
+                        <span class="cr-item-price">&euro; {$item.prezzo|default:0|number_format:2:",":"."}</span>
+                        <a class="cr-item-remove" href="/carrello/remove/{$item.id_annuncio|default:0}" aria-label="Rimuovi">&times;</a>
+                    </div>
+                </article>
+            {/foreach}
 
-    <section class="card">
-        <h2>Totale</h2>
-        <p class="price">&euro; {$totale|default:0|number_format:2:",":"."}</p>
-        {if !empty($purchasableItems)}
-            <a class="btn" href="/pagamento/checkout-carrello">Procedi al checkout</a>
-        {else}
-            <p class="muted">Nessun articolo acquistabile nel carrello.</p>
-        {/if}
-    </section>
+            <div class="cr-actions-row">
+                <a class="va-link" href="/home/index">Continua lo shopping</a>
+                <a class="va-link" href="/carrello/clear">Svuota carrello</a>
+            </div>
+        </section>
+
+        <aside class="cr-summary-wrap">
+            <div class="pg-card cr-summary">
+                <h2 class="pg-card-title">Riepilogo ordine</h2>
+                <div class="cr-summary-row"><span>Subtotale</span><span>&euro; {$totale|default:0|number_format:2:",":"."}</span></div>
+                <div class="cr-summary-row"><span>Spedizione</span><span>Calcolata al checkout</span></div>
+                <hr class="pg-divider pg-divider-dashed">
+                <div class="cr-summary-total"><span>Totale</span><span>&euro; {$totale|default:0|number_format:2:",":"."}</span></div>
+
+                {if !empty($purchasableItems)}
+                    <a class="btn btn-block" data-size="lg" href="/pagamento/checkout-carrello">Procedi al checkout</a>
+                {else}
+                    <p class="muted">Nessun articolo acquistabile nel carrello.</p>
+                {/if}
+
+                <div class="cr-summary-trust">
+                    <div><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"></path></svg> Pagamento protetto</div>
+                    <div><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"></path></svg> Feedback verificato</div>
+                    <div><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"></path></svg> Supporto NerdVault</div>
+                </div>
+            </div>
+        </aside>
+    </div>
 {else}
-    <section class="card">
-        <p>Il carrello e vuoto.</p>
+    <div class="pg-card cr-empty">
+        <div class="cr-empty-glyph">🛒</div>
+        <h2 class="pg-card-title">Carrello vuoto</h2>
+        <p class="muted">Esplora migliaia di annunci da appassionati e venditori PRO.</p>
         <a class="btn" href="/home/index">Esplora annunci</a>
-    </section>
+    </div>
 {/if}
 
 {include file="layouts/footer.tpl"}
