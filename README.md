@@ -141,11 +141,11 @@ composer install
 
 ### 2. Usare il branch di sviluppo
 
-Il branch di lavoro del progetto e' `Develop`:
+Il branch di lavoro del progetto e' `develop`:
 
 ```bash
-git checkout Develop
-git pull origin Develop
+git checkout develop
+git pull origin develop
 ```
 
 ### 3. Importare il database
@@ -224,7 +224,7 @@ Aggiungere un virtual host:
 </VirtualHost>
 ```
 
-### 7. Configurare il file hosts
+### 7. Configurare il file hosts(opzionale)
 
 Aprire come amministratore:
 
@@ -235,7 +235,7 @@ C:\Windows\System32\drivers\etc\hosts
 Aggiungere:
 
 ```text
-127.0.0.1 web_app.local
+127.0.0.1 nerdvault.local
 ```
 
 ### 8. Avviare l'applicazione
@@ -248,7 +248,7 @@ Avviare da XAMPP:
 Poi aprire nel browser:
 
 ```text
-http://web_app.local
+http://nerdvault.local
 ```
 
 In alternativa, se non si configura un virtual host, e' possibile usare:
@@ -354,13 +354,13 @@ Get-ChildItem -Recurse -Filter *.php | ForEach-Object { C:\xampp\php\php.exe -l 
 - Usare i servizi in `src/services/` per la logica applicativa e le query.
 - Usare `e()` per stampare dati dinamici nelle viste.
 - Gli upload degli utenti devono restare dentro `public/uploads/`.
-- Prima di lavorare, aggiornare sempre il branch `Develop`.
+- Prima di lavorare, aggiornare sempre il branch `develop`.
 
 ## Workflow Git consigliato
 
 ```bash
-git checkout Develop
-git pull origin Develop
+git checkout develop
+git pull origin develop
 git status
 ```
 
@@ -369,15 +369,6 @@ Dopo le modifiche:
 ```bash
 git add .
 git commit -m "Descrizione modifica"
-git push origin Develop
+git push origin develop
 ```
 
-## Avvertenze
-
-Il progetto e' configurato per ambiente locale XAMPP. Prima di un eventuale deploy online e' consigliato:
-
-- disattivare `APP_DEBUG` in produzione;
-- spostare le credenziali database fuori dal codice versionato;
-- aggiungere protezione CSRF ai form e alle azioni che modificano dati;
-- evitare azioni distruttive via GET;
-- non versionare file caricati dagli utenti o file generati automaticamente.
