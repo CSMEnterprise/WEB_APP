@@ -26,7 +26,8 @@ WEB_APP/
 |       `-- annunci/
 |-- src/
 |   |-- config/
-|   |   `-- db.php
+|   |   |-- db.example.php
+|   |   `-- mail.example.php
 |   |-- controllers/
 |   |-- Entity/
 |   |-- Foundation/
@@ -171,7 +172,13 @@ La connessione PDO e' configurata in:
 src/config/db.php
 ```
 
-Configurazione locale predefinita:
+Il file `src/config/db.php` e' locale e non viene versionato. Crearlo copiando l'esempio:
+
+```bash
+cp src/config/db.example.php src/config/db.php
+```
+
+Configurazione locale predefinita nell'esempio:
 
 ```php
 $host = 'localhost';
@@ -183,7 +190,17 @@ $password = '';
 
 Questi valori sono adatti alla configurazione standard di XAMPP. Se il database usa credenziali diverse, modificarle in quel file.
 
-### 5. Configurare Apache
+### 5. Configurare le email
+
+La configurazione email e' locale e non viene versionata. Crearla copiando l'esempio:
+
+```bash
+cp src/config/mail.example.php src/config/mail.php
+```
+
+Con `debug` impostato a `true`, i link di verifica email e reset password vengono salvati in sessione invece di essere inviati tramite SMTP.
+
+### 6. Configurare Apache
 
 Per sicurezza, Apache deve servire solo la cartella `public`.
 
@@ -207,7 +224,7 @@ Aggiungere un virtual host:
 </VirtualHost>
 ```
 
-### 6. Configurare il file hosts
+### 7. Configurare il file hosts
 
 Aprire come amministratore:
 
@@ -221,7 +238,7 @@ Aggiungere:
 127.0.0.1 web_app.local
 ```
 
-### 7. Avviare l'applicazione
+### 8. Avviare l'applicazione
 
 Avviare da XAMPP:
 

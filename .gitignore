@@ -7,6 +7,9 @@
 .env.*
 !.env.example
 /src/config/mail.php
+/src/config/db.php
+/src/config/*.php
+!/src/config/*.example.php
 /src/config/*.local.php
 /config/*.local.php
 

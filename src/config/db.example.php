@@ -4,10 +4,8 @@
 |--------------------------------------------------------------------------
 | Configurazione database NerdVault
 |--------------------------------------------------------------------------
-| Questo file crea la connessione PDO e rende disponibile la variabile $pdo.
-| Viene incluso da public/index.php con:
-|
-| require_once __DIR__ . '/../src/config/db.php';
+| Copiare questo file in src/config/db.php e adattare le credenziali locali.
+| Il file db.php e' ignorato da Git per evitare conflitti tra ambienti.
 |--------------------------------------------------------------------------
 */
 

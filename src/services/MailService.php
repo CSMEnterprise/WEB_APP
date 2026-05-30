@@ -8,7 +8,12 @@ class MailService
 
     public function __construct()
     {
-        $this->config = require __DIR__ . '/../config/mail.php';
+        $configPath = __DIR__ . '/../config/mail.php';
+        if (!is_file($configPath)) {
+            throw new \RuntimeException('Configurazione email mancante. Copia src/config/mail.example.php in src/config/mail.php e adatta i valori locali.');
+        }
+
+        $this->config = require $configPath;
     }
 
     /** In debug mode salva il link in sessione invece di inviarlo via SMTP. */
