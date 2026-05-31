@@ -47,6 +47,20 @@ class FAdmin extends FBaseTable
         return $entity instanceof EAdmin ? $entity : null;
     }
 
+    public function findByEmailForLogin(string $email): ?EAdmin
+    {
+        $statoBanSelect = $this->hasColumn('stato_ban') ? '`stato_ban`' : '0 AS stato_ban';
+
+        $entity = $this->fetchEntity("
+            SELECT `id_admin`, `email`, `password_hash`, `livello_sicurezza`, {$statoBanSelect}, `data_creazione`
+            FROM `admin`
+            WHERE `email` = ?
+            LIMIT 1
+        ", [$email]);
+
+        return $entity instanceof EAdmin ? $entity : null;
+    }
+
     public function setBanState(int $idAdmin, bool $banned): void
     {
         // Su database non aggiornati la colonna puo non esistere: in quel caso non fa nulla.

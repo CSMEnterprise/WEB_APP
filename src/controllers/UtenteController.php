@@ -28,7 +28,7 @@ class UtenteController extends BaseController
     private string $lastRegistrationNome = '';
 
     /**
-     * Mantiene PDO per query dirette e transazioni.
+     * Mantiene PDO per le transazioni che coordinano piu operazioni.
      */
     public function __construct(PDO $db)
     {
@@ -550,9 +550,7 @@ class UtenteController extends BaseController
         }
 
         // Gli admin vivono in una tabella separata, quindi vengono controllati prima.
-        $stmt = $this->db->prepare('SELECT * FROM admin WHERE email = ? LIMIT 1');
-        $stmt->execute([$email]);
-        $admin = $stmt->fetch();
+        $admin = FPersistentManager::adminByEmailForLogin($email);
 
         if ($admin && password_verify($password, $admin['password_hash'])) {
             if (!empty($admin['stato_ban'])) {
@@ -563,17 +561,8 @@ class UtenteController extends BaseController
             return $admin;
         }
 
-        $stmt = $this->db->prepare("
-            SELECT u.*,
-                   ab.id_acc_business,
-                   ab.nome_azienda
-            FROM utente_registrato u
-            LEFT JOIN account_business ab ON ab.id_utente = u.id_utente
-            WHERE u.email = ?
-            LIMIT 1
-        ");
-        $stmt->execute([$email]);
-        $utente = $stmt->fetch();
+        $utenteEntity = FPersistentManager::utenteByEmailForLogin($email);
+        $utente = $utenteEntity ? $utenteEntity->toArray() : null;
 
         if (!$utente || !password_verify($password, $utente['password_hash'])) {
             throw new ServiceException('Credenziali non valide.');
@@ -630,22 +619,16 @@ class UtenteController extends BaseController
 
         $token = bin2hex(random_bytes(32));
         $scadenza = date('Y-m-d H:i:s', strtotime('+48 hours'));
-        $stmt = $this->db->prepare("
-            INSERT INTO utente_registrato
-            (email, username, password_hash, nome, telefono, email_verificata, token_verifica, token_scadenza)
-            VALUES (?, ?, ?, ?, ?, 0, ?, ?)
-        ");
-
         try {
-            $stmt->execute([
+            $idUtente = FPersistentManager::createUtenteWithVerification(
                 $email,
                 $username,
                 password_hash($password, PASSWORD_DEFAULT),
                 $nome !== '' ? $nome : null,
                 $telefono !== '' ? $telefono : null,
                 $token,
-                $scadenza,
-            ]);
+                $scadenza
+            );
         } catch (PDOException $e) {
             $msg = $e->getMessage();
 
@@ -664,7 +647,7 @@ class UtenteController extends BaseController
         $this->lastRegistrationEmail = $email;
         $this->lastRegistrationNome = $nome;
 
-        return (int) $this->db->lastInsertId();
+        return $idUtente;
     }
     /**
      * Crea i dati aziendali collegati a un utente gia registrato.
@@ -728,29 +711,17 @@ class UtenteController extends BaseController
             throw new ServiceException('Token non valido.');
         }
 
-        $stmt = $this->db->prepare("
-            SELECT id_utente, token_scadenza
-            FROM utente_registrato
-            WHERE token_verifica = ? AND email_verificata = 0
-            LIMIT 1
-        ");
-        $stmt->execute([$token]);
-        $utente = $stmt->fetch();
+        $utente = FPersistentManager::utenteByVerificationToken($token);
 
         if (!$utente) {
             throw new ServiceException('Token non valido o account gia verificato.');
         }
 
-        if (strtotime($utente['token_scadenza']) < time()) {
+        if (strtotime((string) $utente->getTokenScadenza()) < time()) {
             throw new ServiceException('Il link di verifica e scaduto. Richiedi un nuovo invio.');
         }
 
-        $stmt = $this->db->prepare("
-            UPDATE utente_registrato
-            SET email_verificata = 1, token_verifica = NULL, token_scadenza = NULL
-            WHERE id_utente = ?
-        ");
-        $stmt->execute([$utente['id_utente']]);
+        FPersistentManager::confirmUtenteEmail((int) $utente->getIdUtente());
     }
 
     /**
@@ -759,14 +730,7 @@ class UtenteController extends BaseController
     private function resendVerification(string $email, MailService $mail): void
     {
         $email = $this->clean($email);
-        $stmt = $this->db->prepare("
-            SELECT id_utente, username, nome
-            FROM utente_registrato
-            WHERE email = ? AND email_verificata = 0
-            LIMIT 1
-        ");
-        $stmt->execute([$email]);
-        $utente = $stmt->fetch();
+        $utente = FPersistentManager::unverifiedUtenteByEmail($email);
 
         if (!$utente) {
             return;
@@ -774,14 +738,9 @@ class UtenteController extends BaseController
 
         $token = bin2hex(random_bytes(32));
         $scadenza = date('Y-m-d H:i:s', strtotime('+48 hours'));
-        $stmt = $this->db->prepare("
-            UPDATE utente_registrato
-            SET token_verifica = ?, token_scadenza = ?
-            WHERE id_utente = ?
-        ");
-        $stmt->execute([$token, $scadenza, $utente['id_utente']]);
+        FPersistentManager::updateUtenteVerificationToken((int) $utente->getIdUtente(), $token, $scadenza);
 
-        $mail->inviaVerificaEmail($email, $utente['nome'] ?? $utente['username'], $token);
+        $mail->inviaVerificaEmail($email, $utente->getNome() ?? $utente->getUsername(), $token);
     }
 
     /**
@@ -795,28 +754,20 @@ class UtenteController extends BaseController
             throw new ServiceException('Inserisci la tua email.');
         }
 
-        $stmt = $this->db->prepare("
-            SELECT id_utente, username, nome
-            FROM utente_registrato
-            WHERE email = ?
-            LIMIT 1
-        ");
-        $stmt->execute([$email]);
-        $utente = $stmt->fetch();
+        $utente = FPersistentManager::utenteBasicByEmail($email);
 
         if (!$utente) {
             return;
         }
 
-        $this->db->prepare('UPDATE password_reset SET usato = 1 WHERE id_utente = ?')
-            ->execute([$utente['id_utente']]);
+        $idUtente = (int) $utente->getIdUtente();
+        FPersistentManager::invalidatePasswordResetsForUser($idUtente);
 
         $token = bin2hex(random_bytes(32));
         $scadenza = date('Y-m-d H:i:s', strtotime('+1 hour'));
-        $this->db->prepare('INSERT INTO password_reset (id_utente, token, scadenza) VALUES (?, ?, ?)')
-            ->execute([$utente['id_utente'], $token, $scadenza]);
+        FPersistentManager::createPasswordReset($idUtente, $token, $scadenza);
 
-        $mail->inviaResetPassword($email, $utente['nome'] ?? $utente['username'], $token);
+        $mail->inviaResetPassword($email, $utente->getNome() ?? $utente->getUsername(), $token);
     }
 
     /**
@@ -828,30 +779,20 @@ class UtenteController extends BaseController
             throw new ServiceException('Token non valido.');
         }
 
-        $stmt = $this->db->prepare("
-            SELECT id_utente, scadenza
-            FROM password_reset
-            WHERE token = ? AND usato = 0
-            LIMIT 1
-        ");
-        $stmt->execute([$token]);
-        $reset = $stmt->fetch();
+        $reset = FPersistentManager::passwordResetByToken($token);
 
         if (!$reset) {
             throw new ServiceException('Il link non e valido o e gia stato utilizzato.');
         }
 
-        if (strtotime($reset['scadenza']) < time()) {
+        if (strtotime($reset->getScadenza()) < time()) {
             throw new ServiceException('Il link e scaduto. Richiedi un nuovo reset.');
         }
 
         $this->validatePasswordPair($password, $confirm);
 
-        $this->db->prepare('UPDATE utente_registrato SET password_hash = ? WHERE id_utente = ?')
-            ->execute([password_hash($password, PASSWORD_DEFAULT), $reset['id_utente']]);
-
-        $this->db->prepare('UPDATE password_reset SET usato = 1 WHERE token = ?')
-            ->execute([$token]);
+        FPersistentManager::updateUtentePasswordHash($reset->getIdUtente(), password_hash($password, PASSWORD_DEFAULT));
+        FPersistentManager::markPasswordResetTokenUsed($token);
     }
 
     /**
@@ -863,18 +804,15 @@ class UtenteController extends BaseController
             throw new ServiceException('Compila tutti i campi.');
         }
 
-        $stmt = $this->db->prepare('SELECT password_hash FROM utente_registrato WHERE id_utente = ? LIMIT 1');
-        $stmt->execute([$idUtente]);
-        $row = $stmt->fetch();
+        $utente = FPersistentManager::utenteById($idUtente);
 
-        if (!$row || !password_verify($passwordAttuale, $row['password_hash'])) {
+        if (!$utente || !password_verify($passwordAttuale, $utente->getPasswordHash())) {
             throw new ServiceException('La password attuale non e corretta.');
         }
 
         $this->validatePasswordPair($nuovaPassword, $conferma, 'La nuova password deve avere almeno 10 caratteri, una maiuscola e un carattere speciale.');
 
-        $stmt = $this->db->prepare('UPDATE utente_registrato SET password_hash = ? WHERE id_utente = ?');
-        $stmt->execute([password_hash($nuovaPassword, PASSWORD_DEFAULT), $idUtente]);
+        FPersistentManager::updateUtentePasswordHash($idUtente, password_hash($nuovaPassword, PASSWORD_DEFAULT));
     }
 
     /**
@@ -882,16 +820,7 @@ class UtenteController extends BaseController
      */
     private function getResetTokenUserId(string $token): int
     {
-        $stmt = $this->db->prepare("
-            SELECT id_utente
-            FROM password_reset
-            WHERE token = ? AND usato = 0 AND scadenza > NOW()
-            LIMIT 1
-        ");
-        $stmt->execute([$token]);
-        $row = $stmt->fetch();
-
-        return $row ? (int) $row['id_utente'] : 0;
+        return FPersistentManager::userIdByValidPasswordResetToken($token);
     }
 
     /**

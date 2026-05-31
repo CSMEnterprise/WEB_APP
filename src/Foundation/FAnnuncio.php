@@ -150,6 +150,17 @@ class FAnnuncio extends FBaseTable
         return $entity;
     }
 
+    public function findWithDetailsForUpdate(int $idAnnuncio): ?EAnnuncio
+    {
+        $entity = $this->fetchEntity($this->selectWithDetails() . '
+            WHERE a.`id_annuncio` = ?
+            LIMIT 1
+            FOR UPDATE
+        ', [$idAnnuncio]);
+
+        return $entity instanceof EAnnuncio ? $entity : null;
+    }
+
     public function byUserIdAndStato(int $idUtente, ?string $stato = 'attivo'): array
     {
         // Con stato null restituisce tutti gli annunci dell'utente.
@@ -229,6 +240,14 @@ class FAnnuncio extends FBaseTable
             "UPDATE `annuncio` SET `stato` = 'venduto' WHERE `id_annuncio` = ?",
             [$idAnnuncio]
         );
+    }
+
+    public function markSoldIfActive(int $idAnnuncio): bool
+    {
+        return $this->execute(
+            "UPDATE `annuncio` SET `stato` = 'venduto' WHERE `id_annuncio` = ? AND `stato` = 'attivo'",
+            [$idAnnuncio]
+        ) === 1;
     }
 
     public function search(

@@ -10,7 +10,7 @@ class MailService
     {
         $configPath = __DIR__ . '/../config/mail.php';
         if (!is_file($configPath)) {
-            throw new \RuntimeException('Configurazione email mancante. Copia src/config/mail.example.php in src/config/mail.php e adatta i valori locali.');
+            throw new \RuntimeException('Configurazione email locale mancante. Crea src/config/mail.php con i valori del tuo ambiente.');
         }
 
         $this->config = require $configPath;

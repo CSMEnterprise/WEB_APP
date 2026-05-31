@@ -12,6 +12,7 @@ use App\Entity\{
     EIndirizzo,
     EModera,
     EPagamento,
+    EPasswordReset,
     EPreferito,
     ESegnalazione,
     EUtenteRegistrato
@@ -87,6 +88,11 @@ class FPersistentManager
         return self::annunci()->findWithDetails($idAnnuncio);
     }
 
+    public static function annuncioForPaymentUpdate(int $idAnnuncio): ?EAnnuncio
+    {
+        return self::annunci()->findWithDetailsForUpdate($idAnnuncio);
+    }
+
     public static function annunciByUserIdAndStato(int $idUtente, ?string $stato = 'attivo'): array
     {
         return self::annunci()->byUserIdAndStato($idUtente, $stato);
@@ -115,6 +121,11 @@ class FPersistentManager
     public static function markAnnuncioSold(int $idAnnuncio): void
     {
         self::annunci()->markSold($idAnnuncio);
+    }
+
+    public static function markAnnuncioSoldIfActive(int $idAnnuncio): bool
+    {
+        return self::annunci()->markSoldIfActive($idAnnuncio);
     }
 
     public static function searchAnnunci(
@@ -180,6 +191,53 @@ class FPersistentManager
         return self::utenti()->findWithDefaultAddress($idUtente);
     }
 
+    public static function utenteByEmailForLogin(string $email): ?EUtenteRegistrato
+    {
+        return self::utenti()->findByEmailForLogin($email);
+    }
+
+    public static function utenteBasicByEmail(string $email): ?EUtenteRegistrato
+    {
+        return self::utenti()->findBasicByEmail($email);
+    }
+
+    public static function unverifiedUtenteByEmail(string $email): ?EUtenteRegistrato
+    {
+        return self::utenti()->findUnverifiedByEmail($email);
+    }
+
+    public static function utenteByVerificationToken(string $token): ?EUtenteRegistrato
+    {
+        return self::utenti()->findByVerificationToken($token);
+    }
+
+    public static function createUtenteWithVerification(
+        string $email,
+        string $username,
+        string $passwordHash,
+        ?string $nome,
+        ?string $telefono,
+        string $token,
+        string $scadenza
+    ): int {
+        return self::utenti()->createWithVerification($email, $username, $passwordHash, $nome, $telefono, $token, $scadenza);
+    }
+
+    public static function confirmUtenteEmail(int $idUtente): void
+    {
+        self::utenti()->confirmEmail($idUtente);
+    }
+
+    public static function updateUtenteVerificationToken(int $idUtente, string $token, string $scadenza): void
+    {
+        self::utenti()->updateVerificationToken($idUtente, $token, $scadenza);
+    }
+
+    public static function updateUtentePasswordHash(int $idUtente, string $passwordHash): void
+    {
+        self::utenti()->updatePasswordHash($idUtente, $passwordHash);
+    }
+
     public static function updateProfiloUtente(int $idUtente, string $nome, ?string $telefono): void
     {
         self::utenti()->updateProfile($idUtente, $nome, $telefono);
@@ -208,6 +266,13 @@ class FPersistentManager
     public static function setUtenteBanState(int $idUtente, bool $banned): void
     {
         self::utenti()->setBanState($idUtente, $banned);
+    }
+
+    public static function adminByEmailForLogin(string $email): ?array
+    {
+        $admin = self::adminTable()->findByEmailForLogin($email);
+
+        return $admin ? $admin->toArray() : null;
     }
 
     public static function createIndirizzoForUser(EIndirizzo $indirizzo): int
@@ -440,6 +505,31 @@ class FPersistentManager
         return self::pagamenti()->findWithAnnuncioTitle($idPagamento);
     }
 
+    public static function invalidatePasswordResetsForUser(int $idUtente): void
+    {
+        self::passwordResets()->invalidateForUser($idUtente);
+    }
+
+    public static function createPasswordReset(int $idUtente, string $token, string $scadenza): int
+    {
+        return self::passwordResets()->createForUser($idUtente, $token, $scadenza);
+    }
+
+    public static function passwordResetByToken(string $token): ?EPasswordReset
+    {
+        return self::passwordResets()->findUsableByToken($token);
+    }
+
+    public static function userIdByValidPasswordResetToken(string $token): int
+    {
+        return self::passwordResets()->userIdByValidToken($token);
+    }
+
+    public static function markPasswordResetTokenUsed(string $token): void
+    {
+        self::passwordResets()->markTokenUsed($token);
+    }
+
     public static function ordiniRicevutiBySellerUser(int $idUtente): array
     {
         return self::pagamenti()->receivedBySellerUser($idUtente);
@@ -561,6 +651,11 @@ class FPersistentManager
     private static function pagamenti(): FPagamento
     {
         return self::table(FPagamento::class);
+    }
+
+    private static function passwordResets(): FPasswordReset
+    {
+        return self::table(FPasswordReset::class);
     }
 
     private static function business(): FAccountBusiness

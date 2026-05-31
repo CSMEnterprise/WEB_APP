@@ -36,7 +36,7 @@ Stato attuale:
 - le view restano compatibili perche ricevono array generati dalle Entity;
 - `FDataBase` e `FPersistentManager` riprendono la struttura Foundation del progetto di riferimento;
 - `FBaseTable` contiene le operazioni comuni di mapping tabella/Entity;
-- `FAnnuncio`, `FImmagine`, `FCategoria`, `FUtenteRegistrato`, `FIndirizzo`, `FAccountBusiness`, `FCarrello`, `FElementoCarrello`, `FPreferito`, `FFeedback`, `FSegnalazione`, `FAdmin`, `FModera` e `FPagamento` gestiscono le prime tabelle migrate nel package Foundation;
+- `FAnnuncio`, `FImmagine`, `FCategoria`, `FUtenteRegistrato`, `FIndirizzo`, `FAccountBusiness`, `FCarrello`, `FElementoCarrello`, `FPreferito`, `FFeedback`, `FSegnalazione`, `FAdmin`, `FModera`, `FPagamento` e `FPasswordReset` gestiscono le tabelle migrate nel package Foundation;
 - le Entity sono il punto di passaggio tra dati del database e logica applicativa.
 
 Mappatura principale:

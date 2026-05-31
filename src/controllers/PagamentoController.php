@@ -2,10 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Entity\{
-    EAnnuncio,
-    EPagamento
-};
+use App\Entity\EPagamento;
 use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
 use Exception;
@@ -20,7 +17,7 @@ class PagamentoController extends BaseController
     private PDO $db;
 
     /**
-     * Mantiene PDO per transazioni e query con lock sugli annunci.
+     * Mantiene PDO per le transazioni che coordinano pagamento e vendita.
      */
     public function __construct(PDO $db)
     {
@@ -217,13 +214,11 @@ class PagamentoController extends BaseController
         $this->db->beginTransaction();
 
         try {
-            $annuncioRow = $this->getAnnuncioForPaymentUpdate($idAnnuncio);
+            $annuncio = FPersistentManager::annuncioForPaymentUpdate($idAnnuncio);
 
-            if (!$annuncioRow) {
+            if (!$annuncio) {
                 throw new ServiceException('Annuncio non trovato.');
             }
-
-            $annuncio = EAnnuncio::fromArray($annuncioRow);
 
             if (!$annuncio->isAttivo()) {
                 throw new ServiceException('Annuncio non acquistabile.');
@@ -290,8 +285,7 @@ class PagamentoController extends BaseController
 
             foreach ($idAnnunci as $idAnnuncio) {
                 // Ogni annuncio viene letto con lock per evitare doppie vendite concorrenti.
-                $annuncioRow = $this->getAnnuncioForPaymentUpdate($idAnnuncio);
-                $annuncio = $annuncioRow ? EAnnuncio::fromArray($annuncioRow) : null;
+                $annuncio = FPersistentManager::annuncioForPaymentUpdate($idAnnuncio);
 
                 if (!$annuncio || !$annuncio->isAttivo()) {
                     continue;
@@ -353,43 +347,11 @@ class PagamentoController extends BaseController
     }
 
     /**
-     * Legge l'annuncio con FOR UPDATE per bloccarlo durante la transazione di pagamento.
-     */
-    private function getAnnuncioForPaymentUpdate(int $idAnnuncio): ?array
-    {
-        $stmt = $this->db->prepare("
-            SELECT
-                a.*,
-                c.nome AS categoria_nome,
-                u.username AS venditore_username,
-                ab.id_acc_business AS venditore_business_id,
-                ab.nome_azienda AS venditore_nome_azienda
-            FROM annuncio a
-            LEFT JOIN categoria c ON c.id_categoria = a.id_categoria
-            LEFT JOIN utente_registrato u ON u.id_utente = a.id_utente
-            LEFT JOIN account_business ab ON ab.id_utente = a.id_utente
-            WHERE a.id_annuncio = ?
-            LIMIT 1
-            FOR UPDATE
-        ");
-        $stmt->execute([$idAnnuncio]);
-
-        return $stmt->fetch() ?: null;
-    }
-
-    /**
      * Marca l'annuncio come venduto solo se era ancora attivo.
      */
     private function markAnnuncioSoldForPayment(int $idAnnuncio): void
     {
-        $stmt = $this->db->prepare("
-            UPDATE annuncio
-            SET stato = 'venduto'
-            WHERE id_annuncio = ? AND stato = 'attivo'
-        ");
-        $stmt->execute([$idAnnuncio]);
-
-        if ($stmt->rowCount() !== 1) {
+        if (!FPersistentManager::markAnnuncioSoldIfActive($idAnnuncio)) {
             throw new ServiceException('Annuncio non acquistabile.');
         }
     }

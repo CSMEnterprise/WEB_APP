@@ -26,8 +26,8 @@ WEB_APP/
 |       `-- annunci/
 |-- src/
 |   |-- config/
-|   |   |-- db.example.php
-|   |   `-- mail.example.php
+|   |   |-- db.example.php      template versionato
+|   |   `-- mail.example.php    template versionato
 |   |-- controllers/
 |   |-- Entity/
 |   |-- Foundation/
@@ -65,7 +65,7 @@ WEB_APP/
 - `public/`: contiene il punto di ingresso dell'applicazione. Apache deve servire questa cartella, non la root del progetto.
 - `public/css/`: contiene gli stylesheet dell'interfaccia, separati dai template Smarty.
 - `public/uploads/`: contiene i file caricati dagli utenti, per esempio le immagini degli annunci.
-- `src/config/`: contiene la configurazione dell'applicazione, inclusa la connessione al database.
+- `src/config/`: contiene i template di configurazione versionati. I file locali reali `db.php` e `mail.php` sono ignorati da Git.
 - `src/controllers/`: riceve le richieste dal router e coordina servizi e viste.
 - `src/Entity/`: contiene le classi Entity con proprieta private, getter, setter e metodi di utilita.
 - `src/Foundation/`: contiene classi infrastrutturali e mapper tabella/Entity. La persistenza segue la logica `FDataBase` + `FPersistentManager` + classi `F...`.
@@ -166,13 +166,15 @@ Non ci sono migrazioni SQL aggiuntive da applicare dopo questo file.
 
 ### 4. Configurare la connessione al database
 
-La connessione PDO e' configurata in:
+La connessione PDO usa il file locale:
 
 ```text
 src/config/db.php
 ```
 
-Il file `src/config/db.php` e' locale e non viene versionato. Crearlo copiando l'esempio:
+Questo file non viene versionato. Nel repository resta solo `src/config/db.example.php`, che serve da template per chi clona il progetto da zero.
+
+Se `src/config/db.php` manca, crearlo una sola volta partendo dal template:
 
 ```bash
 cp src/config/db.example.php src/config/db.php
@@ -188,11 +190,19 @@ $username = 'root';
 $password = '';
 ```
 
-Questi valori sono adatti alla configurazione standard di XAMPP. Se il database usa credenziali diverse, modificarle in quel file.
+Questi valori sono adatti alla configurazione standard di XAMPP. Se il database usa credenziali diverse, modificarle direttamente in `src/config/db.php`.
 
 ### 5. Configurare le email
 
-La configurazione email e' locale e non viene versionata. Crearla copiando l'esempio:
+La configurazione email usa il file locale:
+
+```text
+src/config/mail.php
+```
+
+Anche questo file non viene versionato. Nel repository resta solo `src/config/mail.example.php`, usato come template.
+
+Se `src/config/mail.php` manca, crearlo una sola volta partendo dal template:
 
 ```bash
 cp src/config/mail.example.php src/config/mail.php
@@ -316,7 +326,6 @@ Browser
   -> App\Core\FrontController
   -> middleware, se richiesto
   -> controller
-  -> service
   -> Foundation/FPersistentManager
   -> Foundation/F... table mapper
   -> Foundation/FDataBase
@@ -331,13 +340,12 @@ Esempio per la lista annunci:
 public/index.php
   -> FrontController::handle()
   -> AnnuncioController::lista()
-  -> AnnuncioService::getAnnunciAttiviEntity()
   -> FPersistentManager::annunciAttivi()
   -> FAnnuncio::attivi()
   -> templates/annunci/lista.tpl
 ```
 
-La stessa logica e' stata estesa ai flussi principali di utenti, indirizzi, wishlist, carrello, feedback, segnalazioni, moderazione e pagamenti. Le transazioni di acquisto mantengono ancora alcune query dedicate con `FOR UPDATE` dentro `PaymentService`, per controllare in modo atomico lo stato dell'annuncio durante il pagamento.
+La stessa logica e' stata estesa ai flussi principali di utenti, indirizzi, wishlist, carrello, feedback, segnalazioni, moderazione e pagamenti. Le query SQL stanno nel package `App\Foundation`; i controller coordinano richiesta, validazioni, transazioni applicative e rendering. Le transazioni di acquisto usano ancora `FOR UPDATE`, ma la query vive in `FAnnuncio::findWithDetailsForUpdate()`.
 
 ## Verifica sintassi PHP
 

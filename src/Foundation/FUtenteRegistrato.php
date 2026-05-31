@@ -60,6 +60,108 @@ class FUtenteRegistrato extends FBaseTable
         return $entity instanceof EUtenteRegistrato ? $entity : null;
     }
 
+    public function findByEmailForLogin(string $email): ?EUtenteRegistrato
+    {
+        $entity = $this->fetchEntity("
+            SELECT u.`id_utente`, u.`email`, u.`email_verificata`, u.`token_verifica`, u.`token_scadenza`,
+                   u.`username`, u.`password_hash`, u.`nome`, u.`telefono`, u.`propic`,
+                   u.`stato_ban`, u.`data_registrazione`,
+                   ab.`id_acc_business`, ab.`nome_azienda`
+            FROM `utente_registrato` u
+            LEFT JOIN `account_business` ab ON ab.`id_utente` = u.`id_utente`
+            WHERE u.`email` = ?
+            LIMIT 1
+        ", [$email]);
+
+        return $entity instanceof EUtenteRegistrato ? $entity : null;
+    }
+
+    public function findBasicByEmail(string $email): ?EUtenteRegistrato
+    {
+        $entity = $this->fetchEntity("
+            SELECT `id_utente`, `email`, `username`, `nome`
+            FROM `utente_registrato`
+            WHERE `email` = ?
+            LIMIT 1
+        ", [$email]);
+
+        return $entity instanceof EUtenteRegistrato ? $entity : null;
+    }
+
+    public function findUnverifiedByEmail(string $email): ?EUtenteRegistrato
+    {
+        $entity = $this->fetchEntity("
+            SELECT `id_utente`, `email`, `username`, `nome`
+            FROM `utente_registrato`
+            WHERE `email` = ? AND `email_verificata` = 0
+            LIMIT 1
+        ", [$email]);
+
+        return $entity instanceof EUtenteRegistrato ? $entity : null;
+    }
+
+    public function findByVerificationToken(string $token): ?EUtenteRegistrato
+    {
+        $entity = $this->fetchEntity("
+            SELECT `id_utente`, `email`, `email_verificata`, `token_verifica`, `token_scadenza`,
+                   `username`, `password_hash`, `nome`, `telefono`, `propic`, `stato_ban`, `data_registrazione`
+            FROM `utente_registrato`
+            WHERE `token_verifica` = ? AND `email_verificata` = 0
+            LIMIT 1
+        ", [$token]);
+
+        return $entity instanceof EUtenteRegistrato ? $entity : null;
+    }
+
+    public function createWithVerification(
+        string $email,
+        string $username,
+        string $passwordHash,
+        ?string $nome,
+        ?string $telefono,
+        string $token,
+        string $scadenza
+    ): int {
+        return $this->insert([
+            'email' => $email,
+            'username' => $username,
+            'password_hash' => $passwordHash,
+            'nome' => $nome,
+            'telefono' => $telefono,
+            'email_verificata' => 0,
+            'token_verifica' => $token,
+            'token_scadenza' => $scadenza,
+        ]);
+    }
+
+    public function confirmEmail(int $idUtente): void
+    {
+        $this->execute("
+            UPDATE `utente_registrato`
+            SET `email_verificata` = 1,
+                `token_verifica` = NULL,
+                `token_scadenza` = NULL
+            WHERE `id_utente` = ?
+        ", [$idUtente]);
+    }
+
+    public function updateVerificationToken(int $idUtente, string $token, string $scadenza): void
+    {
+        $this->execute("
+            UPDATE `utente_registrato`
+            SET `token_verifica` = ?, `token_scadenza` = ?
+            WHERE `id_utente` = ?
+        ", [$token, $scadenza, $idUtente]);
+    }
+
+    public function updatePasswordHash(int $idUtente, string $passwordHash): void
+    {
+        $this->execute(
+            'UPDATE `utente_registrato` SET `password_hash` = ? WHERE `id_utente` = ?',
+            [$passwordHash, $idUtente]
+        );
+    }
+
     public function updateProfile(int $idUtente, string $nome, ?string $telefono): void
     {
         // Aggiorna solo dati anagrafici modificabili dal profilo.
