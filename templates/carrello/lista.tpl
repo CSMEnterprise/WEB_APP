@@ -29,7 +29,9 @@
     <div class="cr-layout">
         <section class="cr-items">
             {foreach $carrello as $item}
-                {assign var=isPurchasable value=($item.stato|default:'') == 'attivo' && ($item.id_utente|default:0) != $userId}
+                {assign var=itemOwner value=$item.venditore_user_id|default:0}
+                {if empty($itemOwner)}{assign var=itemOwner value=$item.id_utente|default:0}{/if}
+                {assign var=isPurchasable value=($item.stato|default:'') == 'attivo' && $itemOwner != $userId}
                 <article class="cr-item">
                     <a class="cr-item-img" href="/annuncio/show/{$item.id_annuncio|default:0}">
                         {if !empty($item.immagine_principale)}

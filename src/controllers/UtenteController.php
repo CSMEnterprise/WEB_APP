@@ -54,6 +54,8 @@ class UtenteController extends BaseController
                 $_SESSION['user_id']  = (int) $utente['id_admin'];
                 $_SESSION['username'] = 'Admin';
                 $_SESSION['is_admin'] = true;
+                $_SESSION['is_business'] = false;
+                $_SESSION['business_id'] = 0;
                 $_SESSION['propic']   = null;
                 $_SESSION['livello_sicurezza'] = (int) ($utente['livello_sicurezza'] ?? 1);
                 header('Location: /admin/index');
@@ -61,7 +63,9 @@ class UtenteController extends BaseController
                 $_SESSION['user_id']     = (int) $utente['id_utente'];
                 $_SESSION['username']    = $utente['username'];
                 $_SESSION['propic']      = $utente['propic'] ?? null;
+                $_SESSION['is_admin']    = false;
                 $_SESSION['is_business'] = !empty($utente['_is_business']);
+                $_SESSION['business_id']  = (int) ($utente['id_acc_business'] ?? 0);
                 header('Location: /utente/profilo');
             }
             exit;
@@ -113,7 +117,7 @@ class UtenteController extends BaseController
                     $this->lastRegistrationToken
                 );
             } catch (Exception $mailEx) {
-                // Ignora errori mail: l'utente potrà richiedere il reinvio
+                $_SESSION['verification_mail_error'] = 'Account creato, ma invio email non riuscito. Controlla la configurazione Mailtrap e usa il reinvio.';
             }
 
             header('Location: /auth/verifica-email-attesa?email=' . urlencode($this->lastRegistrationEmail));
@@ -177,7 +181,7 @@ class UtenteController extends BaseController
                     $this->lastRegistrationToken
                 );
             } catch (Exception $mailEx) {
-                // Ignora errori mail
+                $_SESSION['verification_mail_error'] = 'Account creato, ma invio email non riuscito. Controlla la configurazione Mailtrap e usa il reinvio.';
             }
 
             header('Location: /auth/verifica-email-attesa?email=' . urlencode($this->lastRegistrationEmail));
@@ -227,7 +231,7 @@ class UtenteController extends BaseController
         $businessEntity = FPersistentManager::businessByUser($idVenditore);
         if ($businessEntity) {
             $business = $businessEntity;
-            $annunci = FPersistentManager::annunciByUserIdAndStato($idVenditore, 'attivo');
+            $annunci = FPersistentManager::annunciByBusinessIdAndStato((int) $businessEntity->getIdAccBusiness(), 'attivo');
             $isPublicVetrina = true;
 
             $this->view('business/profilo.tpl', compact('business', 'annunci', 'isPublicVetrina'), 'Vetrina ' . ($businessEntity->getNomeAzienda() ?: 'PRO'));
@@ -399,10 +403,9 @@ class UtenteController extends BaseController
      */
     public function verificaEmailAttesa(): void
     {
-        // In sviluppo puo mostrare un link debug salvato in sessione dal MailService.
         $email = $_GET['email'] ?? '';
-        $debugLink = $this->consumeDebugMailLink('verifica');
-        $this->view('utenti/verifica_email_attesa.tpl', compact('email', 'debugLink'), 'Verifica email');
+        $errore = $this->consumeVerificationMailError();
+        $this->view('utenti/verifica_email_attesa.tpl', compact('email', 'errore'), 'Verifica email');
     }
 
     /**
@@ -438,8 +441,7 @@ class UtenteController extends BaseController
             $errore = $e->getMessage();
         }
         $email = $data['email'] ?? '';
-        $debugLink = $this->consumeDebugMailLink('verifica');
-        $this->view('utenti/verifica_email_attesa.tpl', compact('email', 'successo', 'errore', 'debugLink'), 'Verifica email');
+        $this->view('utenti/verifica_email_attesa.tpl', compact('email', 'successo', 'errore'), 'Verifica email');
     }
 
     // ----------------------------------------------------------------
@@ -1051,12 +1053,16 @@ class UtenteController extends BaseController
         // I business vendono soltanto: niente indirizzi di spedizione o cronologia acquisti.
         $filtroAnnunci = $filtroAnnunci === 'venduto' ? 'venduto' : 'attivo';
         $isBusiness = !empty($_SESSION['is_business']);
+        $business = $isBusiness ? FPersistentManager::businessByUser($idUtente) : null;
+        $annunci = $business
+            ? FPersistentManager::annunciByBusinessIdAndStato((int) $business->getIdAccBusiness(), $filtroAnnunci)
+            : FPersistentManager::annunciByUserIdAndStato($idUtente, $filtroAnnunci);
 
         return [
             'utente' => FPersistentManager::utenteById($idUtente),
             'indirizziUtente' => $isBusiness ? [] : FPersistentManager::indirizziByUser($idUtente),
             'filtroAnnunci' => $filtroAnnunci,
-            'annunciUtente' => FPersistentManager::annunciByUserIdAndStato($idUtente, $filtroAnnunci),
+            'annunciUtente' => $annunci,
             'titoloAnnunciProfilo' => $filtroAnnunci === 'venduto' ? 'Annunci venduti' : 'Annunci attivi',
             'cronologiaPagamenti' => $isBusiness ? [] : FPersistentManager::cronologiaPagamentiByUser($idUtente),
         ];
@@ -1068,6 +1074,14 @@ class UtenteController extends BaseController
     private function renderProfilo(array $data): void
     {
         $this->view('utenti/profilo.tpl', $data, 'Profilo');
+    }
+
+    private function consumeVerificationMailError(): string
+    {
+        $errore = (string) ($_SESSION['verification_mail_error'] ?? '');
+        unset($_SESSION['verification_mail_error']);
+
+        return $errore;
     }
 
     /**

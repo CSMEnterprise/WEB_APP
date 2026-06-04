@@ -1,4 +1,4 @@
-{* Pagina di attesa verifica email: mostrata subito dopo la registrazione. Include istruzioni, form di reinvio e (solo in modalità debug) il link di verifica diretto. *}
+{* Pagina di attesa verifica email: mostrata subito dopo la registrazione. Include istruzioni e form di reinvio. *}
 {include file="layouts/header.tpl"}
 
 <div class="u-style-080">
@@ -16,14 +16,6 @@
                 {if ($email|default:'') != ''}<strong class="u-style-132">{$email}</strong>{else}il tuo indirizzo email{/if}.
             </p>
             <p class="muted u-style-133">Clicca il link nell'email per attivare il tuo account. Il link scadra tra <strong class="u-style-132">48 ore</strong>.</p>
-        {/if}
-
-        {if !empty($debugLink)}
-            <div class="u-style-134">
-                <p class="u-style-086">Modalita debug - Link di verifica</p>
-                <p class="u-style-087">L'email non viene inviata in modalita debug. Clicca direttamente il link qui sotto:</p>
-                <a class="u-debug-link" href="{$debugLink}">{$debugLink}</a>
-            </div>
         {/if}
 
         <details class="u-style-135">

@@ -4,19 +4,20 @@
 |--------------------------------------------------------------------------
 | Configurazione email NerdVault
 |--------------------------------------------------------------------------
-| Copiare questo file in src/config/mail.php e adattare i valori locali.
-| Con debug=true i link email vengono salvati in sessione invece di inviare SMTP.
+| Copiare questo file in src/config/mail.php e inserire le credenziali SMTP
+| del proprio inbox Mailtrap.
 |--------------------------------------------------------------------------
 */
 
 return [
-    'debug' => true,
-    'base_url' => 'http://nerdvault.local',
+    'debug' => false,
+    'base_url' => 'http://localhost/WEB_APP/public',
 
-    'host' => 'smtp.example.com',
-    'port' => 587,
-    'username' => '',
-    'password' => '',
+    'host' => 'sandbox.smtp.mailtrap.io',
+    'port' => 2525,
+    'encryption' => 'tls',
+    'username' => 'MAILTRAP_USERNAME',
+    'password' => 'MAILTRAP_PASSWORD',
     'from' => 'no-reply@nerdvault.local',
     'from_name' => 'NerdVault',
 ];

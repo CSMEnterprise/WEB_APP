@@ -47,14 +47,15 @@ class FFeedback extends FBaseTable
     {
         // Include feedback dove l'utente e acquirente oppure venditore dell'annuncio.
         return $this->fetchEntities("
-            SELECT f.*, u.`username` AS autore, p.`id_acquirente`, a.`id_utente` AS venditore_id, a.`titolo`
+            SELECT f.*, u.`username` AS autore, p.`id_acquirente`, COALESCE(a.`id_utente`, ab.`id_utente`) AS venditore_id, a.`titolo`
             FROM `feedback` f
             JOIN `utente_registrato` u ON u.`id_utente` = f.`id_autore`
             JOIN `pagamento` p ON p.`id_pagamento` = f.`id_pagamento`
             JOIN `annuncio` a ON a.`id_annuncio` = p.`id_annuncio`
-            WHERE p.`id_acquirente` = ? OR a.`id_utente` = ?
+            LEFT JOIN `account_business` ab ON ab.`id_acc_business` = a.`id_business`
+            WHERE p.`id_acquirente` = ? OR a.`id_utente` = ? OR ab.`id_utente` = ?
             ORDER BY f.`data_feedback` DESC
-        ", [$idUtente, $idUtente]);
+        ", [$idUtente, $idUtente, $idUtente]);
     }
 
     public function byVenditore(int $idVenditore): array
@@ -70,9 +71,10 @@ class FFeedback extends FBaseTable
             JOIN `utente_registrato` u ON u.`id_utente` = f.`id_autore`
             JOIN `pagamento` p ON p.`id_pagamento` = f.`id_pagamento`
             JOIN `annuncio` a ON a.`id_annuncio` = p.`id_annuncio`
-            WHERE a.`id_utente` = ?
+            LEFT JOIN `account_business` ab ON ab.`id_acc_business` = a.`id_business`
+            WHERE a.`id_utente` = ? OR ab.`id_utente` = ?
             ORDER BY f.`data_feedback` DESC
-        ", [$idVenditore]);
+        ", [$idVenditore, $idVenditore]);
     }
 
     public function existsForPagamentoAndAutore(int $idPagamento, int $idAutore): bool
@@ -92,7 +94,8 @@ class FFeedback extends FBaseTable
             FROM `feedback` f
             JOIN `pagamento` p ON p.`id_pagamento` = f.`id_pagamento`
             JOIN `annuncio` a ON a.`id_annuncio` = p.`id_annuncio`
-            WHERE a.`id_utente` = ?
-        ", [$idUtente]);
+            LEFT JOIN `account_business` ab ON ab.`id_acc_business` = a.`id_business`
+            WHERE a.`id_utente` = ? OR ab.`id_utente` = ?
+        ", [$idUtente, $idUtente]);
     }
 }

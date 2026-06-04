@@ -50,7 +50,8 @@ class AnnuncioController extends BaseController
         }
 
         $annuncio = $annuncioEntity;
-        $idVenditore = (int) ($annuncioEntity->getIdUtente() ?? 0);
+        $annuncioData = $annuncioEntity->toArray();
+        $idVenditore = (int) ($annuncioData['venditore_user_id'] ?? $annuncioEntity->getIdUtente() ?? 0);
         $feedbackVenditore = $idVenditore > 0
             ? FPersistentManager::feedbackByVenditore($idVenditore)
             : [];
@@ -82,7 +83,7 @@ class AnnuncioController extends BaseController
             $annuncioEntity = FPersistentManager::annuncioById($idAnnuncio);
             $annuncio = $annuncioEntity;
 
-            if (!$annuncioEntity || (int)($annuncioEntity->getIdUtente() ?? 0) !== $idUtente || !$annuncioEntity->isAttivo()) {
+            if (!$annuncioEntity || !FPersistentManager::userOwnsAnnuncio($idUtente, $idAnnuncio) || !$annuncioEntity->isAttivo()) {
                 throw new ServiceException('Non puoi modificare questo annuncio.');
             }
 
@@ -160,7 +161,7 @@ class AnnuncioController extends BaseController
             $this->requirePositiveId($idAnnuncio, 'Annuncio');
             $this->requirePositiveId($idUtente, 'Utente');
 
-            if (!FPersistentManager::deleteAnnuncioForUser($idAnnuncio, $idUtente)) {
+            if (!FPersistentManager::deleteAnnuncioForOwner($idAnnuncio, $idUtente)) {
                 throw new ServiceException('Non puoi eliminare questo annuncio.');
             }
 
@@ -180,8 +181,10 @@ class AnnuncioController extends BaseController
         [$titolo, $descrizione, $idCategoria, $statoConservazione, $prezzo] = $this->validateAnnuncioData($data);
 
         return FPersistentManager::transaction(function () use ($idUtente, $idCategoria, $titolo, $descrizione, $statoConservazione, $prezzo, $files): int {
+            $business = FPersistentManager::businessByUser($idUtente);
             $annuncio = EAnnuncio::fromArray([
-                'id_utente' => $idUtente,
+                'id_utente' => $business ? null : $idUtente,
+                'id_business' => $business ? (int) $business->getIdAccBusiness() : null,
                 'id_categoria' => $idCategoria,
                 'titolo' => $titolo,
                 'descrizione' => $descrizione !== '' ? $descrizione : null,
@@ -191,7 +194,9 @@ class AnnuncioController extends BaseController
                 'stato' => 'attivo',
             ]);
 
-            $idAnnuncio = FPersistentManager::createAnnuncioForUser($annuncio, $idUtente);
+            $idAnnuncio = $business
+                ? FPersistentManager::createAnnuncioForBusiness($annuncio, (int) $business->getIdAccBusiness())
+                : FPersistentManager::createAnnuncioForUser($annuncio, $idUtente);
             $this->saveAnnuncioImages($idAnnuncio, $files);
 
             return $idAnnuncio;
@@ -208,7 +213,7 @@ class AnnuncioController extends BaseController
 
         $annuncio = FPersistentManager::annuncioById($idAnnuncio);
 
-        if (!$annuncio || (int)($annuncio->getIdUtente() ?? 0) !== $idUtente) {
+        if (!$annuncio || !FPersistentManager::userOwnsAnnuncio($idUtente, $idAnnuncio)) {
             throw new ServiceException('Non puoi modificare questo annuncio.');
         }
 
@@ -228,7 +233,7 @@ class AnnuncioController extends BaseController
                 'prezzo' => $prezzo,
             ]));
 
-            FPersistentManager::updateAnnuncioForUser($idAnnuncio, $idUtente, $updated);
+            FPersistentManager::updateAnnuncioForOwner($idAnnuncio, $idUtente, $updated);
             $this->saveAnnuncioImages($idAnnuncio, $files);
         });
     }

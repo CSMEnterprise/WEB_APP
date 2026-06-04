@@ -37,7 +37,7 @@ class CarrelloController extends BaseController
 
             // La view riceve sia il carrello completo sia il sottoinsieme davvero acquistabile.
             foreach ($carrello as $item) {
-                $isOwner = (int)($item['id_utente'] ?? 0) === $idUtente;
+                $isOwner = FPersistentManager::userOwnsAnnuncio($idUtente, (int) ($item['id_annuncio'] ?? 0));
 
                 if (!$isOwner && ($item['stato'] ?? '') === 'attivo') {
                     $purchasableItems[] = $item;
@@ -125,7 +125,7 @@ class CarrelloController extends BaseController
             throw new ServiceException("Questo annuncio non e' acquistabile.");
         }
 
-        if ((int)($annuncio->getIdUtente() ?? 0) === $idUtente) {
+        if (FPersistentManager::userOwnsAnnuncio($idUtente, $idAnnuncio)) {
             throw new ServiceException('Non puoi aggiungere al carrello un tuo annuncio.');
         }
 

@@ -40,12 +40,17 @@ class FPersistentManager
 
         if ($entity instanceof EAnnuncio) {
             $idUtente = $entity->getIdUtente();
+            $idBusiness = $entity->getIdBusiness();
 
-            if ($idUtente === null) {
-                throw new RuntimeException('Annuncio senza utente proprietario.');
+            if ($idUtente !== null) {
+                return $table->createForUser($entity, $idUtente);
             }
 
-            return $table->createForUser($entity, $idUtente);
+            if ($idBusiness !== null) {
+                return $table->createForBusiness($entity, $idBusiness);
+            }
+
+            throw new RuntimeException('Annuncio senza proprietario utente o business.');
         }
 
         return $table->insert($entity);
@@ -104,9 +109,19 @@ class FPersistentManager
         return self::annunci()->byUserIdAndStato($idUtente, $stato);
     }
 
+    public static function annunciByBusinessIdAndStato(int $idBusiness, ?string $stato = 'attivo'): array
+    {
+        return self::annunci()->byBusinessIdAndStato($idBusiness, $stato);
+    }
+
     public static function createAnnuncioForUser(EAnnuncio $annuncio, int $idUtente): int
     {
         return self::annunci()->createForUser($annuncio, $idUtente);
+    }
+
+    public static function createAnnuncioForBusiness(EAnnuncio $annuncio, int $idBusiness): int
+    {
+        return self::annunci()->createForBusiness($annuncio, $idBusiness);
     }
 
     public static function updateAnnuncioForUser(int $idAnnuncio, int $idUtente, EAnnuncio $annuncio): bool
@@ -114,9 +129,37 @@ class FPersistentManager
         return self::annunci()->updateForUser($idAnnuncio, $idUtente, $annuncio);
     }
 
+    public static function updateAnnuncioForOwner(int $idAnnuncio, int $idUtente, EAnnuncio $annuncio): bool
+    {
+        $business = self::businessByUser($idUtente);
+
+        if ($business && $annuncio->getIdBusiness() !== null) {
+            return self::annunci()->updateForBusiness($idAnnuncio, (int) $business->getIdAccBusiness(), $annuncio);
+        }
+
+        return self::annunci()->updateForUser($idAnnuncio, $idUtente, $annuncio);
+    }
+
     public static function deleteAnnuncioForUser(int $idAnnuncio, int $idUtente): bool
     {
         return self::annunci()->deleteForUser($idAnnuncio, $idUtente);
+    }
+
+    public static function deleteAnnuncioForOwner(int $idAnnuncio, int $idUtente): bool
+    {
+        $business = self::businessByUser($idUtente);
+        $annuncio = self::annuncioById($idAnnuncio);
+
+        if ($business !== null && $annuncio && $annuncio->getIdBusiness() !== null) {
+            return self::annunci()->deleteForBusiness($idAnnuncio, (int) $business->getIdAccBusiness());
+        }
+
+        return self::annunci()->deleteForUser($idAnnuncio, $idUtente);
+    }
+
+    public static function userOwnsAnnuncio(int $idUtente, int $idAnnuncio): bool
+    {
+        return self::annunci()->isOwnedByUser($idAnnuncio, $idUtente);
     }
 
     public static function deleteAnnuncioByAdmin(int $idAnnuncio): void
@@ -525,7 +568,7 @@ class FPersistentManager
                 throw new ServiceException('Annuncio non acquistabile.');
             }
 
-            if ((int) ($annuncio->getIdUtente() ?? 0) === $idUtente) {
+            if (self::userOwnsAnnuncio($idUtente, $idAnnuncio)) {
                 throw new ServiceException('Non puoi acquistare un tuo annuncio.');
             }
 
@@ -561,7 +604,7 @@ class FPersistentManager
                     continue;
                 }
 
-                if ((int) ($annuncio->getIdUtente() ?? 0) === $idUtente) {
+                if (self::userOwnsAnnuncio($idUtente, (int) $idAnnuncio)) {
                     continue;
                 }
 
@@ -619,6 +662,11 @@ class FPersistentManager
     public static function ordiniRicevutiBySellerUser(int $idUtente): array
     {
         return self::pagamenti()->receivedBySellerUser($idUtente);
+    }
+
+    public static function ordiniRicevutiByBusiness(int $idBusiness): array
+    {
+        return self::pagamenti()->receivedBySellerBusiness($idBusiness);
     }
 
     private static function markAnnuncioSoldForPayment(int $idAnnuncio): void

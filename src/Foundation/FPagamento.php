@@ -55,12 +55,16 @@ class FPagamento extends FBaseTable
                 p.*,
                 a.`titolo` AS annuncio_titolo,
                 a.`id_annuncio` AS annuncio_id,
-                a.`id_utente` AS venditore_id,
-                v.`username` AS venditore_username,
+                COALESCE(a.`id_utente`, ab.`id_utente`) AS venditore_id,
+                COALESCE(v.`username`, bu.`username`) AS venditore_username,
+                ab.`id_acc_business` AS venditore_business_id,
+                ab.`nome_azienda` AS venditore_nome_azienda,
                 f.`id_feedback` AS feedback_id
             FROM `pagamento` p
             JOIN `annuncio` a ON a.`id_annuncio` = p.`id_annuncio`
             LEFT JOIN `utente_registrato` v ON v.`id_utente` = a.`id_utente`
+            LEFT JOIN `account_business` ab ON ab.`id_acc_business` = a.`id_business`
+            LEFT JOIN `utente_registrato` bu ON bu.`id_utente` = ab.`id_utente`
             LEFT JOIN `feedback` f ON f.`id_pagamento` = p.`id_pagamento`
                                     AND f.`id_autore` = p.`id_acquirente`
             WHERE p.`id_acquirente` = ?
@@ -84,7 +88,7 @@ class FPagamento extends FBaseTable
 
     public function receivedBySellerUser(int $idUtente): array
     {
-        // Ordini ricevuti da un venditore/business sui propri annunci.
+        // Ordini ricevuti da un venditore privato sui propri annunci.
         return $this->fetchEntities("
             SELECT
                 p.*,
@@ -103,5 +107,28 @@ class FPagamento extends FBaseTable
             WHERE a.`id_utente` = ?
             ORDER BY p.`data` DESC
         ", [$idUtente]);
+    }
+
+    public function receivedBySellerBusiness(int $idBusiness): array
+    {
+        // Ordini ricevuti da una vetrina business sui propri annunci.
+        return $this->fetchEntities("
+            SELECT
+                p.*,
+                a.`titolo`,
+                u.`username` AS acquirente_username,
+                (
+                    SELECT i.`url`
+                    FROM `immagine` i
+                    WHERE i.`id_annuncio` = a.`id_annuncio`
+                    ORDER BY i.`ordine` ASC, i.`id_immagine` ASC
+                    LIMIT 1
+                ) AS immagine_principale
+            FROM `pagamento` p
+            JOIN `annuncio` a ON a.`id_annuncio` = p.`id_annuncio`
+            JOIN `utente_registrato` u ON u.`id_utente` = p.`id_acquirente`
+            WHERE a.`id_business` = ?
+            ORDER BY p.`data` DESC
+        ", [$idBusiness]);
     }
 }

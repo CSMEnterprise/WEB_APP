@@ -40,7 +40,8 @@ class FPreferito extends FBaseTable
                 p.`data_aggiunta` AS data_aggiunta_wishlist,
                 a.*,
                 c.`nome` AS categoria_nome,
-                u.`username` AS venditore_username,
+                COALESCE(u.`username`, bu.`username`) AS venditore_username,
+                COALESCE(a.`id_utente`, ab.`id_utente`) AS venditore_user_id,
                 ab.`id_acc_business` AS venditore_business_id,
                 ab.`nome_azienda` AS venditore_nome_azienda,
                 (
@@ -54,7 +55,8 @@ class FPreferito extends FBaseTable
             JOIN `annuncio` a ON a.`id_annuncio` = p.`id_annuncio`
             LEFT JOIN `categoria` c ON c.`id_categoria` = a.`id_categoria`
             LEFT JOIN `utente_registrato` u ON u.`id_utente` = a.`id_utente`
-            LEFT JOIN `account_business` ab ON ab.`id_utente` = a.`id_utente`
+            LEFT JOIN `account_business` ab ON ab.`id_acc_business` = a.`id_business`
+            LEFT JOIN `utente_registrato` bu ON bu.`id_utente` = ab.`id_utente`
             WHERE p.`id_utente` = ?
               AND a.`stato` = 'attivo'
             ORDER BY p.`data_aggiunta` DESC

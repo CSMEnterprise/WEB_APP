@@ -46,8 +46,11 @@ class MailService
         $mail->SMTPAuth   = true;
         $mail->Username   = $this->config['username'];
         $mail->Password   = $this->config['password'];
-        $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = $this->config['port'];
+        $encryption = $this->config['encryption'] ?? \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+        if ($encryption !== null && $encryption !== '') {
+            $mail->SMTPSecure = $encryption;
+        }
         $mail->setFrom($this->config['from'], $this->config['from_name']);
 
         return $mail;
@@ -55,13 +58,7 @@ class MailService
 
     public function inviaVerificaEmail(string $destinatario, string $nome, string $token): void
     {
-        $link = rtrim($this->config['base_url'], '/') . '/auth/verifica-email/' . urlencode($token);
-
-        // ── MODALITÀ DEBUG: mostra il link a schermo, non invia email ──
-        if (!empty($this->config['debug'])) {
-            $this->debugSalva('verifica', $link, $destinatario);
-            return;
-        }
+        $link = $this->buildUrl('/auth/verifica-email/' . urlencode($token));
 
         $mail = $this->crea();
         $mail->addAddress($destinatario, $nome ?: $destinatario);
@@ -81,7 +78,7 @@ class MailService
 
     public function inviaResetPassword(string $destinatario, string $nome, string $token): void
     {
-        $link = rtrim($this->config['base_url'], '/') . '/auth/reset-password/' . urlencode($token);
+        $link = $this->buildUrl('/auth/reset-password/' . urlencode($token));
 
         // ── MODALITÀ DEBUG: mostra il link a schermo, non invia email ──
         if (!empty($this->config['debug'])) {
@@ -155,5 +152,19 @@ class MailService
             </table>
         </body>
         </html>";
+    }
+
+    private function buildUrl(string $path): string
+    {
+        $baseUrl = trim((string) ($this->config['base_url'] ?? ''));
+
+        if ($baseUrl === '') {
+            $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+            $scriptDir = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/');
+            $baseUrl = $scheme . '://' . $host . ($scriptDir !== '' && $scriptDir !== '/' ? $scriptDir : '');
+        }
+
+        return rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
     }
 }

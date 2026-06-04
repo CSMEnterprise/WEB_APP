@@ -11,6 +11,6 @@ Il file contiene:
 - chiavi primarie, indici, vincoli univoci e foreign key gia dentro i `CREATE TABLE`;
 - dati base della tabella `categoria`.
 
-Non ci sono piu file di migrazione da importare dopo lo schema principale.
+Non ci sono file di migrazione da importare dopo lo schema principale.
 
 Se in futuro verranno aggiunti dati dimostrativi, vanno messi in un file separato, per esempio `dati_demo.sql`, lasciando `nerdvault.sql` dedicato allo schema e alle categorie di base.

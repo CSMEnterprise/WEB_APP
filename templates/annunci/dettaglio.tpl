@@ -3,8 +3,10 @@
 
 {if !empty($annuncio)}
     {assign var=annuncioId value=$annuncio.id_annuncio|default:0}
-    {assign var=annuncioOwner value=$annuncio.id_utente|default:0}
-    {assign var=isOwner value=$isLogged && !$isAdmin && $annuncioOwner == $userId}
+    {assign var=annuncioOwner value=$annuncio.venditore_user_id|default:0}
+    {if empty($annuncioOwner)}{assign var=annuncioOwner value=$annuncio.id_utente|default:0}{/if}
+    {assign var=annuncioBusinessOwner value=$annuncio.id_business|default:0}
+    {assign var=isOwner value=$isLogged && !$isAdmin && (($annuncio.id_utente|default:0) == $userId || ($annuncioBusinessOwner > 0 && $annuncioBusinessOwner == $businessId))}
     {assign var=canUseWishlist value=$isLogged && !$isAdmin && !$isBusiness && !$isOwner}
     {assign var=isInWishlist value=$annuncioId|in_array:$wishlistIds}
     {assign var=isInCart value=$annuncioId|in_array:$carrelloIds}

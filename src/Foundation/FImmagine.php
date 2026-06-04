@@ -67,11 +67,15 @@ class FImmagine extends FBaseTable
             "SELECT i.*
              FROM `immagine` i
              JOIN `annuncio` a ON a.`id_annuncio` = i.`id_annuncio`
+             LEFT JOIN `account_business` ab ON ab.`id_acc_business` = a.`id_business`
              WHERE i.`id_immagine` = ?
-               AND a.`id_utente` = ?
+               AND (
+                 a.`id_utente` = ?
+                 OR ab.`id_utente` = ?
+               )
                AND a.`stato` = 'attivo'
              LIMIT 1",
-            [$idImmagine, $idUtente]
+            [$idImmagine, $idUtente, $idUtente]
         );
 
         return $entity instanceof EImmagine ? $entity : null;

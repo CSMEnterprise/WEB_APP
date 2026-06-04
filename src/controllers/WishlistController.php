@@ -133,7 +133,7 @@ class WishlistController extends BaseController
             throw new ServiceException('Non puoi aggiungere alla wishlist un annuncio non disponibile.');
         }
 
-        if ((int)($annuncio->getIdUtente() ?? 0) === $idUtente) {
+        if (FPersistentManager::userOwnsAnnuncio($idUtente, $idAnnuncio)) {
             throw new ServiceException('Non puoi aggiungere alla wishlist un tuo annuncio.');
         }
 

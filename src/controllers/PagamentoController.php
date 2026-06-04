@@ -176,7 +176,7 @@ class PagamentoController extends BaseController
             throw new ServiceException('Annuncio non acquistabile.');
         }
 
-        if ((int)($annuncio->getIdUtente() ?? 0) === $idUtente) {
+        if (FPersistentManager::userOwnsAnnuncio($idUtente, $idAnnuncio)) {
             throw new ServiceException('Non puoi acquistare un tuo annuncio.');
         }
 
@@ -246,7 +246,7 @@ class PagamentoController extends BaseController
 
         return array_values(array_filter($carrello, static function ($item) use ($idUtente) {
             return ($item['stato'] ?? '') === 'attivo'
-                && (int)($item['id_utente'] ?? 0) !== $idUtente;
+                && !FPersistentManager::userOwnsAnnuncio($idUtente, (int) ($item['id_annuncio'] ?? 0));
         }));
     }
 

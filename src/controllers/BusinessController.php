@@ -24,7 +24,9 @@ class BusinessController extends BaseController
         $this->requirePositiveId($idUtente, 'Utente');
 
         $business = FPersistentManager::businessByUser($idUtente);
-        $annunci = FPersistentManager::annunciByUserIdAndStato($idUtente, null);
+        $annunci = $business
+            ? FPersistentManager::annunciByBusinessIdAndStato((int) $business->getIdAccBusiness(), null)
+            : [];
 
         $this->view('business/profilo.tpl', compact('business', 'annunci'), 'Area business');
     }
@@ -43,7 +45,9 @@ class BusinessController extends BaseController
     public function creaAccount(array $data, int $idUtente): void
     {
         try {
-            $this->createBusinessAccount($data, $idUtente);
+            $idBusiness = $this->createBusinessAccount($data, $idUtente);
+            $_SESSION['is_business'] = true;
+            $_SESSION['business_id'] = $idBusiness;
 
             header('Location: /business/dashboard');
             exit;
@@ -73,7 +77,7 @@ class BusinessController extends BaseController
         } catch (Exception $e) {
             $errore = $e->getMessage();
             $business = $businessEntity;
-            $annunci = FPersistentManager::annunciByUserIdAndStato($idUtente, null);
+            $annunci = FPersistentManager::annunciByBusinessIdAndStato((int) $businessEntity->getIdAccBusiness(), null);
 
             $this->view('business/profilo.tpl', compact('errore', 'business', 'annunci'), 'Area business');
         }
@@ -99,7 +103,7 @@ class BusinessController extends BaseController
         } catch (Exception $e) {
             $errore = $e->getMessage();
             $business = $businessEntity;
-            $annunci = FPersistentManager::annunciByUserIdAndStato($idUtente, null);
+            $annunci = FPersistentManager::annunciByBusinessIdAndStato((int) $businessEntity->getIdAccBusiness(), null);
 
             $this->view('business/profilo.tpl', compact('errore', 'business', 'annunci'), 'Area business');
         }
@@ -112,7 +116,10 @@ class BusinessController extends BaseController
     {
         $this->requirePositiveId($idUtente, 'Utente');
 
-        $ordini = FPersistentManager::ordiniRicevutiBySellerUser($idUtente);
+        $business = FPersistentManager::businessByUser($idUtente);
+        $ordini = $business
+            ? FPersistentManager::ordiniRicevutiByBusiness((int) $business->getIdAccBusiness())
+            : [];
 
         $this->view('business/ordini.tpl', compact('ordini'), 'Ordini ricevuti');
     }

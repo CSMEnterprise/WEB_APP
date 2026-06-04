@@ -203,6 +203,8 @@ CREATE TABLE `indirizzi` (
 -- --------------------------------------------------------
 -- Tabella `annuncio`
 -- --------------------------------------------------------
+-- Un annuncio privato valorizza `id_utente`; un annuncio business valorizza
+-- `id_business`. Il vincolo `chk_annuncio_venditore` impone un solo proprietario.
 
 CREATE TABLE `annuncio` (
   `id_annuncio` int(11) NOT NULL AUTO_INCREMENT,

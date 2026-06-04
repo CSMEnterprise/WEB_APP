@@ -163,7 +163,7 @@ class FAnnuncio extends FBaseTable
 
     public function byUserIdAndStato(int $idUtente, ?string $stato = 'attivo'): array
     {
-        // Con stato null restituisce tutti gli annunci dell'utente.
+        // Con stato null restituisce tutti gli annunci privati dell'utente.
         $whereStato = '';
         $params = [$idUtente];
 
@@ -174,6 +174,23 @@ class FAnnuncio extends FBaseTable
 
         return $this->fetchEntities($this->selectWithDetails() . "
             WHERE a.`id_utente` = ? {$whereStato}
+            ORDER BY a.`data_creazione` DESC
+        ", $params);
+    }
+
+    public function byBusinessIdAndStato(int $idBusiness, ?string $stato = 'attivo'): array
+    {
+        // Con stato null restituisce tutti gli annunci pubblicati dalla vetrina business.
+        $whereStato = '';
+        $params = [$idBusiness];
+
+        if ($stato !== null) {
+            $whereStato = ' AND a.`stato` = ?';
+            $params[] = trim($stato);
+        }
+
+        return $this->fetchEntities($this->selectWithDetails() . "
+            WHERE a.`id_business` = ? {$whereStato}
             ORDER BY a.`data_creazione` DESC
         ", $params);
     }
@@ -191,9 +208,22 @@ class FAnnuncio extends FBaseTable
         return $this->insert($row);
     }
 
+    public function createForBusiness(EAnnuncio $annuncio, int $idBusiness): int
+    {
+        // Gli annunci business appartengono alla vetrina, non direttamente all'utente login.
+        $row = $annuncio->toArray();
+        $row['id_utente'] = null;
+        $row['id_business'] = $idBusiness;
+        $row['modalita_consegna'] = $row['modalita_consegna'] ?? 'Consegna';
+        $row['stato'] = $row['stato'] ?? 'attivo';
+        unset($row['id_annuncio'], $row['data_creazione'], $row['data_scadenza']);
+
+        return $this->insert($row);
+    }
+
     public function updateForUser(int $idAnnuncio, int $idUtente, EAnnuncio $annuncio): bool
     {
-        // Aggiorna solo campi modificabili e solo se l'annuncio e ancora attivo.
+        // Aggiorna solo campi modificabili e solo se l'annuncio privato e ancora attivo.
         $row = $annuncio->toArray();
         $params = [
             (int) $row['id_categoria'],
@@ -218,13 +248,63 @@ class FAnnuncio extends FBaseTable
         ", $params) > 0;
     }
 
+    public function updateForBusiness(int $idAnnuncio, int $idBusiness, EAnnuncio $annuncio): bool
+    {
+        // Stesse regole degli annunci privati, ma ownership vincolata alla vetrina.
+        $row = $annuncio->toArray();
+        $params = [
+            (int) $row['id_categoria'],
+            (string) $row['titolo'],
+            $row['descrizione'] !== '' ? $row['descrizione'] : null,
+            (string) $row['stato_conservazione'],
+            (float) $row['prezzo'],
+            $idAnnuncio,
+            $idBusiness,
+        ];
+
+        return $this->execute("
+            UPDATE `annuncio`
+            SET `id_categoria` = ?,
+                `titolo` = ?,
+                `descrizione` = ?,
+                `stato_conservazione` = ?,
+                `prezzo` = ?
+            WHERE `id_annuncio` = ?
+              AND `id_business` = ?
+              AND `stato` = 'attivo'
+        ", $params) > 0;
+    }
+
     public function deleteForUser(int $idAnnuncio, int $idUtente): bool
     {
-        // La clausola id_utente impedisce cancellazioni di annunci altrui.
+        // La clausola id_utente impedisce cancellazioni di annunci privati altrui.
         return $this->execute(
             'DELETE FROM `annuncio` WHERE `id_annuncio` = ? AND `id_utente` = ?',
             [$idAnnuncio, $idUtente]
         ) > 0;
+    }
+
+    public function deleteForBusiness(int $idAnnuncio, int $idBusiness): bool
+    {
+        // La clausola id_business impedisce cancellazioni da vetrine non proprietarie.
+        return $this->execute(
+            'DELETE FROM `annuncio` WHERE `id_annuncio` = ? AND `id_business` = ?',
+            [$idAnnuncio, $idBusiness]
+        ) > 0;
+    }
+
+    public function isOwnedByUser(int $idAnnuncio, int $idUtente): bool
+    {
+        return (int) $this->fetchColumn("
+            SELECT COUNT(*)
+            FROM `annuncio` a
+            LEFT JOIN `account_business` ab ON ab.`id_acc_business` = a.`id_business`
+            WHERE a.`id_annuncio` = ?
+              AND (
+                a.`id_utente` = ?
+                OR ab.`id_utente` = ?
+              )
+        ", [$idAnnuncio, $idUtente, $idUtente]) > 0;
     }
 
     public function deleteByAdmin(int $idAnnuncio): void
@@ -302,7 +382,8 @@ class FAnnuncio extends FBaseTable
             SELECT
                 a.*,
                 c.`nome` AS categoria_nome,
-                u.`username` AS venditore_username,
+                COALESCE(u.`username`, bu.`username`) AS venditore_username,
+                COALESCE(a.`id_utente`, ab.`id_utente`) AS venditore_user_id,
                 ab.`id_acc_business` AS venditore_business_id,
                 ab.`nome_azienda` AS venditore_nome_azienda,
                 (
@@ -315,7 +396,8 @@ class FAnnuncio extends FBaseTable
             FROM `annuncio` a
             LEFT JOIN `categoria` c ON c.`id_categoria` = a.`id_categoria`
             LEFT JOIN `utente_registrato` u ON u.`id_utente` = a.`id_utente`
-            LEFT JOIN `account_business` ab ON ab.`id_utente` = a.`id_utente`
+            LEFT JOIN `account_business` ab ON ab.`id_acc_business` = a.`id_business`
+            LEFT JOIN `utente_registrato` bu ON bu.`id_utente` = ab.`id_utente`
         ";
     }
 
