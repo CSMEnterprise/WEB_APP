@@ -16,7 +16,6 @@ use App\Controllers\{
     UtenteController,
     WishlistController
 };
-use PDO;
 use ReflectionMethod;
 use Throwable;
 use function App\Middleware\{
@@ -35,13 +34,6 @@ use function App\Middleware\{
  */
 class FrontController extends BaseController
 {
-    private PDO $pdo;
-
-    public function __construct(PDO $pdo)
-    {
-        $this->pdo = $pdo;
-    }
-
     public function handle(): void
     {
         try {
@@ -396,7 +388,7 @@ class FrontController extends BaseController
                 'params' => fn() => [currentUserId()],
             ],
             'business/info-store' => [
-                'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => requireBusiness($this->pdo)],
+                'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => requireBusiness()],
                 'controller' => BusinessController::class,
                 'action' => 'salvaInfo',
                 'params' => fn() => [$_POST, currentUserId()],
@@ -593,7 +585,7 @@ class FrontController extends BaseController
             return false;
         }
 
-        $controller = new $className($this->pdo);
+        $controller = new $className();
         $controller->$action(...$params);
         return true;
     }

@@ -18,7 +18,7 @@ class FeedbackController extends BaseController
     public function form(int $idPagamento, int $idAutore): void
     {
         $pagamentoEntity = FPersistentManager::pagamentoById($idPagamento);
-        $pagamento = $this->entityToArray($pagamentoEntity);
+        $pagamento = $pagamentoEntity;
 
         if (!$pagamentoEntity || $pagamentoEntity->getIdAcquirente() !== $idAutore) {
             $this->renderError('Non puoi lasciare un feedback per questo pagamento.', 403);
@@ -46,7 +46,7 @@ class FeedbackController extends BaseController
         } catch (Exception $e) {
             $errore = $e->getMessage();
             $idPagamento = (int) ($data['id_pagamento'] ?? 0);
-            $pagamento = $this->entityToArray(FPersistentManager::pagamentoById($idPagamento));
+            $pagamento = FPersistentManager::pagamentoById($idPagamento);
 
             $this->view('feedback/form.tpl', compact('errore', 'idPagamento', 'pagamento'), 'Lascia feedback');
         }
@@ -59,7 +59,7 @@ class FeedbackController extends BaseController
     {
         $this->requirePositiveId($idUtente, 'Utente');
 
-        $feedback = $this->entitiesToArrays(FPersistentManager::feedbackByUser($idUtente));
+        $feedback = FPersistentManager::feedbackByUser($idUtente);
 
         $this->view('feedback/lista.tpl', compact('feedback'), 'I miei feedback');
     }
@@ -71,9 +71,9 @@ class FeedbackController extends BaseController
     {
         $this->requirePositiveId($idVenditore, 'Venditore');
 
-        $feedback = $this->entitiesToArrays(FPersistentManager::feedbackByVenditore($idVenditore));
+        $feedback = FPersistentManager::feedbackByVenditore($idVenditore);
         $media = FPersistentManager::mediaFeedbackVenditore($idVenditore);
-        $venditore = $this->entityToArray(FPersistentManager::utenteById($idVenditore));
+        $venditore = FPersistentManager::utenteById($idVenditore);
 
         $this->view('feedback/lista_venditore.tpl', compact('feedback', 'media', 'venditore'), 'Feedback venditore');
     }

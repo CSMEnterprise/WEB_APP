@@ -24,16 +24,16 @@ La persistenza viene spostata nel package `App\Foundation`, seguendo la logica d
 - le classi tabella `F...` fanno da mapper tra PDO e Entity.
 
 Queste classi leggono righe dal database, restituiscono oggetti `E...` e salvano gli oggetti filtrando solo le colonne della tabella.
-Le validazioni, le transazioni e le regole applicative stanno nei controller; la persistenza resta nel package `App\Foundation`.
+Le validazioni di input restano nei controller; le transazioni e la persistenza stanno nel package `App\Foundation`.
 
-`App\Controllers\BaseController` contiene i metodi di conversione da Entity ad array. In questo modo i controller possono ragionare sugli oggetti, e la conversione resta confinata al confine con le view.
+`App\View\ViewDataNormalizer` contiene la conversione da Entity ad array. In questo modo i controller possono passare oggetti al layer View, e la compatibilita con i template Smarty resta confinata al confine di rendering.
 
 `EBaseEntity` conserva anche i campi extra letti dalle query con join, per esempio `categoria_nome`, `immagine_principale`, `venditore_username`, `annuncio_titolo`. Questo evita di perdere dati utili alle pagine quando una riga del database viene trasformata in Entity.
 
 Stato attuale:
 
 - i controller principali chiamano `FPersistentManager` e lavorano sulle Entity;
-- le view restano compatibili perche ricevono array generati dalle Entity;
+- le view restano compatibili perche `SmartyView` normalizza Entity e array prima di assegnarli ai template;
 - `FDataBase` e `FPersistentManager` riprendono la struttura Foundation del progetto di riferimento;
 - `FBaseTable` contiene le operazioni comuni di mapping tabella/Entity;
 - `FAnnuncio`, `FImmagine`, `FCategoria`, `FUtenteRegistrato`, `FIndirizzo`, `FAccountBusiness`, `FCarrello`, `FElementoCarrello`, `FPreferito`, `FFeedback`, `FSegnalazione`, `FAdmin`, `FModera`, `FPagamento` e `FPasswordReset` gestiscono le tabelle migrate nel package Foundation;

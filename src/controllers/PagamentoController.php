@@ -2,28 +2,15 @@
 
 namespace App\Controllers;
 
-use App\Entity\EPagamento;
 use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
 use Exception;
-use PDO;
-use Throwable;
 
 /**
  * Gestisce checkout e pagamento simulato PayPal per singoli annunci e carrello.
  */
 class PagamentoController extends BaseController
 {
-    private PDO $db;
-
-    /**
-     * Mantiene PDO per le transazioni che coordinano pagamento e vendita.
-     */
-    public function __construct(PDO $db)
-    {
-        $this->db = $db;
-    }
-
     /**
      * Prepara la pagina di checkout per un singolo annuncio.
      */
@@ -31,9 +18,9 @@ class PagamentoController extends BaseController
     {
         try {
             $pagamento = $this->preparePayment($idUtente, $idAnnuncio);
-            $annuncio = $this->entityToArray($pagamento['annuncio']);
+            $annuncio = $pagamento['annuncio'];
             $totale = $pagamento['totale'];
-            $indirizziUtente = $this->entitiesToArrays(FPersistentManager::indirizziByUser($idUtente));
+            $indirizziUtente = FPersistentManager::indirizziByUser($idUtente);
 
             $this->view('pagamenti/checkout.tpl', compact('annuncio', 'totale', 'indirizziUtente'), 'Checkout');
         } catch (Exception $e) {
@@ -48,10 +35,10 @@ class PagamentoController extends BaseController
     {
         try {
             $pagamento = $this->preparePayment($idUtente, $idAnnuncio);
-            $annuncio = $this->entityToArray($pagamento['annuncio']);
+            $annuncio = $pagamento['annuncio'];
             $totale = $pagamento['totale'];
             $indirizzoSpedizioneEntity = FPersistentManager::indirizzoForUser($idIndirizzo, $idUtente);
-            $indirizzoSpedizione = $this->entityToArray($indirizzoSpedizioneEntity);
+            $indirizzoSpedizione = $indirizzoSpedizioneEntity;
 
             if (!$indirizzoSpedizioneEntity) {
                 throw new ServiceException('Seleziona un indirizzo di spedizione valido.');
@@ -96,7 +83,7 @@ class PagamentoController extends BaseController
             }
 
             $totale = array_sum(array_column($items, 'prezzo'));
-            $indirizziUtente = $this->entitiesToArrays(FPersistentManager::indirizziByUser($idUtente));
+            $indirizziUtente = FPersistentManager::indirizziByUser($idUtente);
 
             $this->view('pagamenti/checkout_carrello.tpl', compact('items', 'totale', 'indirizziUtente'), 'Checkout carrello');
         } catch (Exception $e) {
@@ -118,7 +105,7 @@ class PagamentoController extends BaseController
             }
 
             $indirizzoSpedizioneEntity = FPersistentManager::indirizzoForUser($idIndirizzo, $idUtente);
-            $indirizzoSpedizione = $this->entityToArray($indirizzoSpedizioneEntity);
+            $indirizzoSpedizione = $indirizzoSpedizioneEntity;
 
             if (!$indirizzoSpedizioneEntity) {
                 throw new ServiceException('Seleziona un indirizzo di spedizione valido.');
@@ -211,49 +198,12 @@ class PagamentoController extends BaseController
         $this->requirePositiveId($idAnnuncio, 'Annuncio');
         $this->requirePositiveId($idIndirizzo, 'Indirizzo di spedizione');
 
-        $this->db->beginTransaction();
-
-        try {
-            $annuncio = FPersistentManager::annuncioForPaymentUpdate($idAnnuncio);
-
-            if (!$annuncio) {
-                throw new ServiceException('Annuncio non trovato.');
-            }
-
-            if (!$annuncio->isAttivo()) {
-                throw new ServiceException('Annuncio non acquistabile.');
-            }
-
-            if ((int)($annuncio->getIdUtente() ?? 0) === $idUtente) {
-                throw new ServiceException('Non puoi acquistare un tuo annuncio.');
-            }
-
-            if (!FPersistentManager::indirizzoForUser($idIndirizzo, $idUtente)) {
-                throw new ServiceException('Indirizzo di spedizione non valido.');
-            }
-
-            $pagamento = new EPagamento($idAnnuncio, $idUtente, $idIndirizzo, $annuncio->getPrezzo());
-            $pagamento->completa();
-            $pagamento->setPaypalTransactionId($paypalTransactionId !== '' ? $paypalTransactionId : null);
-
-            $idPagamento = FPersistentManager::createPagamento($pagamento);
-            $this->markAnnuncioSoldForPayment($idAnnuncio);
-            $this->removeAnnuncioFromBuyerSurfaces($idAnnuncio);
-
-            $this->db->commit();
-
-            return $idPagamento;
-        } catch (Throwable $e) {
-            if ($this->db->inTransaction()) {
-                $this->db->rollBack();
-            }
-
-            if ($e instanceof ServiceException) {
-                throw $e;
-            }
-
-            throw new ServiceException('Errore durante la conferma del pagamento.');
-        }
+        return FPersistentManager::confirmSinglePayment(
+            $idUtente,
+            $idAnnuncio,
+            $idIndirizzo,
+            $paypalTransactionId !== '' ? $paypalTransactionId : null
+        );
     }
 
     /**
@@ -274,53 +224,7 @@ class PagamentoController extends BaseController
             throw new ServiceException('Nessun articolo da acquistare.');
         }
 
-        if (!FPersistentManager::indirizzoForUser($idIndirizzo, $idUtente)) {
-            throw new ServiceException('Indirizzo di spedizione non valido.');
-        }
-
-        $this->db->beginTransaction();
-
-        try {
-            $idPagamenti = [];
-
-            foreach ($idAnnunci as $idAnnuncio) {
-                // Ogni annuncio viene letto con lock per evitare doppie vendite concorrenti.
-                $annuncio = FPersistentManager::annuncioForPaymentUpdate($idAnnuncio);
-
-                if (!$annuncio || !$annuncio->isAttivo()) {
-                    continue;
-                }
-
-                if ((int)($annuncio->getIdUtente() ?? 0) === $idUtente) {
-                    continue;
-                }
-
-                $pagamento = new EPagamento($idAnnuncio, $idUtente, $idIndirizzo, $annuncio->getPrezzo());
-                $pagamento->completa();
-
-                $idPagamenti[] = FPersistentManager::createPagamento($pagamento);
-                $this->markAnnuncioSoldForPayment($idAnnuncio);
-                $this->removeAnnuncioFromBuyerSurfaces($idAnnuncio);
-            }
-
-            if (empty($idPagamenti)) {
-                throw new ServiceException('Nessun articolo acquistabile nel carrello.');
-            }
-
-            $this->db->commit();
-
-            return $idPagamenti;
-        } catch (Throwable $e) {
-            if ($this->db->inTransaction()) {
-                $this->db->rollBack();
-            }
-
-            if ($e instanceof ServiceException) {
-                throw $e;
-            }
-
-            throw new ServiceException('Errore durante la conferma del pagamento.');
-        }
+        return FPersistentManager::confirmCartPayment($idUtente, $idAnnunci, $idIndirizzo);
     }
 
     /**
@@ -338,7 +242,7 @@ class PagamentoController extends BaseController
             FPersistentManager::removeUnavailableCartItems($idCarrello);
         }
 
-        $carrello = $this->entitiesToArrays(FPersistentManager::elementiCarrelloAcquistabili($idCarrello));
+        $carrello = FPersistentManager::elementiCarrelloAcquistabili($idCarrello);
 
         return array_values(array_filter($carrello, static function ($item) use ($idUtente) {
             return ($item['stato'] ?? '') === 'attivo'
@@ -346,22 +250,4 @@ class PagamentoController extends BaseController
         }));
     }
 
-    /**
-     * Marca l'annuncio come venduto solo se era ancora attivo.
-     */
-    private function markAnnuncioSoldForPayment(int $idAnnuncio): void
-    {
-        if (!FPersistentManager::markAnnuncioSoldIfActive($idAnnuncio)) {
-            throw new ServiceException('Annuncio non acquistabile.');
-        }
-    }
-
-    /**
-     * Dopo la vendita rimuove l'annuncio da carrelli e wishlist di tutti gli utenti.
-     */
-    private function removeAnnuncioFromBuyerSurfaces(int $idAnnuncio): void
-    {
-        FPersistentManager::removeAnnuncioFromAllCarts($idAnnuncio);
-        FPersistentManager::removePreferitiByAnnuncio($idAnnuncio);
-    }
 }

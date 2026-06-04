@@ -36,7 +36,7 @@ class HomeController extends BaseController
         $wishlistIds = [];
         $carrelloIds = [];
         $utenti = [];
-        $categorie = $this->entitiesToArrays(FPersistentManager::categorie());
+        $categorie = FPersistentManager::categorie();
 
         if ($q !== '' || $idCategoria > 0 || $hasFiltriAvanzati) {
             $totaleAnnunci = FPersistentManager::countSearchAnnunci($q, $idCategoria, $prezzoMin, $prezzoMax, $excludeHomeUserId);
@@ -47,8 +47,8 @@ class HomeController extends BaseController
                 $offsetAnnunci = ($paginaCorrente - 1) * $annunciPerPagina;
             }
 
-            $homeAnnunci = $this->entitiesToArrays(FPersistentManager::searchAnnunci($q, $idCategoria, $prezzoMin, $prezzoMax, $ordinamento, $annunciPerPagina, $offsetAnnunci, $excludeHomeUserId));
-            $utenti = $q !== '' ? $this->entitiesToArrays(FPersistentManager::searchUtenti($q)) : [];
+            $homeAnnunci = FPersistentManager::searchAnnunci($q, $idCategoria, $prezzoMin, $prezzoMax, $ordinamento, $annunciPerPagina, $offsetAnnunci, $excludeHomeUserId);
+            $utenti = $q !== '' ? FPersistentManager::searchUtenti($q) : [];
             $homeTitoloAnnunci = $q !== '' ? 'Risultati per "' . $q . '"' : 'Risultati ricerca';
         } else {
             $totaleAnnunci = FPersistentManager::countSearchAnnunci('', 0, null, null, $excludeHomeUserId);
@@ -59,7 +59,7 @@ class HomeController extends BaseController
                 $offsetAnnunci = ($paginaCorrente - 1) * $annunciPerPagina;
             }
 
-            $homeAnnunci = $this->entitiesToArrays(FPersistentManager::searchAnnunci('', 0, null, null, 'data_desc', $annunciPerPagina, $offsetAnnunci, $excludeHomeUserId));
+            $homeAnnunci = FPersistentManager::searchAnnunci('', 0, null, null, 'data_desc', $annunciPerPagina, $offsetAnnunci, $excludeHomeUserId);
             $homeTitoloAnnunci = 'Annunci in evidenza';
         }
 

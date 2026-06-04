@@ -2,7 +2,6 @@
 
 namespace App\View;
 
-use App\Foundation\FDataBase;
 use App\Foundation\FPersistentManager;
 use RuntimeException;
 use Smarty\Smarty;
@@ -14,6 +13,7 @@ use Smarty\Smarty;
 class SmartyView
 {
     private Smarty $smarty;
+    private ViewDataNormalizer $normalizer;
 
     /**
      * Prepara Smarty e registra modifier utili nei template .tpl.
@@ -27,6 +27,7 @@ class SmartyView
 
         $this->ensureDirectory($compilePath);
         $this->ensureDirectory($cachePath);
+        $this->normalizer = new ViewDataNormalizer();
 
         $this->smarty = new Smarty();
         $this->smarty->setTemplateDir($templatesPath);
@@ -107,35 +108,22 @@ class SmartyView
         $this->smarty->assign('isBusiness',       $isBusiness);
         $this->smarty->assign('userId',           $userId);
         $this->smarty->assign('username',         (string)($_SESSION['username'] ?? ''));
-        $this->smarty->assign('propic',           $this->publicPath((string)($_SESSION['propic'] ?? '')));
+        $this->smarty->assign('propic',           $this->normalizer->publicPath((string)($_SESSION['propic'] ?? '')));
         $this->smarty->assign('livelloSicurezza', $livello);
 
         // ── Categorie per l'header ────────────────────────────────────────
         $categorieHeader = [];
-        $pdo = null;
         try {
-            $pdo = FDataBase::getInstance()->getConnection();
-            $categorieHeader = array_map(
-                static fn($c) => $c->toArray(),
-                FPersistentManager::categorie()
-            );
+            $categorieHeader = FPersistentManager::categorie();
         } catch (RuntimeException) {
         }
-        $this->smarty->assign('categorieHeader', $categorieHeader);
+        $this->smarty->assign('categorieHeader', $this->normalizer->normalize($categorieHeader));
 
         // ── Contatore carrello (solo utente normale) ──────────────────────
         $cartItemCount = 0;
-        if ($isLogged && !$isAdmin && !$isBusiness && $pdo instanceof \PDO) {
+        if ($isLogged && !$isAdmin && !$isBusiness) {
             try {
-                $stmt = $pdo->prepare("
-                    SELECT COUNT(*)
-                    FROM carrello c
-                    JOIN elemento_carrello e ON e.id_carrello = c.id_carrello
-                    JOIN annuncio a ON a.id_annuncio = e.id_annuncio
-                    WHERE c.id_utente = ? AND a.stato = 'attivo'
-                ");
-                $stmt->execute([$userId]);
-                $cartItemCount = (int)$stmt->fetchColumn();
+                $cartItemCount = FPersistentManager::activeCartItemCountByUser($userId);
             } catch (\Throwable $ignored) {
                 // Il rendering non deve fallire solo per il badge carrello.
             }
@@ -144,7 +132,7 @@ class SmartyView
 
         // ── Variabili di pagina ───────────────────────────────────────────
         foreach ($data as $key => $value) {
-            $this->smarty->assign($key, $value);
+            $this->smarty->assign($key, $this->normalizer->normalize($value));
         }
 
         $this->smarty->display($template);
@@ -183,22 +171,4 @@ class SmartyView
         return filter_var($value, FILTER_VALIDATE_BOOLEAN);
     }
 
-    private function publicPath(string $path): string
-    {
-        $path = trim(str_replace('\\', '/', $path));
-
-        if ($path === ''
-            || str_starts_with($path, '/')
-            || preg_match('#^(https?:)?//#i', $path)
-            || str_starts_with($path, 'data:')
-        ) {
-            return $path;
-        }
-
-        if (str_starts_with($path, 'uploads/') || str_starts_with($path, 'assets/')) {
-            return '/' . $path;
-        }
-
-        return $path;
-    }
 }

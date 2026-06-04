@@ -31,7 +31,7 @@ class CarrelloController extends BaseController
                 FPersistentManager::removeUnavailableCartItems($idCarrello);
             }
 
-            $carrello = $this->entitiesToArrays(FPersistentManager::elementiCarrelloAcquistabili($idCarrello));
+            $carrello = FPersistentManager::elementiCarrelloAcquistabili($idCarrello);
             $purchasableItems = [];
             $totale = 0.0;
 

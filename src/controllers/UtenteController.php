@@ -13,27 +13,16 @@ use App\Services\{
 };
 use Exception;
 use finfo;
-use PDO;
 use PDOException;
-use Throwable;
 
 /**
  * Gestisce autenticazione, registrazione, profilo utente, indirizzi e recupero password.
  */
 class UtenteController extends BaseController
 {
-    private PDO $db;
     private string $lastRegistrationToken = '';
     private string $lastRegistrationEmail = '';
     private string $lastRegistrationNome = '';
-
-    /**
-     * Mantiene PDO per le transazioni che coordinano piu operazioni.
-     */
-    public function __construct(PDO $db)
-    {
-        $this->db = $db;
-    }
 
     public function loginFormOrSubmit(array $data = []): void
     {
@@ -160,26 +149,24 @@ class UtenteController extends BaseController
     public function registerBusiness(array $data): void
     {
         try {
-            $this->db->beginTransaction();
+            FPersistentManager::transaction(function () use (&$data): void {
+                // Usa email aziendale come email di accesso
+                $data['email'] = $data['email_aziendale'] ?? '';
 
-            // Usa email aziendale come email di accesso
-            $data['email'] = $data['email_aziendale'] ?? '';
+                // Genera uno username univoco dal nome azienda
+                $base = preg_replace('/[^A-Za-z0-9]/', '_', $data['nome_azienda'] ?? 'business');
+                $base = strtolower(trim($base, '_'));
+                $base = preg_replace('/_+/', '_', $base);
+                $base = substr($base, 0, 26);
+                if (strlen($base) < 3) {
+                    $base = 'biz_' . $base;
+                }
+                $data['username'] = $base . '_' . substr(bin2hex(random_bytes(2)), 0, 4);
 
-            // Genera uno username univoco dal nome azienda
-            $base = preg_replace('/[^A-Za-z0-9]/', '_', $data['nome_azienda'] ?? 'business');
-            $base = strtolower(trim($base, '_'));
-            $base = preg_replace('/_+/', '_', $base);
-            $base = substr($base, 0, 26);
-            if (strlen($base) < 3) {
-                $base = 'biz_' . $base;
-            }
-            $data['username'] = $base . '_' . substr(bin2hex(random_bytes(2)), 0, 4);
-
-            $data['_business_registration'] = true;
-            $idUtente = $this->registerUser($data);
-            $this->createBusinessAccount($data, $idUtente);
-
-            $this->db->commit();
+                $data['_business_registration'] = true;
+                $idUtente = $this->registerUser($data);
+                $this->createBusinessAccount($data, $idUtente);
+            });
 
             // Invia email di verifica
             try {
@@ -196,10 +183,6 @@ class UtenteController extends BaseController
             header('Location: /auth/verifica-email-attesa?email=' . urlencode($this->lastRegistrationEmail));
             exit;
         } catch (Exception $e) {
-            if ($this->db->inTransaction()) {
-                $this->db->rollBack();
-            }
-
             $errore = $e->getMessage();
             $this->view('utenti/registrazione_business.tpl', compact('errore'), 'Registrazione business');
         }
@@ -216,7 +199,7 @@ class UtenteController extends BaseController
     public function profiloCorrente(int $idUtente, string $filtroAnnunci = 'attivo'): void
     {
         if (!empty($_SESSION['is_admin'])) {
-            (new AdminController($this->db))->dashboard($idUtente);
+            (new AdminController())->dashboard($idUtente);
             return;
         }
 
@@ -234,7 +217,7 @@ class UtenteController extends BaseController
         }
 
         $venditoreEntity = FPersistentManager::utenteById($idVenditore);
-        $venditore = $this->entityToArray($venditoreEntity);
+        $venditore = $venditoreEntity;
 
         if (!$venditoreEntity || $venditoreEntity->isBannato()) {
             $this->renderError('Venditore non trovato.', 404);
@@ -243,16 +226,16 @@ class UtenteController extends BaseController
 
         $businessEntity = FPersistentManager::businessByUser($idVenditore);
         if ($businessEntity) {
-            $business = $this->entityToArray($businessEntity);
-            $annunci = $this->entitiesToArrays(FPersistentManager::annunciByUserIdAndStato($idVenditore, 'attivo'));
+            $business = $businessEntity;
+            $annunci = FPersistentManager::annunciByUserIdAndStato($idVenditore, 'attivo');
             $isPublicVetrina = true;
 
-            $this->view('business/profilo.tpl', compact('business', 'annunci', 'isPublicVetrina'), 'Vetrina ' . ($business['nome_azienda'] ?? 'PRO'));
+            $this->view('business/profilo.tpl', compact('business', 'annunci', 'isPublicVetrina'), 'Vetrina ' . ($businessEntity->getNomeAzienda() ?: 'PRO'));
             return;
         }
 
-        $annunciVenditore = $this->entitiesToArrays(FPersistentManager::annunciByUserIdAndStato($idVenditore, 'attivo'));
-        $feedbackVenditore = $this->entitiesToArrays(FPersistentManager::feedbackByVenditore($idVenditore));
+        $annunciVenditore = FPersistentManager::annunciByUserIdAndStato($idVenditore, 'attivo');
+        $feedbackVenditore = FPersistentManager::feedbackByVenditore($idVenditore);
         $mediaVenditore = FPersistentManager::mediaFeedbackVenditore($idVenditore);
 
         $this->view('utenti/venditore.tpl', compact('venditore', 'annunciVenditore', 'feedbackVenditore', 'mediaVenditore'), 'Profilo venditore');
@@ -347,7 +330,7 @@ class UtenteController extends BaseController
     public function showModificaIndirizzo(int $idIndirizzo, int $idUtente): void
     {
         $editingIndirizzoEntity = FPersistentManager::indirizzoForUser($idIndirizzo, $idUtente);
-        $editingIndirizzo = $this->entityToArray($editingIndirizzoEntity);
+        $editingIndirizzo = $editingIndirizzoEntity;
 
         if (!$editingIndirizzoEntity) {
             header('Location: /utente/profilo');
@@ -372,7 +355,7 @@ class UtenteController extends BaseController
         } catch (Exception $e) {
             $data = $this->loadProfiloData($idUtente);
             $data['errore'] = $e->getMessage();
-            $data['editingIndirizzo'] = $this->entityToArray(FPersistentManager::indirizzoForUser($idIndirizzo, $idUtente));
+            $data['editingIndirizzo'] = FPersistentManager::indirizzoForUser($idIndirizzo, $idUtente);
             $this->renderProfilo($data);
         }
     }
@@ -1052,17 +1035,10 @@ class UtenteController extends BaseController
             throw new ServiceException('Indirizzo non valido.');
         }
 
-        $this->db->beginTransaction();
-
         try {
             // L'operazione toglie il flag agli altri indirizzi e lo assegna a quello scelto.
             FPersistentManager::setIndirizzoPredefinito($idUtente, $idIndirizzo);
-            $this->db->commit();
-        } catch (Throwable $e) {
-            if ($this->db->inTransaction()) {
-                $this->db->rollBack();
-            }
-
+        } catch (Exception $e) {
             throw new ServiceException('Impossibile impostare l indirizzo predefinito.');
         }
     }
@@ -1077,12 +1053,12 @@ class UtenteController extends BaseController
         $isBusiness = !empty($_SESSION['is_business']);
 
         return [
-            'utente' => $this->entityToArray(FPersistentManager::utenteById($idUtente)),
-            'indirizziUtente' => $isBusiness ? [] : $this->entitiesToArrays(FPersistentManager::indirizziByUser($idUtente)),
+            'utente' => FPersistentManager::utenteById($idUtente),
+            'indirizziUtente' => $isBusiness ? [] : FPersistentManager::indirizziByUser($idUtente),
             'filtroAnnunci' => $filtroAnnunci,
-            'annunciUtente' => $this->entitiesToArrays(FPersistentManager::annunciByUserIdAndStato($idUtente, $filtroAnnunci)),
+            'annunciUtente' => FPersistentManager::annunciByUserIdAndStato($idUtente, $filtroAnnunci),
             'titoloAnnunciProfilo' => $filtroAnnunci === 'venduto' ? 'Annunci venduti' : 'Annunci attivi',
-            'cronologiaPagamenti' => $isBusiness ? [] : $this->entitiesToArrays(FPersistentManager::cronologiaPagamentiByUser($idUtente)),
+            'cronologiaPagamenti' => $isBusiness ? [] : FPersistentManager::cronologiaPagamentiByUser($idUtente),
         ];
     }
 

@@ -18,7 +18,7 @@ class AdminController extends BaseController
         $this->requirePositiveId($idAdmin, 'Admin');
 
         $stats = FPersistentManager::dashboardStats();
-        $azioniModera = $this->entitiesToArrays(FPersistentManager::moderaByAdmin($idAdmin));
+        $azioniModera = FPersistentManager::moderaByAdmin($idAdmin);
 
         $this->view('admin/dashboard.tpl', compact('stats', 'azioniModera'), 'Dashboard admin');
     }
@@ -28,7 +28,7 @@ class AdminController extends BaseController
      */
     public function dashboardModerazione(array $filters): void
     {
-        $azioniModerazione = $this->entitiesToArrays(FPersistentManager::azioniModerazione($filters));
+        $azioniModerazione = FPersistentManager::azioniModerazione($filters);
         $filters = [
             'admin' => trim((string) ($filters['admin'] ?? '')),
         ];
@@ -42,9 +42,9 @@ class AdminController extends BaseController
     public function utenti(array $filters = []): void
     {
         $searchUtente = trim((string) ($filters['q_utente'] ?? ''));
-        $utenti = $this->entitiesToArrays(FPersistentManager::utentiForAdmin($searchUtente));
+        $utenti = FPersistentManager::utentiForAdmin($searchUtente);
         $admins = ((int) ($_SESSION['livello_sicurezza'] ?? 1) === 2)
-            ? $this->entitiesToArrays(FPersistentManager::admins())
+            ? FPersistentManager::admins()
             : [];
         $filters = ['q_utente' => $searchUtente];
 
@@ -130,7 +130,7 @@ class AdminController extends BaseController
      */
     public function segnalazioni(array $filters = []): void
     {
-        $segnalazioni = $this->entitiesToArrays(FPersistentManager::segnalazioni($filters));
+        $segnalazioni = FPersistentManager::segnalazioni($filters);
         $filters = [
             'oggetto' => trim((string) ($filters['oggetto'] ?? '')),
             'tipologia' => trim((string) ($filters['tipologia'] ?? '')),

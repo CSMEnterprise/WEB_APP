@@ -4,7 +4,6 @@ namespace App\Controllers;
 
 use App\Entity\{
     EAdmin,
-    EBaseEntity,
     EModera
 };
 use App\Foundation\{
@@ -12,7 +11,6 @@ use App\Foundation\{
 };
 use App\Services\ServiceException;
 use App\View\SmartyView;
-use PDO;
 
 /**
  * Classe base condivisa da tutti i controller.
@@ -21,71 +19,6 @@ use PDO;
  */
 abstract class BaseController
 {
-    public function __construct(?PDO $db = null)
-    {
-    }
-
-    /**
-     * Converte una singola entity in array per passarla facilmente ai template.
-     */
-    protected function entityToArray(?EBaseEntity $entity): ?array
-    {
-        return $entity ? $this->normalizePublicPaths($entity->toArray()) : null;
-    }
-
-    /**
-     * Normalizza liste di entity o array misti nel formato atteso dalle view.
-     */
-    protected function entitiesToArrays(array $entities): array
-    {
-        return array_map(
-            fn($entity) => $this->normalizePublicPaths($entity instanceof EBaseEntity ? $entity->toArray() : (array) $entity),
-            $entities
-        );
-    }
-
-    /**
-     * Rende assoluti i path pubblici salvati nel DB, cosi funzionano anche con URL profondi.
-     */
-    protected function normalizePublicPaths(array $data): array
-    {
-        foreach ($data as $key => $value) {
-            if (is_array($value)) {
-                $data[$key] = $this->normalizePublicPaths($value);
-                continue;
-            }
-
-            if (!is_string($value)) {
-                continue;
-            }
-
-            if (in_array($key, ['url', 'propic', 'immagine_principale'], true)) {
-                $data[$key] = $this->publicPath($value);
-            }
-        }
-
-        return $data;
-    }
-
-    protected function publicPath(string $path): string
-    {
-        $path = trim(str_replace('\\', '/', $path));
-
-        if ($path === ''
-            || str_starts_with($path, '/')
-            || preg_match('#^(https?:)?//#i', $path)
-            || str_starts_with($path, 'data:')
-        ) {
-            return $path;
-        }
-
-        if (str_starts_with($path, 'uploads/') || str_starts_with($path, 'assets/')) {
-            return '/' . $path;
-        }
-
-        return $path;
-    }
-
     /**
      * Verifica che un identificativo ricevuto da route/form sia valido.
      */

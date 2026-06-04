@@ -32,7 +32,7 @@ class FElementoCarrello extends FBaseTable
     public function elementiAcquistabili(int $idCarrello): array
     {
         // Restituisce direttamente dati annuncio arricchiti, pronti per la view carrello.
-        return $this->fetchEntities("
+        return $this->fetchRows("
             SELECT
                 e.`id_elemento_carrello`,
                 e.`id_carrello`,

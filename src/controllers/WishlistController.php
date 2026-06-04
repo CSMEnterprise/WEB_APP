@@ -25,7 +25,7 @@ class WishlistController extends BaseController
             $this->denyBusinessBuyer($idUtente);
 
             FPersistentManager::removeUnavailablePreferitiForUser($idUtente);
-            $wishlist = $this->entitiesToArrays(FPersistentManager::wishlistAnnunciByUser($idUtente));
+            $wishlist = FPersistentManager::wishlistAnnunciByUser($idUtente);
             $wishlistIds = array_map(
                 static fn(array $annuncio): int => (int) ($annuncio['id_annuncio'] ?? 0),
                 $wishlist

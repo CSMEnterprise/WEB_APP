@@ -23,8 +23,8 @@ class BusinessController extends BaseController
     {
         $this->requirePositiveId($idUtente, 'Utente');
 
-        $business = $this->entityToArray(FPersistentManager::businessByUser($idUtente));
-        $annunci = $this->entitiesToArrays(FPersistentManager::annunciByUserIdAndStato($idUtente, null));
+        $business = FPersistentManager::businessByUser($idUtente);
+        $annunci = FPersistentManager::annunciByUserIdAndStato($idUtente, null);
 
         $this->view('business/profilo.tpl', compact('business', 'annunci'), 'Area business');
     }
@@ -72,8 +72,8 @@ class BusinessController extends BaseController
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
-            $business = $this->entityToArray($businessEntity);
-            $annunci = $this->entitiesToArrays(FPersistentManager::annunciByUserIdAndStato($idUtente, null));
+            $business = $businessEntity;
+            $annunci = FPersistentManager::annunciByUserIdAndStato($idUtente, null);
 
             $this->view('business/profilo.tpl', compact('errore', 'business', 'annunci'), 'Area business');
         }
@@ -98,8 +98,8 @@ class BusinessController extends BaseController
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
-            $business = $this->entityToArray($businessEntity);
-            $annunci = $this->entitiesToArrays(FPersistentManager::annunciByUserIdAndStato($idUtente, null));
+            $business = $businessEntity;
+            $annunci = FPersistentManager::annunciByUserIdAndStato($idUtente, null);
 
             $this->view('business/profilo.tpl', compact('errore', 'business', 'annunci'), 'Area business');
         }
@@ -112,7 +112,7 @@ class BusinessController extends BaseController
     {
         $this->requirePositiveId($idUtente, 'Utente');
 
-        $ordini = $this->entitiesToArrays(FPersistentManager::ordiniRicevutiBySellerUser($idUtente));
+        $ordini = FPersistentManager::ordiniRicevutiBySellerUser($idUtente);
 
         $this->view('business/ordini.tpl', compact('ordini'), 'Ordini ricevuti');
     }

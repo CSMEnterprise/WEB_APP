@@ -17,6 +17,7 @@ use App\Entity\{
     ESegnalazione,
     EUtenteRegistrato
 };
+use App\Services\ServiceException;
 use RuntimeException;
 
 /**
@@ -25,6 +26,11 @@ use RuntimeException;
  */
 class FPersistentManager
 {
+    public static function transaction(callable $callback): mixed
+    {
+        return FDataBase::getInstance()->transaction($callback);
+    }
+
     /**
      * Salvataggio generico di una entity; gli annunci richiedono anche il proprietario.
      */
@@ -297,7 +303,9 @@ class FPersistentManager
 
     public static function setIndirizzoPredefinito(int $idUtente, int $idIndirizzo): void
     {
-        self::indirizzi()->setDefaultForUser($idUtente, $idIndirizzo);
+        self::transaction(
+            fn() => self::indirizzi()->setDefaultForUser($idUtente, $idIndirizzo)
+        );
     }
 
     public static function updateIndirizzoForUser(EIndirizzo $indirizzo): void
@@ -378,6 +386,11 @@ class FPersistentManager
     public static function carrelloAnnuncioIdsByUser(int $idUtente): array
     {
         return self::elementiCarrello()->activeAnnuncioIdsByUser($idUtente);
+    }
+
+    public static function activeCartItemCountByUser(int $idUtente): int
+    {
+        return self::carrelli()->countActiveItemsByUser($idUtente);
     }
 
     public static function addElementoCarrello(EElementoCarrello $elemento): void
@@ -495,6 +508,79 @@ class FPersistentManager
         return self::pagamenti()->create($pagamento);
     }
 
+    public static function confirmSinglePayment(
+        int $idUtente,
+        int $idAnnuncio,
+        int $idIndirizzo,
+        ?string $paypalTransactionId = null
+    ): int {
+        return self::transaction(function () use ($idUtente, $idAnnuncio, $idIndirizzo, $paypalTransactionId): int {
+            $annuncio = self::annuncioForPaymentUpdate($idAnnuncio);
+
+            if (!$annuncio) {
+                throw new ServiceException('Annuncio non trovato.');
+            }
+
+            if (!$annuncio->isAttivo()) {
+                throw new ServiceException('Annuncio non acquistabile.');
+            }
+
+            if ((int) ($annuncio->getIdUtente() ?? 0) === $idUtente) {
+                throw new ServiceException('Non puoi acquistare un tuo annuncio.');
+            }
+
+            if (!self::indirizzoForUser($idIndirizzo, $idUtente)) {
+                throw new ServiceException('Indirizzo di spedizione non valido.');
+            }
+
+            $pagamento = new EPagamento($idAnnuncio, $idUtente, $idIndirizzo, $annuncio->getPrezzo());
+            $pagamento->completa();
+            $pagamento->setPaypalTransactionId($paypalTransactionId);
+
+            $idPagamento = self::createPagamento($pagamento);
+            self::markAnnuncioSoldForPayment($idAnnuncio);
+            self::removeAnnuncioFromBuyerSurfaces($idAnnuncio);
+
+            return $idPagamento;
+        });
+    }
+
+    public static function confirmCartPayment(int $idUtente, array $idAnnunci, int $idIndirizzo): array
+    {
+        return self::transaction(function () use ($idUtente, $idAnnunci, $idIndirizzo): array {
+            if (!self::indirizzoForUser($idIndirizzo, $idUtente)) {
+                throw new ServiceException('Indirizzo di spedizione non valido.');
+            }
+
+            $idPagamenti = [];
+
+            foreach ($idAnnunci as $idAnnuncio) {
+                $annuncio = self::annuncioForPaymentUpdate((int) $idAnnuncio);
+
+                if (!$annuncio || !$annuncio->isAttivo()) {
+                    continue;
+                }
+
+                if ((int) ($annuncio->getIdUtente() ?? 0) === $idUtente) {
+                    continue;
+                }
+
+                $pagamento = new EPagamento((int) $idAnnuncio, $idUtente, $idIndirizzo, $annuncio->getPrezzo());
+                $pagamento->completa();
+
+                $idPagamenti[] = self::createPagamento($pagamento);
+                self::markAnnuncioSoldForPayment((int) $idAnnuncio);
+                self::removeAnnuncioFromBuyerSurfaces((int) $idAnnuncio);
+            }
+
+            if (empty($idPagamenti)) {
+                throw new ServiceException('Nessun articolo acquistabile nel carrello.');
+            }
+
+            return $idPagamenti;
+        });
+    }
+
     public static function cronologiaPagamentiByUser(int $idUtente): array
     {
         return self::pagamenti()->chronologyByUser($idUtente);
@@ -533,6 +619,19 @@ class FPersistentManager
     public static function ordiniRicevutiBySellerUser(int $idUtente): array
     {
         return self::pagamenti()->receivedBySellerUser($idUtente);
+    }
+
+    private static function markAnnuncioSoldForPayment(int $idAnnuncio): void
+    {
+        if (!self::markAnnuncioSoldIfActive($idAnnuncio)) {
+            throw new ServiceException('Annuncio non acquistabile.');
+        }
+    }
+
+    private static function removeAnnuncioFromBuyerSurfaces(int $idAnnuncio): void
+    {
+        self::removeAnnuncioFromAllCarts($idAnnuncio);
+        self::removePreferitiByAnnuncio($idAnnuncio);
     }
 
     public static function dashboardStats(): array

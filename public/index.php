@@ -18,4 +18,4 @@ require_once $dbConfigPath;
 
 FDataBase::init($pdo);
 
-(new FrontController($pdo))->handle();
+(new FrontController())->handle();

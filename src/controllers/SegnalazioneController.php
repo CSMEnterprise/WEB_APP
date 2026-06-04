@@ -46,7 +46,7 @@ class SegnalazioneController extends BaseController
      */
     public function lista(): void
     {
-        $segnalazioni = $this->entitiesToArrays(FPersistentManager::segnalazioni());
+        $segnalazioni = FPersistentManager::segnalazioni();
 
         $this->view('segnalazioni/lista.tpl', compact('segnalazioni'), 'Segnalazioni');
     }

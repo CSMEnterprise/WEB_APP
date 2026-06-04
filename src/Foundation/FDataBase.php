@@ -99,6 +99,31 @@ class FDataBase
     }
 
     /**
+     * Esegue un blocco in transazione, con rollback automatico sugli errori.
+     */
+    public function transaction(callable $callback): mixed
+    {
+        if ($this->inTransaction()) {
+            return $callback();
+        }
+
+        $this->beginTransaction();
+
+        try {
+            $result = $callback();
+            $this->commit();
+
+            return $result;
+        } catch (\Throwable $e) {
+            if ($this->inTransaction()) {
+                $this->rollBack();
+            }
+
+            throw $e;
+        }
+    }
+
+    /**
      * Conteggio rapido usato per statistiche di dashboard.
      */
     public function count(string $table, string $where = ''): int

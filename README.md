@@ -70,7 +70,7 @@ WEB_APP/
 - `src/Entity/`: contiene le classi Entity con proprieta private, getter, setter e metodi di utilita.
 - `src/Foundation/`: contiene classi infrastrutturali e mapper tabella/Entity. La persistenza segue la logica `FDataBase` + `FPersistentManager` + classi `F...`.
 - `src/View/`: contiene il wrapper della view layer, incluso `SmartyView` per il rendering Smarty.
-- `src/services/`: contiene la logica applicativa e le query al database tramite PDO.
+- `src/services/`: contiene servizi applicativi di supporto, come email ed eccezioni applicative; le query al database stanno in `src/Foundation/`.
 - `templates/`: contiene i template Smarty usati per renderizzare le pagine.
 - `src/middleware/`: contiene i controlli di accesso per utenti autenticati, admin, business e guest.
 - `src/helpers/`: contiene funzioni comuni, come l'escape HTML.
@@ -345,7 +345,7 @@ public/index.php
   -> templates/annunci/lista.tpl
 ```
 
-La stessa logica e' stata estesa ai flussi principali di utenti, indirizzi, wishlist, carrello, feedback, segnalazioni, moderazione e pagamenti. Le query SQL stanno nel package `App\Foundation`; i controller coordinano richiesta, validazioni, transazioni applicative e rendering. Le transazioni di acquisto usano ancora `FOR UPDATE`, ma la query vive in `FAnnuncio::findWithDetailsForUpdate()`.
+La stessa logica e' stata estesa ai flussi principali di utenti, indirizzi, wishlist, carrello, feedback, segnalazioni, moderazione e pagamenti. Le query SQL e le transazioni stanno nel package `App\Foundation`; i controller coordinano richiesta, validazioni e rendering. Le transazioni di acquisto usano ancora `FOR UPDATE`, ma la query vive in `FAnnuncio::findWithDetailsForUpdate()`.
 
 ## Verifica sintassi PHP
 

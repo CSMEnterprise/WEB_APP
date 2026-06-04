@@ -7,23 +7,12 @@ use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
 use Exception;
 use finfo;
-use PDO;
 
 /**
  * Gestisce annunci, dettaglio pubblico, creazione/modifica e immagini caricate.
  */
 class AnnuncioController extends BaseController
 {
-    private PDO $db;
-
-    /**
-     * Mantiene PDO per transazioni e query dirette.
-     */
-    public function __construct(PDO $db)
-    {
-        $this->db = $db;
-    }
-
     /**
      * Lista annunci con eventuale ricerca testuale o filtro categoria.
      */
@@ -31,13 +20,13 @@ class AnnuncioController extends BaseController
     {
         $q = trim($_GET['q'] ?? '');
         $idCategoria = (int) ($_GET['id_categoria'] ?? 0);
-        $categorie = $this->entitiesToArrays(FPersistentManager::categorie());
+        $categorie = FPersistentManager::categorie();
 
         if ($q !== '' || $idCategoria > 0) {
-            $annunci = $this->entitiesToArrays(FPersistentManager::searchAnnunci($q, $idCategoria));
-            $utenti = $this->entitiesToArrays(FPersistentManager::searchUtenti($q));
+            $annunci = FPersistentManager::searchAnnunci($q, $idCategoria);
+            $utenti = FPersistentManager::searchUtenti($q);
         } else {
-            $annunci = $this->entitiesToArrays(FPersistentManager::annunciAttivi());
+            $annunci = FPersistentManager::annunciAttivi();
             $utenti = [];
         }
 
@@ -60,10 +49,10 @@ class AnnuncioController extends BaseController
             return;
         }
 
-        $annuncio = $this->entityToArray($annuncioEntity);
+        $annuncio = $annuncioEntity;
         $idVenditore = (int) ($annuncioEntity->getIdUtente() ?? 0);
         $feedbackVenditore = $idVenditore > 0
-            ? $this->entitiesToArrays(FPersistentManager::feedbackByVenditore($idVenditore))
+            ? FPersistentManager::feedbackByVenditore($idVenditore)
             : [];
         $mediaVenditore = $idVenditore > 0 ? FPersistentManager::mediaFeedbackVenditore($idVenditore) : 0.0;
 
@@ -71,7 +60,7 @@ class AnnuncioController extends BaseController
         $wishlistIds = $isRegularUser ? FPersistentManager::wishlistIdsByUser((int) $_SESSION['user_id']) : [];
         $carrelloIds = $isRegularUser ? FPersistentManager::carrelloAnnuncioIdsByUser((int) $_SESSION['user_id']) : [];
 
-        $this->view('annunci/dettaglio.tpl', compact('annuncio', 'feedbackVenditore', 'mediaVenditore', 'wishlistIds', 'carrelloIds'), $annuncio['titolo'] ?? 'Annuncio');
+        $this->view('annunci/dettaglio.tpl', compact('annuncio', 'feedbackVenditore', 'mediaVenditore', 'wishlistIds', 'carrelloIds'), $annuncioEntity->getTitolo() ?: 'Annuncio');
     }
 
     /**
@@ -79,7 +68,7 @@ class AnnuncioController extends BaseController
      */
     public function formCreazione(): void
     {
-        $categorie = $this->entitiesToArrays(FPersistentManager::categorie());
+        $categorie = FPersistentManager::categorie();
 
         $this->view('annunci/form.tpl', compact('categorie'), 'Nuovo annuncio');
     }
@@ -91,13 +80,13 @@ class AnnuncioController extends BaseController
     {
         try {
             $annuncioEntity = FPersistentManager::annuncioById($idAnnuncio);
-            $annuncio = $this->entityToArray($annuncioEntity);
+            $annuncio = $annuncioEntity;
 
             if (!$annuncioEntity || (int)($annuncioEntity->getIdUtente() ?? 0) !== $idUtente || !$annuncioEntity->isAttivo()) {
                 throw new ServiceException('Non puoi modificare questo annuncio.');
             }
 
-            $categorie = $this->entitiesToArrays(FPersistentManager::categorie());
+            $categorie = FPersistentManager::categorie();
             $isEdit = true;
 
             $this->view('annunci/form.tpl', compact('categorie', 'annuncio', 'isEdit'), 'Modifica annuncio');
@@ -118,7 +107,7 @@ class AnnuncioController extends BaseController
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
-            $categorie = $this->entitiesToArrays(FPersistentManager::categorie());
+            $categorie = FPersistentManager::categorie();
 
             $this->view('annunci/form.tpl', compact('errore', 'categorie'), 'Nuovo annuncio');
         }
@@ -138,9 +127,9 @@ class AnnuncioController extends BaseController
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
-            $categorie = $this->entitiesToArrays(FPersistentManager::categorie());
+            $categorie = FPersistentManager::categorie();
             $annuncioEntity = $idAnnuncio > 0 ? FPersistentManager::annuncioById($idAnnuncio) : null;
-            $annuncio = $annuncioEntity ? $this->entityToArray($annuncioEntity) : $data;
+            $annuncio = $annuncioEntity ?: $data;
             $isEdit = true;
 
             $this->view('annunci/form.tpl', compact('errore', 'categorie', 'annuncio', 'isEdit'), 'Modifica annuncio');
@@ -190,9 +179,7 @@ class AnnuncioController extends BaseController
         $this->requirePositiveId($idUtente, 'Utente');
         [$titolo, $descrizione, $idCategoria, $statoConservazione, $prezzo] = $this->validateAnnuncioData($data);
 
-        $this->db->beginTransaction();
-
-        try {
+        return FPersistentManager::transaction(function () use ($idUtente, $idCategoria, $titolo, $descrizione, $statoConservazione, $prezzo, $files): int {
             $annuncio = EAnnuncio::fromArray([
                 'id_utente' => $idUtente,
                 'id_categoria' => $idCategoria,
@@ -207,16 +194,8 @@ class AnnuncioController extends BaseController
             $idAnnuncio = FPersistentManager::createAnnuncioForUser($annuncio, $idUtente);
             $this->saveAnnuncioImages($idAnnuncio, $files);
 
-            $this->db->commit();
-
             return $idAnnuncio;
-        } catch (Exception $e) {
-            if ($this->db->inTransaction()) {
-                $this->db->rollBack();
-            }
-
-            throw $e;
-        }
+        });
     }
 
     /**
@@ -239,9 +218,7 @@ class AnnuncioController extends BaseController
 
         [$titolo, $descrizione, $idCategoria, $statoConservazione, $prezzo] = $this->validateAnnuncioData($data);
 
-        $this->db->beginTransaction();
-
-        try {
+        FPersistentManager::transaction(function () use ($annuncio, $idAnnuncio, $idUtente, $idCategoria, $titolo, $descrizione, $statoConservazione, $prezzo, $files): void {
             $updated = EAnnuncio::fromArray(array_merge($annuncio->toArray(), [
                 'id_annuncio' => $idAnnuncio,
                 'id_categoria' => $idCategoria,
@@ -253,15 +230,7 @@ class AnnuncioController extends BaseController
 
             FPersistentManager::updateAnnuncioForUser($idAnnuncio, $idUtente, $updated);
             $this->saveAnnuncioImages($idAnnuncio, $files);
-
-            $this->db->commit();
-        } catch (Exception $e) {
-            if ($this->db->inTransaction()) {
-                $this->db->rollBack();
-            }
-
-            throw $e;
-        }
+        });
     }
 
     /**

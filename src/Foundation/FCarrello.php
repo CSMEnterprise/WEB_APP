@@ -59,4 +59,16 @@ class FCarrello extends FBaseTable
 
         return $entity instanceof ECarrello ? $entity : null;
     }
+
+    public function countActiveItemsByUser(int $idUtente): int
+    {
+        return (int) $this->fetchColumn(
+            "SELECT COUNT(*)
+             FROM `carrello` c
+             JOIN `elemento_carrello` e ON e.`id_carrello` = c.`id_carrello`
+             JOIN `annuncio` a ON a.`id_annuncio` = e.`id_annuncio`
+             WHERE c.`id_utente` = ? AND a.`stato` = 'attivo'",
+            [$idUtente]
+        );
+    }
 }
