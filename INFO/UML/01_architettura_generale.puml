@@ -1,0 +1,85 @@
+@startuml
+title NerdVault - Architettura generale del framework MVC
+
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultTextAlignment center
+
+left to right direction
+
+actor "Client\nBrowser" as Browser
+
+node "Web server\nApache / XAMPP" as WebServer {
+  component ".htaccess\nURL rewriting" as Htaccess
+  component "public/index.php\nBootstrap applicazione" as Index
+}
+
+package "Livello Core" as Core {
+  component "FrontController\n- normalizza URL\n- risolve route\n- invoca controller" as Front
+}
+
+package "Livello Controller" as ControllerLayer {
+  component "Middleware\nAuth, Guest,\nAdmin, Business" as Middleware
+  component "Controller applicativi\nHome, Utente, Annuncio,\nCarrello, Wishlist,\nPagamento, Admin..." as Controllers
+  component "BaseController\nview(), errori,\nvalidazioni comuni" as BaseController
+}
+
+package "Livello Model / Persistenza" as ModelLayer {
+  component "FPersistentManager\nFacade del layer Foundation" as PersistentManager
+  component "Foundation specifiche\nFAnnuncio, FUtenteRegistrato,\nFCarrello, FPagamento..." as Foundations
+  component "FBaseTable\nCRUD e query helper comuni" as BaseTable
+  component "FDataBase\nPDO condiviso" as DatabaseWrapper
+  component "Entity E...\nOggetti di dominio" as Entities
+}
+
+package "Livello View" as ViewLayer {
+  component "SmartyView\nrender template" as SmartyView
+  component "ViewDataNormalizer\nnormalizzazione dati" as Normalizer
+  folder "templates/*.tpl" as Templates
+}
+
+package "Servizi di supporto" as Services {
+  component "MailService\nemail verifica/reset" as MailService
+  component "ServiceException\nerrori applicativi" as ServiceException
+}
+
+database "MySQL / MariaDB\nDatabase nerdvault" as DB
+folder "public/uploads\nFile caricati" as Uploads
+
+Browser --> Htaccess : richiesta HTTP
+Htaccess --> Index : inoltro a entry point
+Index --> DatabaseWrapper : crea PDO e init()
+Index --> Front : handle()
+
+Front --> Middleware : controlli accesso
+Front --> Controllers : dispatch controller/action
+Controllers --|> BaseController
+
+Controllers --> PersistentManager : legge/scrive dati
+Controllers --> MailService : invio email
+Controllers --> Uploads : gestione upload
+Controllers --> ServiceException : errori di business
+
+BaseController --> SmartyView : render view
+SmartyView --> Normalizer : prepara dati
+SmartyView --> Templates : display()
+
+PersistentManager --> Foundations : delega operazioni
+Foundations --|> BaseTable
+Foundations --> Entities : crea / usa entity
+BaseTable --> DatabaseWrapper : usa PDO
+DatabaseWrapper --> DB : query SQL
+
+note bottom of ControllerLayer
+I controller coordinano richiesta HTTP,
+sessione, validazioni principali, redirect e view.
+end note
+
+note bottom of ModelLayer
+Le Foundation sono il layer di persistenza:
+racchiudono accesso al database e regole sui dati.
+end note
+
+@enduml

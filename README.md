@@ -347,13 +347,6 @@ public/index.php
 
 La stessa logica e' stata estesa ai flussi principali di utenti, indirizzi, wishlist, carrello, feedback, segnalazioni, moderazione e pagamenti. Le query SQL e le transazioni stanno nel package `App\Foundation`; i controller coordinano richiesta, validazioni e rendering. Le transazioni di acquisto usano ancora `FOR UPDATE`, ma la query vive in `FAnnuncio::findWithDetailsForUpdate()`.
 
-## Verifica sintassi PHP
-
-Con XAMPP su Windows e' possibile controllare la sintassi dei file PHP con:
-
-```powershell
-Get-ChildItem -Recurse -Filter *.php | ForEach-Object { C:\xampp\php\php.exe -l $_.FullName }
-```
 
 ## Note per lo sviluppo
 
