@@ -29,6 +29,7 @@ php_errors.log
 # Dump database e database locali
 *.sql
 !/database/nerdvault.sql
+!/database/dati_demo.sql
 *.sqlite
 *.sqlite3
 *.db

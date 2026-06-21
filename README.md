@@ -160,6 +160,17 @@ database/nerdvault.sql
 
 Il file crea automaticamente il database `nerdvault`, tutte le tabelle, le chiavi, i vincoli e le categorie di base.
 
+Per installare anche i dati dimostrativi usati durante la presentazione,
+importare subito dopo:
+
+```text
+database/dati_demo.sql
+```
+
+Il dataset aggiunge account per tutti i ruoli, annunci attivi e venduti,
+carrelli, wishlist, pagamenti, feedback e segnalazioni. Le credenziali sono
+elencate in `database/README.md`.
+
 Se esiste gia un vecchio database `nerdvault` e vuoi ricrearlo da zero, esporta prima un backup e poi elimina il vecchio database da phpMyAdmin prima di importare questo file.
 
 Non ci sono migrazioni SQL aggiuntive da applicare dopo questo file.
