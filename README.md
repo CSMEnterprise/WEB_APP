@@ -187,8 +187,8 @@ Questo file non viene versionato. Nel repository resta solo `src/config/db.examp
 
 Se `src/config/db.php` manca, crearlo una sola volta partendo dal template:
 
-```bash
-cp src/config/db.example.php src/config/db.php
+```powershell
+Copy-Item src/config/db.example.php src/config/db.php
 ```
 
 Configurazione locale predefinita nell'esempio:
@@ -201,7 +201,9 @@ $username = 'root';
 $password = '';
 ```
 
-Questi valori sono adatti alla configurazione standard di XAMPP. Se il database usa credenziali diverse, modificarle direttamente in `src/config/db.php`.
+Questi valori sono adatti alla configurazione standard di XAMPP. Se il database
+usa credenziali diverse, modificare `src/config/db.php` oppure impostare
+`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME` e `DB_PASSWORD` nell'ambiente.
 
 ### 5. Configurare le email
 
@@ -215,11 +217,14 @@ Anche questo file non viene versionato. Nel repository resta solo `src/config/ma
 
 Se `src/config/mail.php` manca, crearlo una sola volta partendo dal template:
 
-```bash
-cp src/config/mail.example.php src/config/mail.php
+```powershell
+Copy-Item src/config/mail.example.php src/config/mail.php
 ```
 
-Con `debug` impostato a `true`, i link di verifica email e reset password vengono salvati in sessione invece di essere inviati tramite SMTP.
+Il template parte con debug email attivo, quindi non richiede credenziali SMTP:
+i link di verifica e reset vengono mostrati nell'app. Per usare Mailtrap impostare
+`MAIL_DEBUG=0` e configurare le variabili `MAIL_HOST`, `MAIL_PORT`,
+`MAIL_USERNAME` e `MAIL_PASSWORD`.
 
 ### 6. Configurare Apache
 
@@ -235,7 +240,7 @@ Aggiungere un virtual host:
 
 ```apache
 <VirtualHost *:80>
-    ServerName web_app.local
+    ServerName nerdvault.local
     DocumentRoot "C:/xampp/htdocs/WEB_APP/public"
 
     <Directory "C:/xampp/htdocs/WEB_APP/public">
@@ -245,7 +250,7 @@ Aggiungere un virtual host:
 </VirtualHost>
 ```
 
-### 7. Configurare il file hosts(opzionale)
+### 7. Configurare il file hosts (necessario per il virtual host)
 
 Aprire come amministratore:
 
@@ -272,7 +277,8 @@ Poi aprire nel browser:
 http://nerdvault.local
 ```
 
-In alternativa, se non si configura un virtual host, e' possibile usare:
+In alternativa, con il DocumentRoot standard di XAMPP e senza virtual host, e'
+possibile usare:
 
 ```text
 http://localhost/WEB_APP/public/
