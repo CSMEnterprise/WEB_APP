@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Core\Request;
+use App\Core\SessionManager;
 use App\Entity\EAnnuncio;
 use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
@@ -18,8 +20,8 @@ class AnnuncioController extends BaseController
      */
     public function lista(): void
     {
-        $q = trim($_GET['q'] ?? '');
-        $idCategoria = (int) ($_GET['id_categoria'] ?? 0);
+        $q = trim((string) Request::get('q', ''));
+        $idCategoria = Request::getInt('id_categoria');
         $categorie = FPersistentManager::categorie();
 
         if ($q !== '' || $idCategoria > 0) {
@@ -30,9 +32,9 @@ class AnnuncioController extends BaseController
             $utenti = [];
         }
 
-        $isRegularUser = !empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business']);
-        $wishlistIds = $isRegularUser ? FPersistentManager::wishlistIdsByUser((int) $_SESSION['user_id']) : [];
-        $carrelloIds = $isRegularUser ? FPersistentManager::carrelloAnnuncioIdsByUser((int) $_SESSION['user_id']) : [];
+        $isRegularUser = SessionManager::has('user_id') && !SessionManager::has('is_admin') && !SessionManager::has('is_business');
+        $wishlistIds = $isRegularUser ? FPersistentManager::wishlistIdsByUser((int) SessionManager::get('user_id')) : [];
+        $carrelloIds = $isRegularUser ? FPersistentManager::carrelloAnnuncioIdsByUser((int) SessionManager::get('user_id')) : [];
 
         $this->view('annunci/lista.tpl', compact('q', 'idCategoria', 'categorie', 'annunci', 'utenti', 'wishlistIds', 'carrelloIds'), 'Annunci');
     }
@@ -57,9 +59,9 @@ class AnnuncioController extends BaseController
             : [];
         $mediaVenditore = $idVenditore > 0 ? FPersistentManager::mediaFeedbackVenditore($idVenditore) : 0.0;
 
-        $isRegularUser = !empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business']);
-        $wishlistIds = $isRegularUser ? FPersistentManager::wishlistIdsByUser((int) $_SESSION['user_id']) : [];
-        $carrelloIds = $isRegularUser ? FPersistentManager::carrelloAnnuncioIdsByUser((int) $_SESSION['user_id']) : [];
+        $isRegularUser = SessionManager::has('user_id') && !SessionManager::has('is_admin') && !SessionManager::has('is_business');
+        $wishlistIds = $isRegularUser ? FPersistentManager::wishlistIdsByUser((int) SessionManager::get('user_id')) : [];
+        $carrelloIds = $isRegularUser ? FPersistentManager::carrelloAnnuncioIdsByUser((int) SessionManager::get('user_id')) : [];
 
         $this->view('annunci/dettaglio.tpl', compact('annuncio', 'feedbackVenditore', 'mediaVenditore', 'wishlistIds', 'carrelloIds'), $annuncioEntity->getTitolo() ?: 'Annuncio');
     }

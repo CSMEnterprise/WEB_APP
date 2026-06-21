@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Core\Request;
 use App\Core\SessionManager;
 
 class MailService
@@ -22,12 +23,12 @@ class MailService
     private function debugSalva(string $tipo, string $link, string $destinatario): void
     {
         SessionManager::start();
-        $_SESSION['debug_mail'] = [
+        SessionManager::set('debug_mail', [
             'tipo'        => $tipo,
             'link'        => $link,
             'destinatario'=> $destinatario,
             'timestamp'   => time(),
-        ];
+        ]);
     }
 
     private function crea(): object
@@ -159,9 +160,9 @@ class MailService
         $baseUrl = trim((string) ($this->config['base_url'] ?? ''));
 
         if ($baseUrl === '') {
-            $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-            $scriptDir = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/');
+            $scheme = (!empty(Request::server('HTTPS')) && Request::server('HTTPS') !== 'off') ? 'https' : 'http';
+            $host = Request::server('HTTP_HOST', 'localhost');
+            $scriptDir = rtrim(str_replace('\\', '/', dirname(Request::server('SCRIPT_NAME', '/'))), '/');
             $baseUrl = $scheme . '://' . $host . ($scriptDir !== '' && $scriptDir !== '/' ? $scriptDir : '');
         }
 

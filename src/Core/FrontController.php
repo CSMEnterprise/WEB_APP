@@ -105,7 +105,7 @@ class FrontController extends BaseController
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
                 'controller' => AnnuncioController::class,
                 'action' => 'crea',
-                'params' => fn() => [$_POST, currentUserId(), $_FILES],
+                'params' => fn() => [Request::post(), currentUserId(), Request::files()],
             ],
             'annuncio/edit' => [
                 'urlParams' => true,
@@ -119,14 +119,14 @@ class FrontController extends BaseController
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
                 'controller' => AnnuncioController::class,
                 'action' => 'aggiorna',
-                'params' => fn() => [$_POST, currentUserId(), $_FILES],
+                'params' => fn() => [Request::post(), currentUserId(), Request::files()],
             ],
             'annuncio/image-delete' => [
                 'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
                 'controller' => AnnuncioController::class,
                 'action' => 'eliminaImmagine',
-                'params' => fn() => [$_POST, currentUserId()],
+                'params' => fn() => [Request::post(), currentUserId()],
             ],
             'annuncio/delete' => [
                 'methods' => ['POST'],
@@ -140,7 +140,7 @@ class FrontController extends BaseController
                 'middleware' => [fn() => requireGuest()],
                 'controller' => UtenteController::class,
                 'action' => 'loginFormOrSubmit',
-                'params' => fn() => [$_POST],
+                'params' => fn() => [Request::post()],
             ],
             'auth/logout' => [
                 'methods' => ['POST'],
@@ -157,13 +157,13 @@ class FrontController extends BaseController
                 'middleware' => [fn() => requireGuest()],
                 'controller' => UtenteController::class,
                 'action' => 'registerUserFormOrSubmit',
-                'params' => fn() => [$_POST],
+                'params' => fn() => [Request::post()],
             ],
             'auth/register-business' => [
                 'middleware' => [fn() => requireGuest()],
                 'controller' => UtenteController::class,
                 'action' => 'registerBusinessFormOrSubmit',
-                'params' => fn() => [$_POST],
+                'params' => fn() => [Request::post()],
             ],
             'auth/verifica-email-attesa' => [
                 'controller' => UtenteController::class,
@@ -178,20 +178,20 @@ class FrontController extends BaseController
             'auth/reinvia-verifica' => [
                 'controller' => UtenteController::class,
                 'action' => 'reinviaVerifica',
-                'params' => fn() => [$_POST],
+                'params' => fn() => [Request::post()],
             ],
             'auth/recupero-password' => [
                 'middleware' => [fn() => requireGuest()],
                 'controller' => UtenteController::class,
                 'action' => 'passwordRecoveryFormOrSubmit',
-                'params' => fn() => [$_POST],
+                'params' => fn() => [Request::post()],
             ],
             'auth/reset-password' => [
                 'urlParams' => true,
                 'middleware' => [fn() => requireGuest()],
                 'controller' => UtenteController::class,
                 'action' => 'passwordResetFormOrSubmit',
-                'params' => fn(array $params) => [$_POST, $params[0] ?? ''],
+                'params' => fn(array $params) => [Request::post(), $params[0] ?? ''],
             ],
 
             'utente/profilo' => [
@@ -217,28 +217,28 @@ class FrontController extends BaseController
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
                 'controller' => UtenteController::class,
                 'action' => 'aggiornaFotoProfilo',
-                'params' => fn() => [$_FILES, currentUserId()],
+                'params' => fn() => [Request::files(), currentUserId()],
             ],
             'utente/update' => [
                 'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
                 'controller' => UtenteController::class,
                 'action' => 'aggiornaProfiloUtente',
-                'params' => fn() => [$_POST, currentUserId()],
+                'params' => fn() => [Request::post(), currentUserId()],
             ],
             'utente/password' => [
                 'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
                 'controller' => UtenteController::class,
                 'action' => 'cambiaPassword',
-                'params' => fn() => [$_POST, currentUserId()],
+                'params' => fn() => [Request::post(), currentUserId()],
             ],
             'utente/indirizzo-store' => [
                 'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => denyBusiness()],
                 'controller' => UtenteController::class,
                 'action' => 'salvaIndirizzoSpedizione',
-                'params' => fn() => [$_POST, currentUserId()],
+                'params' => fn() => [Request::post(), currentUserId()],
             ],
             'utente/indirizzo-default' => [
                 'methods' => ['POST'],
@@ -259,7 +259,7 @@ class FrontController extends BaseController
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => denyBusiness()],
                 'controller' => UtenteController::class,
                 'action' => 'aggiornaIndirizzo',
-                'params' => fn() => [$_POST, currentUserId()],
+                'params' => fn() => [Request::post(), currentUserId()],
             ],
             'utente/indirizzo-delete' => [
                 'methods' => ['POST'],
@@ -357,7 +357,7 @@ class FrontController extends BaseController
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => denyBusiness()],
                 'controller' => PagamentoController::class,
                 'action' => 'confermaCarrello',
-                'params' => fn() => [$_POST, currentUserId()],
+                'params' => fn() => [Request::post(), currentUserId()],
             ],
             'pagamento/paypal' => [
                 'methods' => ['POST'],
@@ -380,7 +380,7 @@ class FrontController extends BaseController
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => denyBusiness()],
                 'controller' => PagamentoController::class,
                 'action' => 'conferma',
-                'params' => fn() => [$_POST, currentUserId()],
+                'params' => fn() => [Request::post(), currentUserId()],
             ],
             'pagamento/esito' => [
                 'middleware' => [fn() => requireAuth()],
@@ -404,7 +404,7 @@ class FrontController extends BaseController
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
                 'controller' => BusinessController::class,
                 'action' => 'creaAccount',
-                'params' => fn() => [$_POST, currentUserId()],
+                'params' => fn() => [Request::post(), currentUserId()],
             ],
             'business/ordini' => [
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => requireBusiness()],
@@ -417,14 +417,14 @@ class FrontController extends BaseController
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => requireBusiness()],
                 'controller' => BusinessController::class,
                 'action' => 'salvaInfo',
-                'params' => fn() => [$_POST, currentUserId()],
+                'params' => fn() => [Request::post(), currentUserId()],
             ],
             'business/indirizzo-store' => [
                 'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => requireBusiness()],
                 'controller' => BusinessController::class,
                 'action' => 'salvaIndirizzo',
-                'params' => fn() => [$_POST, currentUserId()],
+                'params' => fn() => [Request::post(), currentUserId()],
             ],
 
             'feedback/list' => [
@@ -438,14 +438,14 @@ class FrontController extends BaseController
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
                 'controller' => FeedbackController::class,
                 'action' => 'form',
-                'params' => fn(array $params) => [(int) ($_GET['id_pagamento'] ?? $params[0] ?? 0), currentUserId()],
+                'params' => fn(array $params) => [(int) (Request::get('id_pagamento') ?? $params[0] ?? 0), currentUserId()],
             ],
             'feedback/store' => [
                 'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
                 'controller' => FeedbackController::class,
                 'action' => 'crea',
-                'params' => fn() => [$_POST, currentUserId()],
+                'params' => fn() => [Request::post(), currentUserId()],
             ],
             'feedback/venditore' => [
                 'urlParams' => true,
@@ -466,7 +466,7 @@ class FrontController extends BaseController
                 'middleware' => [fn() => requireAuth()],
                 'controller' => SegnalazioneController::class,
                 'action' => 'crea',
-                'params' => fn() => [$_POST, currentUserId()],
+                'params' => fn() => [Request::post(), currentUserId()],
             ],
             'segnalazione/close' => [
                 'methods' => ['POST'],
@@ -493,13 +493,13 @@ class FrontController extends BaseController
                 'middleware' => [fn() => requireAdminLivello2()],
                 'controller' => AdminController::class,
                 'action' => 'dashboardModerazione',
-                'params' => fn() => [$_GET],
+                'params' => fn() => [Request::get()],
             ],
             'admin/utenti' => [
                 'middleware' => [fn() => requireAdmin()],
                 'controller' => AdminController::class,
                 'action' => 'utenti',
-                'params' => fn() => [$_GET],
+                'params' => fn() => [Request::get()],
             ],
             'admin/banna-utente' => [
                 'methods' => ['POST'],
@@ -533,7 +533,7 @@ class FrontController extends BaseController
                 'middleware' => [fn() => requireAdmin()],
                 'controller' => AdminController::class,
                 'action' => 'segnalazioni',
-                'params' => fn() => [$_GET],
+                'params' => fn() => [Request::get()],
             ],
 
             'legale/privacy' => [
@@ -553,13 +553,13 @@ class FrontController extends BaseController
 
     private function requestSegments(): array
     {
-        $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
-        if (!empty($_SERVER['PATH_INFO'])) {
-            $path = (string) $_SERVER['PATH_INFO'];
+        $path = parse_url(Request::server('REQUEST_URI', '/'), PHP_URL_PATH) ?: '/';
+        if (!empty(Request::server('PATH_INFO'))) {
+            $path = (string) Request::server('PATH_INFO');
         }
 
         $path = rawurldecode(str_replace('\\', '/', $path));
-        $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
+        $scriptName = str_replace('\\', '/', Request::server('SCRIPT_NAME', ''));
         $scriptDir = rtrim(str_replace('\\', '/', dirname($scriptName)), '/');
 
         if ($scriptName !== '' && str_starts_with($path, $scriptName)) {
@@ -636,7 +636,7 @@ class FrontController extends BaseController
 
     private function postId(string $key): int
     {
-        return (int) ($_POST[$key] ?? 0);
+        return (int) (Request::post($key, 0));
     }
 
     private function methodAllowed(array $route): bool
@@ -645,18 +645,18 @@ class FrontController extends BaseController
             return true;
         }
 
-        $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+        $method = strtoupper((string) (Request::server('REQUEST_METHOD', 'GET')));
         return in_array($method, $route['methods'], true);
     }
 
     private function csrfAllowed(): bool
     {
-        $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+        $method = strtoupper((string) (Request::server('REQUEST_METHOD', 'GET')));
 
         if ($method !== 'POST') {
             return true;
         }
 
-        return Csrf::validate($_POST[Csrf::fieldName()] ?? null);
+        return Csrf::validate(Request::post(Csrf::fieldName()) ?? null);
     }
 }

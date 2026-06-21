@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Core\Request;
 use App\Entity\{
     EAnnuncio,
     EPreferito
@@ -88,7 +89,7 @@ class WishlistController extends BaseController
                 $this->aggiungiAnnuncioAllaWishlist($idUtente, $idAnnuncio);
             }
 
-            $redirect = $_SERVER['HTTP_REFERER'] ?? '/annuncio/list';
+            $redirect = Request::server('HTTP_REFERER', '/annuncio/list');
             header('Location: ' . $redirect);
             exit;
         } catch (Exception $e) {

@@ -2,6 +2,7 @@
 
 namespace App\Middleware;
 
+use App\Core\SessionManager;
 use App\Foundation\FPersistentManager;
 
 /**
@@ -29,7 +30,7 @@ function requireBusiness(): void
  */
 function denyBusiness(): void
 {
-    if (!empty($_SESSION['is_business'])) {
+    if (SessionManager::has('is_business')) {
         http_response_code(403);
         echo 'Gli account business sono abilitati solo alla vendita: carrello, wishlist e acquisto prodotti non sono disponibili.';
         exit;

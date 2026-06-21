@@ -13,7 +13,7 @@ function requireAuth(): void
 {
     SessionManager::start();
 
-    if (empty($_SESSION['user_id'])) {
+    if (!SessionManager::has('user_id')) {
         header('Location: /auth/login');
         exit;
     }
@@ -27,7 +27,7 @@ function isLoggedIn(): bool
 {
     SessionManager::start();
 
-    return !empty($_SESSION['user_id']);
+    return SessionManager::has('user_id');
 }
 
 /**
@@ -38,5 +38,5 @@ function currentUserId(): int
 {
     SessionManager::start();
 
-    return (int) ($_SESSION['user_id'] ?? 0);
+    return (int) SessionManager::get('user_id', 0);
 }

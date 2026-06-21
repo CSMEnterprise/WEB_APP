@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Core\Request;
 use App\Core\SessionManager;
 use App\Entity\{
     EAccountBusiness,
@@ -27,7 +28,7 @@ class UtenteController extends BaseController
 
     public function loginFormOrSubmit(array $data = []): void
     {
-        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+        if ((Request::server('REQUEST_METHOD', 'GET')) === 'POST') {
             $this->login($data);
             return;
         }
@@ -53,21 +54,21 @@ class UtenteController extends BaseController
             SessionManager::regenerateForAuthentication();
 
             if (!empty($utente['_is_admin'])) {
-                $_SESSION['user_id']  = (int) $utente['id_admin'];
-                $_SESSION['username'] = 'Admin';
-                $_SESSION['is_admin'] = true;
-                $_SESSION['is_business'] = false;
-                $_SESSION['business_id'] = 0;
-                $_SESSION['propic']   = null;
-                $_SESSION['livello_sicurezza'] = (int) ($utente['livello_sicurezza'] ?? 1);
+                SessionManager::set('user_id', (int) $utente['id_admin']);
+                SessionManager::set('username', 'Admin');
+                SessionManager::set('is_admin', true);
+                SessionManager::set('is_business', false);
+                SessionManager::set('business_id', 0);
+                SessionManager::set('propic', null);
+                SessionManager::set('livello_sicurezza', (int) ($utente['livello_sicurezza'] ?? 1));
                 header('Location: /admin/index');
             } else {
-                $_SESSION['user_id']     = (int) $utente['id_utente'];
-                $_SESSION['username']    = $utente['username'];
-                $_SESSION['propic']      = $utente['propic'] ?? null;
-                $_SESSION['is_admin']    = false;
-                $_SESSION['is_business'] = !empty($utente['_is_business']);
-                $_SESSION['business_id']  = (int) ($utente['id_acc_business'] ?? 0);
+                SessionManager::set('user_id', (int) $utente['id_utente']);
+                SessionManager::set('username', $utente['username']);
+                SessionManager::set('propic', $utente['propic'] ?? null);
+                SessionManager::set('is_admin', false);
+                SessionManager::set('is_business', !empty($utente['_is_business']));
+                SessionManager::set('business_id', (int) ($utente['id_acc_business'] ?? 0));
                 header('Location: /utente/profilo');
             }
             exit;
@@ -94,7 +95,7 @@ class UtenteController extends BaseController
 
     public function registerUserFormOrSubmit(array $data = []): void
     {
-        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+        if ((Request::server('REQUEST_METHOD', 'GET')) === 'POST') {
             $this->register($data);
             return;
         }
@@ -119,7 +120,7 @@ class UtenteController extends BaseController
                     $this->lastRegistrationToken
                 );
             } catch (Exception $mailEx) {
-                $_SESSION['verification_mail_error'] = 'Account creato, ma invio email non riuscito. Controlla la configurazione Mailtrap e usa il reinvio.';
+                SessionManager::set('verification_mail_error', 'Account creato, ma invio email non riuscito. Controlla la configurazione Mailtrap e usa il reinvio.');
             }
 
             header('Location: /auth/verifica-email-attesa?email=' . urlencode($this->lastRegistrationEmail));
@@ -141,7 +142,7 @@ class UtenteController extends BaseController
 
     public function registerBusinessFormOrSubmit(array $data = []): void
     {
-        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+        if ((Request::server('REQUEST_METHOD', 'GET')) === 'POST') {
             $this->registerBusiness($data);
             return;
         }
@@ -183,7 +184,7 @@ class UtenteController extends BaseController
                     $this->lastRegistrationToken
                 );
             } catch (Exception $mailEx) {
-                $_SESSION['verification_mail_error'] = 'Account creato, ma invio email non riuscito. Controlla la configurazione Mailtrap e usa il reinvio.';
+                SessionManager::set('verification_mail_error', 'Account creato, ma invio email non riuscito. Controlla la configurazione Mailtrap e usa il reinvio.');
             }
 
             header('Location: /auth/verifica-email-attesa?email=' . urlencode($this->lastRegistrationEmail));
@@ -204,7 +205,7 @@ class UtenteController extends BaseController
 
     public function profiloCorrente(int $idUtente, string $filtroAnnunci = 'attivo'): void
     {
-        if (!empty($_SESSION['is_admin'])) {
+        if (SessionManager::has('is_admin')) {
             (new AdminController())->dashboard($idUtente);
             return;
         }
@@ -264,7 +265,7 @@ class UtenteController extends BaseController
     {
         try {
             $url = $this->updatePropic($idUtente, $files['propic'] ?? []);
-            $_SESSION['propic'] = $url;
+            SessionManager::set('propic', $url);
             header('Location: /utente/profilo');
             exit;
         } catch (Exception $e) {
@@ -405,7 +406,7 @@ class UtenteController extends BaseController
      */
     public function verificaEmailAttesa(): void
     {
-        $email = $_GET['email'] ?? '';
+        $email = Request::get('email', '');
         $errore = $this->consumeVerificationMailError();
         $this->view('utenti/verifica_email_attesa.tpl', compact('email', 'errore'), 'Verifica email');
     }
@@ -460,7 +461,7 @@ class UtenteController extends BaseController
 
     public function passwordRecoveryFormOrSubmit(array $data = []): void
     {
-        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+        if ((Request::server('REQUEST_METHOD', 'GET')) === 'POST') {
             $this->inviaResetPassword($data);
             return;
         }
@@ -517,7 +518,7 @@ class UtenteController extends BaseController
 
     public function passwordResetFormOrSubmit(array $data = [], string $token = ''): void
     {
-        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+        if ((Request::server('REQUEST_METHOD', 'GET')) === 'POST') {
             $this->resetPassword($data);
             return;
         }
@@ -1054,7 +1055,7 @@ class UtenteController extends BaseController
     {
         // I business vendono soltanto: niente indirizzi di spedizione o cronologia acquisti.
         $filtroAnnunci = $filtroAnnunci === 'venduto' ? 'venduto' : 'attivo';
-        $isBusiness = !empty($_SESSION['is_business']);
+        $isBusiness = SessionManager::has('is_business');
         $business = $isBusiness ? FPersistentManager::businessByUser($idUtente) : null;
         $annunci = $business
             ? FPersistentManager::annunciByBusinessIdAndStato((int) $business->getIdAccBusiness(), $filtroAnnunci)
@@ -1080,8 +1081,7 @@ class UtenteController extends BaseController
 
     private function consumeVerificationMailError(): string
     {
-        $errore = (string) ($_SESSION['verification_mail_error'] ?? '');
-        unset($_SESSION['verification_mail_error']);
+        $errore = (string) SessionManager::pull('verification_mail_error', '');
 
         return $errore;
     }
@@ -1092,14 +1092,14 @@ class UtenteController extends BaseController
     private function consumeDebugMailLink(string $tipo): string
     {
         // Il link debug viene consumato una sola volta per non mostrarlo in pagine successive.
-        $debugMail = $_SESSION['debug_mail'] ?? null;
+        $debugMail = SessionManager::get('debug_mail');
 
         if (!is_array($debugMail) || ($debugMail['tipo'] ?? '') !== $tipo) {
             return '';
         }
 
         $link = (string) ($debugMail['link'] ?? '');
-        unset($_SESSION['debug_mail']);
+        SessionManager::remove('debug_mail');
 
         return $link;
     }
@@ -1114,11 +1114,11 @@ class UtenteController extends BaseController
         $emailNonVerificata = $isEmailNonVerificata
             ? substr($errore, strlen('EMAIL_NON_VERIFICATA:'))
             : '';
-        $sessionExpired = !empty($_SESSION['session_expired']);
-        unset($_SESSION['session_expired']);
+        $sessionExpired = SessionManager::has('session_expired');
+        SessionManager::remove('session_expired');
 
         $this->view('auth/login.tpl', [
-            'resetOk' => ($_GET['reset'] ?? '') === 'ok',
+            'resetOk' => Request::get('reset', '') === 'ok',
             'sessionExpired' => $sessionExpired,
             'errore' => $isEmailNonVerificata ? 'Email non verificata.' : $errore,
             'isEmailNonVerificata' => $isEmailNonVerificata,

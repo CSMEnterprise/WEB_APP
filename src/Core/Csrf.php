@@ -16,18 +16,20 @@ final class Csrf
     {
         self::ensureSession();
 
-        if (empty($_SESSION[self::SESSION_KEY]) || !is_string($_SESSION[self::SESSION_KEY])) {
-            $_SESSION[self::SESSION_KEY] = bin2hex(random_bytes(32));
+        $stored = SessionManager::get(self::SESSION_KEY);
+        if (empty($stored) || !is_string($stored)) {
+            $stored = bin2hex(random_bytes(32));
+            SessionManager::set(self::SESSION_KEY, $stored);
         }
 
-        return $_SESSION[self::SESSION_KEY];
+        return $stored;
     }
 
     public static function validate(mixed $token): bool
     {
         self::ensureSession();
 
-        $stored = $_SESSION[self::SESSION_KEY] ?? '';
+        $stored = SessionManager::get(self::SESSION_KEY, '');
 
         return is_string($token)
             && is_string($stored)

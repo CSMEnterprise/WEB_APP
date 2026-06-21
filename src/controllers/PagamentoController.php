@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Core\Request;
 use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
 use Exception;
@@ -150,9 +151,9 @@ class PagamentoController extends BaseController
      */
     public function esito(): void
     {
-        $status = $_GET['status'] ?? 'errore';
-        $idPagamento = (int) ($_GET['id'] ?? 0);
-        $numeroPagamenti = (int) ($_GET['n'] ?? 0);
+        $status = Request::get('status', 'errore');
+        $idPagamento = Request::getInt('id');
+        $numeroPagamenti = Request::getInt('n');
 
         $this->view('pagamenti/esito.tpl', compact('status', 'idPagamento', 'numeroPagamenti'), 'Esito pagamento');
     }

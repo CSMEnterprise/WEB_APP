@@ -2,6 +2,8 @@
 
 namespace App\Middleware;
 
+use App\Core\SessionManager;
+
 /**
  * Verifica che l'utente loggato sia un amministratore.
  * Chiama prima requireAuth(), poi controlla `is_admin` in sessione.
@@ -11,7 +13,7 @@ function requireAdmin(): void
 {
     requireAuth();
 
-    if (empty($_SESSION['is_admin'])) {
+    if (!SessionManager::has('is_admin')) {
         http_response_code(403);
         echo 'Accesso negato: area riservata agli amministratori.';
         exit;
@@ -27,7 +29,7 @@ function requireAdminLivello2(): void
 {
     requireAdmin();
 
-    if ((int) ($_SESSION['livello_sicurezza'] ?? 1) !== 2) {
+    if ((int) SessionManager::get('livello_sicurezza', 1) !== 2) {
         http_response_code(403);
         echo 'Accesso negato: area riservata agli amministratori di livello 2.';
         exit;
@@ -41,7 +43,7 @@ function requireAdminLivello2(): void
  */
 function denyAdmin(): void
 {
-    if (!empty($_SESSION['is_admin'])) {
+    if (SessionManager::has('is_admin')) {
         http_response_code(403);
         echo 'Accesso negato: gli amministratori non possono usare questa funzione.';
         exit;

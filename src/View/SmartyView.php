@@ -3,6 +3,8 @@
 namespace App\View;
 
 use App\Core\Csrf;
+use App\Core\Request;
+use App\Core\SessionManager;
 use App\Foundation\FPersistentManager;
 use RuntimeException;
 use Smarty\Smarty;
@@ -93,25 +95,25 @@ class SmartyView
         $this->smarty->assign('pageTitle',  $pageTitle);
         $this->smarty->assign('year',       (int) date('Y'));
         $this->smarty->assign('today',      date('d/m/Y'));
-        $this->smarty->assign('get',        $_GET  ?? []);
-        $this->smarty->assign('post',       $_POST ?? []);
-        $this->smarty->assign('session',    $_SESSION ?? []);
+        $this->smarty->assign('get',        Request::get());
+        $this->smarty->assign('post',       Request::post());
+        $this->smarty->assign('session',    SessionManager::all());
         $this->smarty->assign('csrfToken',  Csrf::token());
         $this->smarty->assign('csrfField',  Csrf::fieldName());
 
         // ── Sessione ──────────────────────────────────────────────────────
-        $isLogged    = !empty($_SESSION['user_id']);
-        $isAdmin     = !empty($_SESSION['is_admin']);
-        $isBusiness  = !empty($_SESSION['is_business']);
-        $userId      = (int)($_SESSION['user_id']          ?? 0);
-        $businessId  = (int)($_SESSION['business_id']      ?? 0);
-        $livello     = (int)($_SESSION['livello_sicurezza'] ?? 1);
+        $isLogged    = SessionManager::has('user_id');
+        $isAdmin     = SessionManager::has('is_admin');
+        $isBusiness  = SessionManager::has('is_business');
+        $userId      = (int) SessionManager::get('user_id', 0);
+        $businessId  = (int) SessionManager::get('business_id', 0);
+        $livello     = (int) SessionManager::get('livello_sicurezza', 1);
 
         if ($isLogged && !$isAdmin && $isBusiness && $businessId <= 0) {
             try {
                 $business = FPersistentManager::businessByUser($userId);
                 $businessId = $business ? (int) $business->getIdAccBusiness() : 0;
-                $_SESSION['business_id'] = $businessId;
+                SessionManager::set('business_id', $businessId);
             } catch (\Throwable $ignored) {
                 $businessId = 0;
             }
@@ -122,8 +124,8 @@ class SmartyView
         $this->smarty->assign('isBusiness',       $isBusiness);
         $this->smarty->assign('userId',           $userId);
         $this->smarty->assign('businessId',       $businessId);
-        $this->smarty->assign('username',         (string)($_SESSION['username'] ?? ''));
-        $this->smarty->assign('propic',           $this->normalizer->publicPath((string)($_SESSION['propic'] ?? '')));
+        $this->smarty->assign('username',         (string) SessionManager::get('username', ''));
+        $this->smarty->assign('propic',           $this->normalizer->publicPath((string) SessionManager::get('propic', '')));
         $this->smarty->assign('livelloSicurezza', $livello);
 
         // ── Categorie per l'header ────────────────────────────────────────
@@ -181,7 +183,7 @@ class SmartyView
 
     private function envFlag(string $name): bool
     {
-        $value = $_ENV[$name] ?? $_SERVER[$name] ?? getenv($name);
+        $value = $_ENV[$name] ?? Request::server($name) ?? getenv($name);
 
         return filter_var($value, FILTER_VALIDATE_BOOLEAN);
     }

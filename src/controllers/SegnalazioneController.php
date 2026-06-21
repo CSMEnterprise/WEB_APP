@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Core\Request;
 use App\Entity\ESegnalazione;
 use App\Foundation\FPersistentManager;
 use App\Services\ServiceException;
@@ -17,7 +18,7 @@ class SegnalazioneController extends BaseController
      */
     public function form(int $idAnnuncio = 0): void
     {
-        $get = $_GET;
+        $get = Request::get();
         if ($idAnnuncio > 0) {
             $get['id_annuncio'] = $idAnnuncio;
         }

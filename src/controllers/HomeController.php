@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Core\Request;
+use App\Core\SessionManager;
 use App\Foundation\FPersistentManager;
 use function App\Middleware\currentUserId;
 
@@ -12,11 +14,13 @@ class HomeController extends BaseController
 {
     public function index(): void
     {
-        $q = trim($_GET['q'] ?? '');
-        $idCategoria = (int) ($_GET['id_categoria'] ?? 0);
-        $prezzoMin = isset($_GET['prezzo_min']) && $_GET['prezzo_min'] !== '' ? max(0, (float) $_GET['prezzo_min']) : null;
-        $prezzoMax = isset($_GET['prezzo_max']) && $_GET['prezzo_max'] !== '' ? max(0, (float) $_GET['prezzo_max']) : null;
-        $ordinamento = (string) ($_GET['ordinamento'] ?? 'data_desc');
+        $q = trim((string) Request::get('q', ''));
+        $idCategoria = Request::getInt('id_categoria');
+        $prezzoMinRaw = Request::get('prezzo_min');
+        $prezzoMaxRaw = Request::get('prezzo_max');
+        $prezzoMin = $prezzoMinRaw !== null && $prezzoMinRaw !== '' ? max(0, (float) $prezzoMinRaw) : null;
+        $prezzoMax = $prezzoMaxRaw !== null && $prezzoMaxRaw !== '' ? max(0, (float) $prezzoMaxRaw) : null;
+        $ordinamento = (string) Request::get('ordinamento', 'data_desc');
         $ordinamentiValidi = ['data_desc', 'data_asc', 'prezzo_asc', 'prezzo_desc'];
 
         if (!in_array($ordinamento, $ordinamentiValidi, true)) {
@@ -29,9 +33,9 @@ class HomeController extends BaseController
 
         $hasFiltriAvanzati = $prezzoMin !== null || $prezzoMax !== null || $ordinamento !== 'data_desc';
         $annunciPerPagina = 12;
-        $paginaCorrente = max(1, (int) ($_GET['page'] ?? 1));
+        $paginaCorrente = max(1, Request::getInt('page', 1));
         $offsetAnnunci = ($paginaCorrente - 1) * $annunciPerPagina;
-        $isRegularUser = !empty($_SESSION['user_id']) && empty($_SESSION['is_admin']) && empty($_SESSION['is_business']);
+        $isRegularUser = SessionManager::has('user_id') && !SessionManager::has('is_admin') && !SessionManager::has('is_business');
         $excludeHomeUserId = $isRegularUser ? currentUserId() : null;
         $wishlistIds = [];
         $carrelloIds = [];
@@ -99,7 +103,7 @@ class HomeController extends BaseController
     private function buildPagination(int $paginaCorrente, int $totalePagine): array
     {
         $buildPageUrl = static function (int $page): string {
-            $params = $_GET;
+            $params = Request::get();
             unset($params['route']);
             $params['page'] = $page;
 

@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Core\SessionManager;
 use App\Entity\{
     EAccountBusiness,
     EIndirizzo
@@ -46,8 +47,8 @@ class BusinessController extends BaseController
     {
         try {
             $idBusiness = $this->createBusinessAccount($data, $idUtente);
-            $_SESSION['is_business'] = true;
-            $_SESSION['business_id'] = $idBusiness;
+            SessionManager::set('is_business', true);
+            SessionManager::set('business_id', $idBusiness);
 
             header('Location: /business/dashboard');
             exit;

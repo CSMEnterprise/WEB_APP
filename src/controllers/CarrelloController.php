@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Core\Request;
 use App\Entity\{
     EAnnuncio,
     EElementoCarrello
@@ -59,7 +60,7 @@ class CarrelloController extends BaseController
         try {
             $this->aggiungiAnnuncioAlCarrello($idUtente, $idAnnuncio);
 
-            $back = $_SERVER['HTTP_REFERER'] ?? '/annuncio/list';
+            $back = Request::server('HTTP_REFERER', '/annuncio/list');
             header('Location: ' . $back);
             exit;
         } catch (Exception $e) {

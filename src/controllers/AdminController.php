@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Core\SessionManager;
 use App\Foundation\FPersistentManager;
 use Exception;
 
@@ -43,7 +44,7 @@ class AdminController extends BaseController
     {
         $searchUtente = trim((string) ($filters['q_utente'] ?? ''));
         $utenti = FPersistentManager::utentiForAdmin($searchUtente);
-        $admins = ((int) ($_SESSION['livello_sicurezza'] ?? 1) === 2)
+        $admins = ((int) SessionManager::get('livello_sicurezza', 1) === 2)
             ? FPersistentManager::admins()
             : [];
         $filters = ['q_utente' => $searchUtente];
