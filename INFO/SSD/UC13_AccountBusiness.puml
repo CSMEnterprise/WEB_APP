@@ -8,7 +8,7 @@ skinparam participant {
   BackgroundColor white
 }
 
-actor "Account Business" as U
+actor "Utente / Account Business" as U
 participant "System\n:NerdVault" as S
 
 U -> S : apriFormBusiness()  <GET /business/create>

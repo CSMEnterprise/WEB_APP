@@ -26,7 +26,7 @@ activate S
 S --> U : immagine rimossa
 deactivate S
 
-U -> S : eliminaAnnuncio(idAnnuncio, csrfToken)  <POST /annuncio/delete/{id}>
+U -> S : eliminaAnnuncio(idAnnuncio, csrfToken)  <POST /annuncio/delete>
 activate S
 S --> U : annuncio eliminato (DELETE) + redirect lista
 deactivate S

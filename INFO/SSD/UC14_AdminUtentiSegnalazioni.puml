@@ -31,7 +31,7 @@ activate S
 S --> U : elenco segnalazioni filtrato
 deactivate S
 
-U -> S : chiudiSegnalazione(idSegnalazione, csrfToken)  <POST /segnalazione/close/{id}>
+U -> S : chiudiSegnalazione(idSegnalazione, csrfToken)  <POST /segnalazione/close>
 activate S
 S --> U : segnalazione chiusa + azione tracciata
 deactivate S

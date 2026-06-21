@@ -11,7 +11,7 @@ skinparam participant {
 actor "Utente Standard" as U
 participant "System\n:NerdVault" as S
 
-U -> S : aggiungiAlCarrello(idAnnuncio, csrfToken)  <POST /carrello/add/{id}>
+U -> S : aggiungiAlCarrello(idAnnuncio, csrfToken)  <POST /carrello/add>
 activate S
 S --> U : carrello creato se assente + riga aggiunta + annuncio tolto dalla wishlist
 deactivate S
@@ -21,7 +21,7 @@ activate S
 S --> U : elenco articoli acquistabili + totale (non disponibili rimossi)
 deactivate S
 
-U -> S : rimuoviDalCarrello(idAnnuncio, csrfToken)  <POST /carrello/remove/{id}>
+U -> S : rimuoviDalCarrello(idAnnuncio, csrfToken)  <POST /carrello/remove>
 activate S
 S --> U : elemento rimosso
 deactivate S

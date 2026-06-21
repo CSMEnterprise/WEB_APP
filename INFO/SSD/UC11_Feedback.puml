@@ -11,7 +11,7 @@ skinparam participant {
 actor "Utente Standard" as U
 participant "System\n:NerdVault" as S
 
-U -> S : apriFormFeedback(idPagamento)  <GET /feedback/create>
+U -> S : apriFormFeedback(idPagamento)  <GET /feedback/create/{idPagamento}>
 activate S
 S --> U : form feedback (verifica acquirente)
 deactivate S

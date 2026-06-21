@@ -11,7 +11,7 @@ skinparam participant {
 actor "Utente Standard" as U
 participant "System\n:NerdVault" as S
 
-U -> S : toggleWishlist(idAnnuncio, csrfToken)  <POST /wishlist/toggle/{id}>
+U -> S : toggleWishlist(idAnnuncio, csrfToken)  <POST /wishlist/toggle>
 activate S
 S --> U : preferito aggiunto/rimosso + redirect pagina di origine
 deactivate S
@@ -21,7 +21,7 @@ activate S
 S --> U : elenco preferiti (annunci non disponibili gia ripuliti)
 deactivate S
 
-U -> S : rimuoviDallaWishlist(idAnnuncio, csrfToken)  <POST /wishlist/remove/{id}>
+U -> S : rimuoviDallaWishlist(idAnnuncio, csrfToken)  <POST /wishlist/remove>
 activate S
 S --> U : preferito rimosso
 deactivate S
