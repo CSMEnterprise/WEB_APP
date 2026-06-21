@@ -17,6 +17,10 @@
                 <div class="pg-alert" data-tone="success">Password aggiornata! Ora puoi accedere.</div>
             {/if}
 
+            {if !empty($sessionExpired)}
+                <div class="pg-alert" data-tone="info">La sessione e scaduta per inattivita. Accedi nuovamente.</div>
+            {/if}
+
             {if !empty($errore)}
                 {if !empty($isEmailNonVerificata)}
                     <div class="pg-alert" data-tone="danger">

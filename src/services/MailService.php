@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Core\SessionManager;
+
 class MailService
 {
     private array $config;
@@ -19,9 +21,7 @@ class MailService
     /** In debug mode salva il link in sessione invece di inviarlo via SMTP. */
     private function debugSalva(string $tipo, string $link, string $destinatario): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        SessionManager::start();
         $_SESSION['debug_mail'] = [
             'tipo'        => $tipo,
             'link'        => $link,

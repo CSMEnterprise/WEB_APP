@@ -38,8 +38,6 @@ final class Csrf
 
     private static function ensureSession(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
+        SessionManager::start();
     }
 }

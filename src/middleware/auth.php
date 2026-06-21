@@ -2,6 +2,8 @@
 
 namespace App\Middleware;
 
+use App\Core\SessionManager;
+
 /**
  * Verifica che l'utente sia autenticato.
  * Se la sessione non contiene `user_id`, reindirizza al login e termina.
@@ -9,9 +11,7 @@ namespace App\Middleware;
  */
 function requireAuth(): void
 {
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
+    SessionManager::start();
 
     if (empty($_SESSION['user_id'])) {
         header('Location: /auth/login');
@@ -25,9 +25,7 @@ function requireAuth(): void
  */
 function isLoggedIn(): bool
 {
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
+    SessionManager::start();
 
     return !empty($_SESSION['user_id']);
 }
@@ -38,9 +36,7 @@ function isLoggedIn(): bool
  */
 function currentUserId(): int
 {
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
+    SessionManager::start();
 
     return (int) ($_SESSION['user_id'] ?? 0);
 }

@@ -368,6 +368,22 @@ La stessa logica e' stata estesa ai flussi principali di utenti, indirizzi, wish
 - Gli upload degli utenti devono restare dentro `public/uploads/`.
 - Prima di lavorare, aggiornare sempre il branch `develop`.
 
+## Sicurezza delle sessioni
+
+`App\Core\SessionManager` centralizza il ciclo di vita della sessione PHP:
+
+- abilita `session.use_strict_mode` e accetta l'ID soltanto tramite cookie;
+- imposta il cookie con `HttpOnly` e `SameSite=Lax`;
+- abilita automaticamente `Secure` sulle richieste HTTPS;
+- rigenera e sostituisce l'ID di sessione dopo ogni login riuscito;
+- invalida sia i dati server-side sia il cookie durante il logout;
+- termina le sessioni autenticate dopo 30 minuti di inattivita.
+
+Il timeout puo essere modificato, in secondi, tramite la variabile di ambiente
+`SESSION_IDLE_TIMEOUT`; il valore `0` disabilita la scadenza per inattivita.
+Se l'applicazione e dietro un proxy HTTPS che non espone direttamente HTTPS a
+PHP, impostare `SESSION_COOKIE_SECURE=1` nell'ambiente di produzione.
+
 ## Workflow Git consigliato
 
 ```bash

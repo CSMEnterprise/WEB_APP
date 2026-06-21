@@ -1,12 +1,12 @@
 <?php
 
 use App\Core\FrontController;
+use App\Core\SessionManager;
 use App\Foundation\FDataBase;
 
-session_start();
-
-
 require_once __DIR__ . '/../vendor/autoload.php';
+
+SessionManager::start();
 
 $dbConfigPath = __DIR__ . '/../src/config/db.php';
 if (!is_file($dbConfigPath)) {

@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Core\SessionManager;
 use App\Entity\{
     EAccountBusiness,
     EIndirizzo
@@ -49,6 +50,7 @@ class UtenteController extends BaseController
     {
         try {
             $utente = $this->loginUser($data['email'] ?? '', $data['password'] ?? '');
+            SessionManager::regenerateForAuthentication();
 
             if (!empty($utente['_is_admin'])) {
                 $_SESSION['user_id']  = (int) $utente['id_admin'];
@@ -250,7 +252,7 @@ class UtenteController extends BaseController
      */
     public function logout(): void
     {
-        session_destroy();
+        SessionManager::destroy();
         header('Location: /home/index');
         exit;
     }
@@ -1112,9 +1114,12 @@ class UtenteController extends BaseController
         $emailNonVerificata = $isEmailNonVerificata
             ? substr($errore, strlen('EMAIL_NON_VERIFICATA:'))
             : '';
+        $sessionExpired = !empty($_SESSION['session_expired']);
+        unset($_SESSION['session_expired']);
 
         $this->view('auth/login.tpl', [
             'resetOk' => ($_GET['reset'] ?? '') === 'ok',
+            'sessionExpired' => $sessionExpired,
             'errore' => $isEmailNonVerificata ? 'Email non verificata.' : $errore,
             'isEmailNonVerificata' => $isEmailNonVerificata,
             'emailNonVerificataUrl' => urlencode($emailNonVerificata),
