@@ -23,6 +23,7 @@
             {/if}
 
             <form class="au-form" method="post" action="/auth/register-business">
+                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
                 <input type="hidden" name="_business_registration" value="1">
 
                 <div class="au-form-section">

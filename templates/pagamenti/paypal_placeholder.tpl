@@ -48,6 +48,7 @@
             </div>
 
             <form method="post" action="/pagamento/conferma" class="pp-actions">
+                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
                 <input type="hidden" name="id_annuncio" value="{$annuncio.id_annuncio|default:0}">
                 <input type="hidden" name="id_indirizzo" value="{$indirizzoSpedizione.id_indirizzo|default:0}">
                 <input type="hidden" name="paypal_transaction_id" value="{$paypalTransactionId|default:''}">

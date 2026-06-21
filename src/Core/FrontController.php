@@ -58,6 +58,17 @@ class FrontController extends BaseController
             return false;
         }
 
+        if (!$this->methodAllowed($route)) {
+            header('Allow: ' . implode(', ', $route['methods']));
+            $this->renderError('Metodo non consentito.', 405);
+            return true;
+        }
+
+        if (!$this->csrfAllowed()) {
+            $this->renderError('Token di sicurezza non valido. Ricarica la pagina e riprova.', 400);
+            return true;
+        }
+
         foreach ($route['middleware'] ?? [] as $middleware) {
             $middleware();
         }
@@ -90,6 +101,7 @@ class FrontController extends BaseController
                 'action' => 'formCreazione',
             ],
             'annuncio/store' => [
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
                 'controller' => AnnuncioController::class,
                 'action' => 'crea',
@@ -103,23 +115,25 @@ class FrontController extends BaseController
                 'params' => fn(array $params) => [$this->id($params), currentUserId()],
             ],
             'annuncio/update' => [
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
                 'controller' => AnnuncioController::class,
                 'action' => 'aggiorna',
                 'params' => fn() => [$_POST, currentUserId(), $_FILES],
             ],
             'annuncio/image-delete' => [
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
                 'controller' => AnnuncioController::class,
                 'action' => 'eliminaImmagine',
                 'params' => fn() => [$_POST, currentUserId()],
             ],
             'annuncio/delete' => [
-                'urlParams' => true,
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
                 'controller' => AnnuncioController::class,
                 'action' => 'elimina',
-                'params' => fn(array $params) => [$this->id($params), currentUserId()],
+                'params' => fn() => [$this->postId('id_annuncio'), currentUserId()],
             ],
 
             'auth/login' => [
@@ -129,6 +143,7 @@ class FrontController extends BaseController
                 'params' => fn() => [$_POST],
             ],
             'auth/logout' => [
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth()],
                 'controller' => UtenteController::class,
                 'action' => 'logout',
@@ -198,35 +213,39 @@ class FrontController extends BaseController
                 'params' => fn(array $params) => [$this->id($params)],
             ],
             'utente/propic-store' => [
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
                 'controller' => UtenteController::class,
                 'action' => 'aggiornaFotoProfilo',
                 'params' => fn() => [$_FILES, currentUserId()],
             ],
             'utente/update' => [
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
                 'controller' => UtenteController::class,
                 'action' => 'aggiornaProfiloUtente',
                 'params' => fn() => [$_POST, currentUserId()],
             ],
             'utente/password' => [
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
                 'controller' => UtenteController::class,
                 'action' => 'cambiaPassword',
                 'params' => fn() => [$_POST, currentUserId()],
             ],
             'utente/indirizzo-store' => [
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => denyBusiness()],
                 'controller' => UtenteController::class,
                 'action' => 'salvaIndirizzoSpedizione',
                 'params' => fn() => [$_POST, currentUserId()],
             ],
             'utente/indirizzo-default' => [
-                'urlParams' => true,
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => denyBusiness()],
                 'controller' => UtenteController::class,
                 'action' => 'impostaIndirizzoPredefinito',
-                'params' => fn(array $params) => [$this->id($params), currentUserId()],
+                'params' => fn() => [$this->postId('id_indirizzo'), currentUserId()],
             ],
             'utente/indirizzo-edit' => [
                 'urlParams' => true,
@@ -236,17 +255,18 @@ class FrontController extends BaseController
                 'params' => fn(array $params) => [$this->id($params), currentUserId()],
             ],
             'utente/indirizzo-update' => [
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => denyBusiness()],
                 'controller' => UtenteController::class,
                 'action' => 'aggiornaIndirizzo',
                 'params' => fn() => [$_POST, currentUserId()],
             ],
             'utente/indirizzo-delete' => [
-                'urlParams' => true,
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => denyBusiness()],
                 'controller' => UtenteController::class,
                 'action' => 'eliminaIndirizzo',
-                'params' => fn(array $params) => [$this->id($params), currentUserId()],
+                'params' => fn() => [$this->postId('id_indirizzo'), currentUserId()],
             ],
 
             'carrello/list' => [
@@ -256,20 +276,21 @@ class FrontController extends BaseController
                 'params' => fn() => [currentUserId()],
             ],
             'carrello/add' => [
-                'urlParams' => true,
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => denyBusiness()],
                 'controller' => CarrelloController::class,
                 'action' => 'aggiungi',
-                'params' => fn(array $params) => [currentUserId(), $this->id($params)],
+                'params' => fn() => [currentUserId(), $this->postId('id_annuncio')],
             ],
             'carrello/remove' => [
-                'urlParams' => true,
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => denyBusiness()],
                 'controller' => CarrelloController::class,
                 'action' => 'rimuovi',
-                'params' => fn(array $params) => [currentUserId(), $this->id($params)],
+                'params' => fn() => [currentUserId(), $this->postId('id_annuncio')],
             ],
             'carrello/clear' => [
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => denyBusiness()],
                 'controller' => CarrelloController::class,
                 'action' => 'svuota',
@@ -283,27 +304,28 @@ class FrontController extends BaseController
                 'params' => fn() => [currentUserId()],
             ],
             'wishlist/add' => [
-                'urlParams' => true,
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => denyBusiness()],
                 'controller' => WishlistController::class,
                 'action' => 'aggiungi',
-                'params' => fn(array $params) => [currentUserId(), $this->id($params)],
+                'params' => fn() => [currentUserId(), $this->postId('id_annuncio')],
             ],
             'wishlist/remove' => [
-                'urlParams' => true,
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => denyBusiness()],
                 'controller' => WishlistController::class,
                 'action' => 'rimuovi',
-                'params' => fn(array $params) => [currentUserId(), $this->id($params)],
+                'params' => fn() => [currentUserId(), $this->postId('id_annuncio')],
             ],
             'wishlist/toggle' => [
-                'urlParams' => true,
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => denyBusiness()],
                 'controller' => WishlistController::class,
                 'action' => 'toggle',
-                'params' => fn(array $params) => [currentUserId(), $this->id($params)],
+                'params' => fn() => [currentUserId(), $this->postId('id_annuncio')],
             ],
             'wishlist/clear' => [
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => denyBusiness()],
                 'controller' => WishlistController::class,
                 'action' => 'svuota',
@@ -324,27 +346,28 @@ class FrontController extends BaseController
                 'params' => fn() => [currentUserId()],
             ],
             'pagamento/paypal-carrello' => [
-                'urlParams' => true,
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => denyBusiness()],
                 'controller' => PagamentoController::class,
                 'action' => 'paypalPlaceholderCarrello',
-                'params' => fn(array $params) => [currentUserId(), (int) ($params[0] ?? $_POST['id_indirizzo'] ?? 0)],
+                'params' => fn() => [currentUserId(), $this->postId('id_indirizzo')],
             ],
             'pagamento/conferma-carrello' => [
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => denyBusiness()],
                 'controller' => PagamentoController::class,
                 'action' => 'confermaCarrello',
                 'params' => fn() => [$_POST, currentUserId()],
             ],
             'pagamento/paypal' => [
-                'urlParams' => true,
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => denyBusiness()],
                 'controller' => PagamentoController::class,
                 'action' => 'paypalPlaceholder',
-                'params' => fn(array $params) => [
+                'params' => fn() => [
                     currentUserId(),
-                    (int) ($params[0] ?? $_POST['id_annuncio'] ?? 0),
-                    (int) ($_POST['id_indirizzo'] ?? 0),
+                    $this->postId('id_annuncio'),
+                    $this->postId('id_indirizzo'),
                 ],
             ],
             'pagamento/cancel' => [
@@ -353,6 +376,7 @@ class FrontController extends BaseController
                 'action' => 'paypalCancel',
             ],
             'pagamento/conferma' => [
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => denyBusiness()],
                 'controller' => PagamentoController::class,
                 'action' => 'conferma',
@@ -376,6 +400,7 @@ class FrontController extends BaseController
                 'action' => 'formCreazione',
             ],
             'business/store' => [
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
                 'controller' => BusinessController::class,
                 'action' => 'creaAccount',
@@ -388,12 +413,14 @@ class FrontController extends BaseController
                 'params' => fn() => [currentUserId()],
             ],
             'business/info-store' => [
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => requireBusiness()],
                 'controller' => BusinessController::class,
                 'action' => 'salvaInfo',
                 'params' => fn() => [$_POST, currentUserId()],
             ],
             'business/indirizzo-store' => [
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin(), fn() => requireBusiness()],
                 'controller' => BusinessController::class,
                 'action' => 'salvaIndirizzo',
@@ -414,6 +441,7 @@ class FrontController extends BaseController
                 'params' => fn(array $params) => [(int) ($_GET['id_pagamento'] ?? $params[0] ?? 0), currentUserId()],
             ],
             'feedback/store' => [
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth(), fn() => denyAdmin()],
                 'controller' => FeedbackController::class,
                 'action' => 'crea',
@@ -434,24 +462,25 @@ class FrontController extends BaseController
                 'params' => fn(array $params) => [(int) ($params[0] ?? 0)],
             ],
             'segnalazione/store' => [
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAuth()],
                 'controller' => SegnalazioneController::class,
                 'action' => 'crea',
                 'params' => fn() => [$_POST, currentUserId()],
             ],
             'segnalazione/close' => [
-                'urlParams' => true,
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAdmin()],
                 'controller' => SegnalazioneController::class,
                 'action' => 'chiudi',
-                'params' => fn(array $params) => [$this->id($params), currentUserId()],
+                'params' => fn() => [$this->postId('id_segnalazione'), currentUserId()],
             ],
             'segnalazione/delete' => [
-                'urlParams' => true,
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAdmin()],
                 'controller' => SegnalazioneController::class,
                 'action' => 'elimina',
-                'params' => fn(array $params) => [$this->id($params), currentUserId()],
+                'params' => fn() => [$this->postId('id_segnalazione'), currentUserId()],
             ],
 
             'admin/index' => [
@@ -473,32 +502,32 @@ class FrontController extends BaseController
                 'params' => fn() => [$_GET],
             ],
             'admin/banna-utente' => [
-                'urlParams' => true,
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAdmin()],
                 'controller' => AdminController::class,
                 'action' => 'bannaUtente',
-                'params' => fn(array $params) => [$this->id($params), currentUserId()],
+                'params' => fn() => [$this->postId('id_utente'), currentUserId()],
             ],
             'admin/sblocca-utente' => [
-                'urlParams' => true,
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAdmin()],
                 'controller' => AdminController::class,
                 'action' => 'sbloccaUtente',
-                'params' => fn(array $params) => [$this->id($params), currentUserId()],
+                'params' => fn() => [$this->postId('id_utente'), currentUserId()],
             ],
             'admin/banna-admin' => [
-                'urlParams' => true,
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAdminLivello2()],
                 'controller' => AdminController::class,
                 'action' => 'bannaAdmin',
-                'params' => fn(array $params) => [$this->id($params), currentUserId()],
+                'params' => fn() => [$this->postId('id_admin'), currentUserId()],
             ],
             'admin/sblocca-admin' => [
-                'urlParams' => true,
+                'methods' => ['POST'],
                 'middleware' => [fn() => requireAdminLivello2()],
                 'controller' => AdminController::class,
                 'action' => 'sbloccaAdmin',
-                'params' => fn(array $params) => [$this->id($params), currentUserId()],
+                'params' => fn() => [$this->postId('id_admin'), currentUserId()],
             ],
             'admin/segnalazioni' => [
                 'middleware' => [fn() => requireAdmin()],
@@ -603,5 +632,31 @@ class FrontController extends BaseController
     private function id(array $params = []): int
     {
         return (int) ($params[0] ?? 0);
+    }
+
+    private function postId(string $key): int
+    {
+        return (int) ($_POST[$key] ?? 0);
+    }
+
+    private function methodAllowed(array $route): bool
+    {
+        if (empty($route['methods'])) {
+            return true;
+        }
+
+        $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+        return in_array($method, $route['methods'], true);
+    }
+
+    private function csrfAllowed(): bool
+    {
+        $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+
+        if ($method !== 'POST') {
+            return true;
+        }
+
+        return Csrf::validate($_POST[Csrf::fieldName()] ?? null);
     }
 }

@@ -31,6 +31,7 @@
         {/if}
 
         <form class="pg-card fb-submit-form" method="post" action="/feedback/store" data-fb-form>
+            <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
             <input type="hidden" name="id_pagamento" value="{$idPagamento|default:$pagamento.id_pagamento|default:0}">
 
             <div class="pg-field">

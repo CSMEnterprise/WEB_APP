@@ -36,6 +36,7 @@
     <section class="pf-hero" aria-label="Riepilogo profilo">
         <div class="pf-hero-left">
             <form class="pf-avatar-form" method="post" action="/utente/propic-store" enctype="multipart/form-data">
+                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
                 <label class="pf-avatar" for="profileAvatarUpload" aria-label="Cambia foto profilo">
                     {if !empty($utente.propic)}
                         <img src="{$utente.propic}" alt="Foto profilo">
@@ -77,6 +78,7 @@
                     <details class="pf-details">
                         <summary class="btn" data-variant="dark" data-size="sm"><span aria-hidden="true">&#9998;</span> Modifica dati</summary>
                         <form class="pf-popover" method="post" action="/utente/update">
+                            <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
                             <div class="pg-field">
                                 <label class="pg-label" for="nome">Nome</label>
                                 <input class="pg-input" type="text" id="nome" name="nome" value="{$utente.nome|default:''}" required>
@@ -92,6 +94,7 @@
                     <details class="pf-details">
                         <summary class="btn" data-variant="dark" data-size="sm">Cambia password <span aria-hidden="true">&#128273;</span></summary>
                         <form class="pf-popover" method="post" action="/utente/password">
+                            <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
                             <div class="pg-field">
                                 <label class="pg-label" for="password_attuale">Password attuale</label>
                                 <input class="pg-input" type="password" id="password_attuale" name="password_attuale" required>
@@ -130,6 +133,7 @@
                 <details class="pf-details pf-add-details">
                     <summary class="btn" data-variant="ghost" data-size="sm">+ Aggiungi</summary>
                     <form class="pf-popover pf-popover-right" method="post" action="/utente/indirizzo-store">
+                        <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
                         <div class="pg-field">
                             <label class="pg-label" for="add_nome">Nome e cognome</label>
                             <input class="pg-input" type="text" id="add_nome" name="nome" value="{$utente.nome|default:''}" placeholder="Nome destinatario">
@@ -180,9 +184,17 @@
                             <div class="pf-addr-actions">
                                 <a class="va-link" href="/utente/indirizzo-edit/{$indirizzo.id_indirizzo|default:0}">Modifica</a>
                                 {if empty($indirizzo.predefinito)}
-                                    <a class="va-link" href="/utente/indirizzo-default/{$indirizzo.id_indirizzo|default:0}">Predefinito</a>
+                                    <form class="u-post-form" method="post" action="/utente/indirizzo-default">
+                                        <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                                        <input type="hidden" name="id_indirizzo" value="{$indirizzo.id_indirizzo|default:0}">
+                                        <button class="va-link u-post-button" type="submit">Predefinito</button>
+                                    </form>
                                 {/if}
-                                <a class="va-link pf-link-danger" href="/utente/indirizzo-delete/{$indirizzo.id_indirizzo|default:0}">Elimina</a>
+                                <form class="u-post-form" method="post" action="/utente/indirizzo-delete">
+                                    <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                                    <input type="hidden" name="id_indirizzo" value="{$indirizzo.id_indirizzo|default:0}">
+                                    <button class="va-link pf-link-danger u-post-button" type="submit">Elimina</button>
+                                </form>
                             </div>
                         </article>
                     {/foreach}
@@ -195,6 +207,7 @@
                 <details class="pf-details pf-edit-address" open>
                     <summary class="btn" data-variant="dark" data-size="sm">Modifica indirizzo selezionato</summary>
                     <form class="pf-popover" method="post" action="/utente/indirizzo-update">
+                        <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
                         <input type="hidden" name="id_indirizzo" value="{$editing.id_indirizzo|default:0}">
                         <div class="pg-field">
                             <label class="pg-label" for="edit_nome">Nome e cognome</label>

@@ -55,7 +55,12 @@
                         <li><a href="/business/ordini">Ordini ricevuti</a></li>
                     {/if}
                     <li><a href="/feedback/list">I miei feedback</a></li>
-                    <li><a href="/auth/logout">Logout</a></li>
+                    <li>
+                        <form class="u-post-form" method="post" action="/auth/logout">
+                            <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                            <button class="u-post-button" type="submit">Logout</button>
+                        </form>
+                    </li>
                 {else}
                     <li><a href="/auth/login">Accedi</a></li>
                     <li><a href="/auth/register-user">Registrati</a></li>

@@ -51,6 +51,7 @@
         </div>
 
         <form method="post" action="/pagamento/conferma-carrello" class="pp-actions">
+            <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
             {foreach $items as $item}
                 <input type="hidden" name="id_annunci[]" value="{$item.id_annuncio|default:0}">
             {/foreach}

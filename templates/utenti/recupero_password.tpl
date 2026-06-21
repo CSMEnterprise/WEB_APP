@@ -22,6 +22,7 @@
         {else}
             {if !empty($errore)}<div class="alert alert-error">{$errore}</div>{/if}
             <form method="post" action="/auth/recupero-password">
+                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
                 <label for="email">La tua email</label>
                 <input type="email" id="email" name="email" value="{$post.email|default:''}" placeholder="tuaemail@esempio.it" required>
                 <button type="submit" class="btn u-style-089">Invia link di recupero</button>

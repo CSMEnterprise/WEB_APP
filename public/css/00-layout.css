@@ -171,12 +171,14 @@
     .profile-menu:focus-within .profile-dropdown {
         opacity: 1; visibility: visible; transform: translateY(0);
     }
-    .profile-dropdown a {
+    .profile-dropdown a,
+    .profile-dropdown .u-post-button {
         width: 100%; display: flex; align-items: center; gap: 10px;
         padding: 10px 12px; border-radius: 12px;
         color: var(--text); font-size: 14px; font-weight: 700;
     }
-    .profile-dropdown a:hover { background: var(--accent-soft); color: #fff; }
+    .profile-dropdown a:hover,
+    .profile-dropdown .u-post-button:hover { background: var(--accent-soft); color: #fff; }
     .profile-dropdown svg { width: 18px; height: 18px; flex: 0 0 18px; }
     .profile-dropdown .dropdown-heart { color: #fb7185; fill: currentColor; stroke: currentColor; }
     .profile-dropdown .dropdown-logout { color: var(--muted); }

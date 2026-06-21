@@ -18,6 +18,7 @@
 
         {if ($idUtente|default:0) > 0}
             <form method="post" action="/auth/reset-password">
+                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
                 <input type="hidden" name="token" value="{$token|default:''}">
 
                 <label for="newPassword">Nuova password</label>

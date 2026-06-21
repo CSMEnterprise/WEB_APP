@@ -9,7 +9,8 @@
     {/if}
 
     <form method="post" action="/segnalazione/store">
-                <input type="hidden" name="id_annuncio" value="{$get.id_annuncio|default:$post.id_annuncio|default:''}">
+        <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+        <input type="hidden" name="id_annuncio" value="{$get.id_annuncio|default:$post.id_annuncio|default:''}">
         <input type="hidden" name="id_utente_segnalato" value="{$get.id_utente_segnalato|default:$post.id_utente_segnalato|default:''}">
         <input type="hidden" name="id_business" value="{$get.id_business|default:$post.id_business|default:''}">
         <input type="hidden" name="id_feedback" value="{$get.id_feedback|default:$post.id_feedback|default:''}">

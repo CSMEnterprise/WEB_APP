@@ -78,10 +78,13 @@
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                                 <span>Home Admin</span>
                             </a>
-                            <a href="/auth/logout">
+                            <form class="u-post-form" method="post" action="/auth/logout">
+                                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                                <button class="u-post-button" type="submit">
                                 <svg class="dropdown-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path></svg>
                                 <span>Logout</span>
-                            </a>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 {elseif $isBusiness}
@@ -114,10 +117,13 @@
                                 <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8 14.9 8.7l6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5-4.7-4.6 6.5-.9L12 2.8Z"></path></svg>
                                 <span>I miei feedback</span>
                             </a>
-                            <a href="/auth/logout">
+                            <form class="u-post-form" method="post" action="/auth/logout">
+                                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                                <button class="u-post-button" type="submit">
                                 <svg class="dropdown-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path></svg>
                                 <span>Logout</span>
-                            </a>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 {elseif $isBusiness}
@@ -139,10 +145,13 @@
                                 <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8 14.9 8.7l6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5-4.7-4.6 6.5-.9L12 2.8Z"></path></svg>
                                 <span>I miei feedback</span>
                             </a>
-                            <a href="/auth/logout">
+                            <form class="u-post-form" method="post" action="/auth/logout">
+                                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                                <button class="u-post-button" type="submit">
                                 <svg class="dropdown-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path></svg>
                                 <span>Logout</span>
-                            </a>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 {/if}

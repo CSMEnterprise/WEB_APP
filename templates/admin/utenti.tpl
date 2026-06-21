@@ -26,9 +26,17 @@
                                 {elseif ($admin.livello_sicurezza|default:1) != 1}
                                     <span class="muted">Non moderabile</span>
                                 {elseif !empty($admin.stato_ban)}
-                                    <a class="btn" href="/admin/sblocca-admin/{$admin.id_admin|default:0}">Sblocca</a>
+                                    <form class="u-post-form-flex" method="post" action="/admin/sblocca-admin">
+                                        <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                                        <input type="hidden" name="id_admin" value="{$admin.id_admin|default:0}">
+                                        <button class="btn" type="submit">Sblocca</button>
+                                    </form>
                                 {else}
-                                    <a class="btn btn-danger" href="/admin/banna-admin/{$admin.id_admin|default:0}">Banna</a>
+                                    <form class="u-post-form-flex" method="post" action="/admin/banna-admin">
+                                        <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                                        <input type="hidden" name="id_admin" value="{$admin.id_admin|default:0}">
+                                        <button class="btn btn-danger" type="submit">Banna</button>
+                                    </form>
                                 {/if}
                             </td>
                         </tr>
@@ -67,9 +75,17 @@
                     <td>{if !empty($utente.stato_ban)}Bannato{else}Attivo{/if}</td>
                     <td>
                         {if !empty($utente.stato_ban)}
-                            <a class="btn" href="/admin/sblocca-utente/{$utente.id_utente|default:0}">Sblocca</a>
+                            <form class="u-post-form-flex" method="post" action="/admin/sblocca-utente">
+                                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                                <input type="hidden" name="id_utente" value="{$utente.id_utente|default:0}">
+                                <button class="btn" type="submit">Sblocca</button>
+                            </form>
                         {else}
-                            <a class="btn btn-danger" href="/admin/banna-utente/{$utente.id_utente|default:0}">Banna</a>
+                            <form class="u-post-form-flex" method="post" action="/admin/banna-utente">
+                                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                                <input type="hidden" name="id_utente" value="{$utente.id_utente|default:0}">
+                                <button class="btn btn-danger" type="submit">Banna</button>
+                            </form>
                         {/if}
                     </td>
                 </tr>

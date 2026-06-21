@@ -48,6 +48,7 @@
 
 <div class="vd-layout">
     <form class="vd-form" method="post" action="/{$formRoute}" enctype="multipart/form-data" data-vd-form>
+        <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
         {if $isEdit}
             <input type="hidden" name="id_annuncio" value="{$annuncio.id_annuncio|default:''}">
         {/if}
@@ -202,6 +203,7 @@
             method="post"
             action="/annuncio/image-delete"
             class="u-style-013">
+            <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
             <input type="hidden" name="id_immagine" value="{$immagine.id_immagine|default:''}">
         </form>
     {/foreach}

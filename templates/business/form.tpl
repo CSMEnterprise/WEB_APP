@@ -9,7 +9,8 @@
     {/if}
 
     <form method="post" action="/business/store">
-                <label for="nome_azienda">Nome azienda</label>
+        <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+        <label for="nome_azienda">Nome azienda</label>
         <input type="text" id="nome_azienda" name="nome_azienda" value="{$post.nome_azienda|default:''}" minlength="2" maxlength="80" required>
 
         <label for="p_iva">Partita IVA</label>

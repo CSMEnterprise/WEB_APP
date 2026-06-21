@@ -19,13 +19,17 @@
     <div class="annuncio-card-media va-card-media">
         {if $isLogged && !$isAdmin && !$isBusiness && !$isOwner}
             {assign var=isInWishlist value=$annuncioId|in_array:$wishlistIds}
-            <a
-                class="wishlist-heart nv-heart {if $isInWishlist}wishlist-heart-active{/if}"
-                href="/wishlist/toggle/{$annuncioId}"
-                title="{if $isInWishlist}Rimuovi dalla wishlist{else}Aggiungi alla wishlist{/if}"
-                aria-label="{if $isInWishlist}Rimuovi dalla wishlist{else}Aggiungi alla wishlist{/if}">
-                &hearts;
-            </a>
+            <form class="u-post-form" method="post" action="/wishlist/toggle">
+                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                <input type="hidden" name="id_annuncio" value="{$annuncioId}">
+                <button
+                    class="wishlist-heart nv-heart u-post-button {if $isInWishlist}wishlist-heart-active{/if}"
+                    type="submit"
+                    title="{if $isInWishlist}Rimuovi dalla wishlist{else}Aggiungi alla wishlist{/if}"
+                    aria-label="{if $isInWishlist}Rimuovi dalla wishlist{else}Aggiungi alla wishlist{/if}">
+                    &hearts;
+                </button>
+            </form>
         {/if}
 
         {if !empty($annuncio.immagine_principale)}
@@ -70,7 +74,11 @@
                     {if $isInCart}
                         <span class="btn u-style-006" data-size="sm" data-variant="dark">Nel carrello</span>
                     {else}
-                        <a class="btn" data-size="sm" href="/carrello/add/{$annuncioId}">Al carrello</a>
+                        <form class="u-post-form-flex" method="post" action="/carrello/add">
+                            <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                            <input type="hidden" name="id_annuncio" value="{$annuncioId}">
+                            <button class="btn" data-size="sm" type="submit">Al carrello</button>
+                        </form>
                     {/if}
                 {/if}
             {/if}

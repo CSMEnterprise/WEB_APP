@@ -59,9 +59,17 @@
                     <td>{$s.data_segnalazione|default:''}</td>
                     <td>
                         {if ($s.stato|default:'') != 'Risolta'}
-                            <a class="btn" href="/segnalazione/close/{$s.id_segnalazione|default:0}">Chiudi</a>
+                            <form class="u-post-form-flex" method="post" action="/segnalazione/close">
+                                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                                <input type="hidden" name="id_segnalazione" value="{$s.id_segnalazione|default:0}">
+                                <button class="btn" type="submit">Chiudi</button>
+                            </form>
                         {/if}
-                        <a class="btn btn-danger" href="/segnalazione/delete/{$s.id_segnalazione|default:0}">Elimina</a>
+                        <form class="u-post-form-flex" method="post" action="/segnalazione/delete">
+                            <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                            <input type="hidden" name="id_segnalazione" value="{$s.id_segnalazione|default:0}">
+                            <button class="btn btn-danger" type="submit">Elimina</button>
+                        </form>
                     </td>
                 </tr>
             {/foreach}

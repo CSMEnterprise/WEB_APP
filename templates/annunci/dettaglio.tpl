@@ -95,7 +95,11 @@
                     {if ($annuncio.stato|default:'') == 'attivo'}
                         <div class="pg-actions">
                             <a class="btn" href="/annuncio/edit/{$annuncioId}">Modifica</a>
-                            <a class="btn btn-danger" href="/annuncio/delete/{$annuncioId}">Elimina</a>
+                            <form class="u-post-form-flex" method="post" action="/annuncio/delete">
+                                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                                <input type="hidden" name="id_annuncio" value="{$annuncioId}">
+                                <button class="btn btn-danger" type="submit">Elimina</button>
+                            </form>
                         </div>
                     {/if}
                 {else}
@@ -103,26 +107,34 @@
                         {if $isInCart}
                             <span class="btn" data-variant="dark" data-size="lg">Nel carrello</span>
                         {else}
-                            <a class="btn dt-cart-btn" data-size="lg" href="/carrello/add/{$annuncioId}">
+                            <form class="u-post-form-flex" method="post" action="/carrello/add">
+                                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                                <input type="hidden" name="id_annuncio" value="{$annuncioId}">
+                                <button class="btn dt-cart-btn" data-size="lg" type="submit">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <circle cx="8" cy="21" r="1"></circle>
                                     <circle cx="19" cy="21" r="1"></circle>
                                     <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
                                 </svg>
                                 <span>Aggiungi al carrello</span>
-                            </a>
+                                </button>
+                            </form>
                         {/if}
                         <a class="btn" data-variant="gold" data-size="lg" href="/pagamento/checkout/{$annuncioId}">Compra ora</a>
                         {if $canUseWishlist}
-                            <a
-                                class="dt-wishlist-btn {if $isInWishlist}is-active{/if}"
-                                href="/wishlist/toggle/{$annuncioId}"
-                                title="{if $isInWishlist}Rimuovi dalla wishlist{else}Aggiungi alla wishlist{/if}"
-                                aria-label="{if $isInWishlist}Rimuovi dalla wishlist{else}Aggiungi alla wishlist{/if}">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="{if $isInWishlist}currentColor{else}none{/if}" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M19.5 12.6 12 20l-7.5-7.4A5 5 0 0 1 12 6a5 5 0 0 1 7.5 6.6z"></path>
-                                </svg>
-                            </a>
+                            <form class="u-post-form-flex" method="post" action="/wishlist/toggle">
+                                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                                <input type="hidden" name="id_annuncio" value="{$annuncioId}">
+                                <button
+                                    class="dt-wishlist-btn u-post-button {if $isInWishlist}is-active{/if}"
+                                    type="submit"
+                                    title="{if $isInWishlist}Rimuovi dalla wishlist{else}Aggiungi alla wishlist{/if}"
+                                    aria-label="{if $isInWishlist}Rimuovi dalla wishlist{else}Aggiungi alla wishlist{/if}">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="{if $isInWishlist}currentColor{else}none{/if}" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M19.5 12.6 12 20l-7.5-7.4A5 5 0 0 1 12 6a5 5 0 0 1 7.5 6.6z"></path>
+                                    </svg>
+                                </button>
+                            </form>
                         {/if}
                         <a class="btn btn-secondary" href="/segnalazione/create/{$annuncioId}">Segnala</a>
                     </div>

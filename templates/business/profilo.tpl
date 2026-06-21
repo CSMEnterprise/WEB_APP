@@ -213,6 +213,7 @@
 
                     {if !$isPublicVetrina}
                         <form class="bs-info-form" method="post" action="/business/info-store" data-bs-info-form hidden>
+                            <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
                             <div class="pg-field-row">
                                 <div class="pg-field">
                                     <label class="pg-label" for="nome_azienda">Nome vetrina</label>
@@ -255,6 +256,7 @@
                         <h2>{if !empty($business.via)}Modifica sede{else}Aggiungi sede{/if}</h2>
                     </div>
                     <form method="post" action="/business/indirizzo-store" data-bs-address-form>
+                        <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
                         <div class="pg-field-row">
                             <div class="pg-field">
                                 <label class="pg-label" for="via">Via / Corso / Piazza</label>

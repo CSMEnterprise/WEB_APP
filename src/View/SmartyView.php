@@ -2,6 +2,7 @@
 
 namespace App\View;
 
+use App\Core\Csrf;
 use App\Foundation\FPersistentManager;
 use RuntimeException;
 use Smarty\Smarty;
@@ -95,6 +96,8 @@ class SmartyView
         $this->smarty->assign('get',        $_GET  ?? []);
         $this->smarty->assign('post',       $_POST ?? []);
         $this->smarty->assign('session',    $_SESSION ?? []);
+        $this->smarty->assign('csrfToken',  Csrf::token());
+        $this->smarty->assign('csrfField',  Csrf::fieldName());
 
         // ── Sessione ──────────────────────────────────────────────────────
         $isLogged    = !empty($_SESSION['user_id']);

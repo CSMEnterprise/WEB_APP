@@ -32,6 +32,7 @@
 
                 {if !empty($indirizziUtente)}
                     <form method="post" action="/pagamento/paypal" class="co-form">
+                        <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
                         <input type="hidden" name="id_annuncio" value="{$annuncio.id_annuncio|default:0}">
 
                         <div class="co-address-list">

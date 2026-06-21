@@ -21,6 +21,7 @@
         <details class="u-style-135">
             <summary class="u-style-136">Non hai ricevuto l'email?</summary>
             <form class="u-style-137" method="post" action="/auth/reinvia-verifica">
+                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
                 <label for="reinvia_email">La tua email</label>
                 <input type="email" id="reinvia_email" name="email" value="{$email|default:''}" required placeholder="tuaemail@esempio.it">
                 <button type="submit" class="btn u-style-138">Reinvia email di verifica</button>

@@ -30,6 +30,7 @@
             {/if}
 
             <form class="au-form" method="post" action="/auth/login">
+                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
                 <div class="pg-field">
                     <label class="pg-label" for="email">Email</label>
                     <input class="pg-input" type="email" id="email" name="email" placeholder="tu@example.com" required>

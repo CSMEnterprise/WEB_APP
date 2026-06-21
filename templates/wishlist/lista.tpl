@@ -45,7 +45,10 @@
             </button>
         </div>
         {if $wishlistCount > 0}
-            <a class="btn btn-secondary" data-size="sm" href="/wishlist/clear">Svuota wishlist</a>
+            <form class="u-post-form-flex" method="post" action="/wishlist/clear">
+                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                <button class="btn btn-secondary" data-size="sm" type="submit">Svuota wishlist</button>
+            </form>
         {/if}
     </div>
 </div>
@@ -95,14 +98,22 @@
                         {if $isInCart}
                             <span class="btn" data-size="sm" data-variant="dark">Nel carrello</span>
                         {else}
-                            <a class="btn wl-cart-btn" data-size="sm" href="/carrello/add/{$annuncioId}">
+                            <form class="u-post-form-flex" method="post" action="/carrello/add">
+                                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                                <input type="hidden" name="id_annuncio" value="{$annuncioId}">
+                                <button class="btn wl-cart-btn" data-size="sm" type="submit">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
                                 Al carrello
-                            </a>
+                                </button>
+                            </form>
                         {/if}
-                        <a class="wl-remove-btn" href="/wishlist/remove/{$annuncioId}" title="Rimuovi dalla wishlist" aria-label="Rimuovi dalla wishlist">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
-                        </a>
+                        <form class="u-post-form" method="post" action="/wishlist/remove">
+                            <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                            <input type="hidden" name="id_annuncio" value="{$annuncioId}">
+                            <button class="wl-remove-btn u-post-button" type="submit" title="Rimuovi dalla wishlist" aria-label="Rimuovi dalla wishlist">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                            </button>
+                        </form>
                     </div>
                 </article>
             {/foreach}

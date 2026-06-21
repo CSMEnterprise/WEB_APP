@@ -50,14 +50,21 @@
                     </div>
                     <div class="cr-item-controls">
                         <span class="cr-item-price">&euro; {$item.prezzo|default:0|number_format:2:",":"."}</span>
-                        <a class="cr-item-remove" href="/carrello/remove/{$item.id_annuncio|default:0}" aria-label="Rimuovi">&times;</a>
+                        <form class="u-post-form" method="post" action="/carrello/remove">
+                            <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                            <input type="hidden" name="id_annuncio" value="{$item.id_annuncio|default:0}">
+                            <button class="cr-item-remove u-post-button" type="submit" aria-label="Rimuovi">&times;</button>
+                        </form>
                     </div>
                 </article>
             {/foreach}
 
             <div class="cr-actions-row">
                 <a class="va-link" href="/home/index">Continua lo shopping</a>
-                <a class="va-link" href="/carrello/clear">Svuota carrello</a>
+                <form class="u-post-form" method="post" action="/carrello/clear">
+                    <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                    <button class="va-link u-post-button" type="submit">Svuota carrello</button>
+                </form>
             </div>
         </section>
 

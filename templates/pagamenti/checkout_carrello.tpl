@@ -60,6 +60,7 @@
 
             {if !empty($indirizziUtente)}
                 <form method="post" action="/pagamento/paypal-carrello" class="co-form">
+                    <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
                     <div class="co-address-list">
                         {foreach $indirizziUtente as $indirizzo}
                             <label class="co-address {if !empty($indirizzo.predefinito)}is-default{/if}">

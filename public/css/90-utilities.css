@@ -178,3 +178,54 @@
 .seller-pro-badge-editing { background: rgba(124,58,237,.2); color: #a78bfa; }
 .u-address-action { min-height: 34px; padding: 7px 12px; font-size: 13px; border-radius: 10px; }
 .u-admin-object-link { margin-top: 6px; font-size: 12px; padding: 5px 10px; }
+.u-post-form { margin: 0; display: inline; }
+.u-post-form-flex { margin: 0; display: inline-flex; }
+.u-post-button {
+    appearance: none;
+    font: inherit;
+    cursor: pointer;
+}
+.u-post-button.va-link {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--accent-h);
+}
+.u-post-button.wishlist-heart,
+.u-post-button.cr-item-remove,
+.u-post-button.wl-remove-btn,
+.u-post-button.dt-wishlist-btn {
+    font-family: inherit;
+    padding: 0;
+}
+.profile-dropdown .u-post-form { display: block; }
+.profile-dropdown .u-post-button {
+    border: 0;
+    background: transparent;
+    text-align: inherit;
+}
+.footer-links .u-post-form { display: block; }
+.footer-links .u-post-button {
+    position: relative;
+    border: 0;
+    background: transparent;
+    text-align: inherit;
+    padding: 0 0 0 18px;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 500;
+    transition: color .2s;
+}
+.footer-links .u-post-button::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 6px;
+    height: 2px;
+    background: var(--accent);
+    transform: translateY(-50%);
+    transition: width .2s;
+}
+.footer-links .u-post-button:hover { color: var(--text); }
+.footer-links .u-post-button:hover::before { width: 12px; }

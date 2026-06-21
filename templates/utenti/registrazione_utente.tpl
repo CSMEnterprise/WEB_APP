@@ -23,6 +23,7 @@
             {/if}
 
             <form class="au-form" method="post" action="/auth/register-user">
+                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
                 <div class="pg-field-row">
                     <div class="pg-field">
                         <label class="pg-label" for="username">Username</label>
