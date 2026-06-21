@@ -1,0 +1,29 @@
+@startuml SSD_UC1_RicercaAnnunci
+' System Sequence Diagram - UC1 Cercare e visualizzare annunci
+' Ogni operazione di sistema corrisponde a una richiesta HTTP del client.
+title SSD - UC1 Cercare e visualizzare annunci
+
+skinparam sequenceMessageAlign center
+skinparam participant {
+  BorderColor black
+  BackgroundColor white
+}
+
+actor "User" as U
+participant "System\n:NerdVault" as S
+
+U -> S : apriHome()  <GET /home/index>
+activate S
+S --> U : home (annunci attivi, categorie, filtri)
+deactivate S
+
+U -> S : cercaAnnunci(q, idCategoria, prezzoMin, prezzoMax, ordinamento, page)  <GET /annuncio/list>
+activate S
+S --> U : elenco annunci paginato
+deactivate S
+
+U -> S : apriAnnuncio(idAnnuncio)  <GET /annuncio/show/{id}>
+activate S
+S --> U : dettaglio annuncio (immagini, venditore, feedback)
+deactivate S
+@enduml

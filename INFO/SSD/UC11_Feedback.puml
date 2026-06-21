@@ -1,0 +1,33 @@
+@startuml SSD_UC11_Feedback
+' System Sequence Diagram - UC11 Lasciare feedback su un acquisto
+title SSD - UC11 Lasciare feedback su un acquisto
+
+skinparam sequenceMessageAlign center
+skinparam participant {
+  BorderColor black
+  BackgroundColor white
+}
+
+actor "Utente Standard" as U
+participant "System\n:NerdVault" as S
+
+U -> S : apriFormFeedback(idPagamento)  <GET /feedback/create>
+activate S
+S --> U : form feedback (verifica acquirente)
+deactivate S
+
+U -> S : creaFeedback(idPagamento, valutazione, commento, csrfToken)  <POST /feedback/store>
+activate S
+S --> U : feedback salvato + visibile nel profilo venditore
+deactivate S
+
+U -> S : vediFeedbackVenditore(idVenditore)  <GET /feedback/venditore/{id}>
+activate S
+S --> U : lista feedback + media valutazioni
+deactivate S
+
+note over U, S
+  Alternative: pagamento non dell'utente -> accesso negato;
+  valutazione fuori 1-5 -> errore
+end note
+@enduml

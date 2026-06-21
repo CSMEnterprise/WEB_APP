@@ -1,0 +1,43 @@
+@startuml SSD_UC5_ProfiloIndirizzi
+' System Sequence Diagram - UC5 Gestire profilo e indirizzi
+title SSD - UC5 Gestire profilo e indirizzi
+
+skinparam sequenceMessageAlign center
+skinparam participant {
+  BorderColor black
+  BackgroundColor white
+}
+
+actor "Utente Standard" as U
+participant "System\n:NerdVault" as S
+
+U -> S : apriProfilo()  <GET /utente/profilo>
+activate S
+S --> U : profilo (anagrafica, foto, indirizzi, annunci, pagamenti)
+deactivate S
+
+U -> S : aggiornaProfilo(nome, telefono, csrfToken)  <POST /utente/update>
+activate S
+S --> U : profilo aggiornato
+deactivate S
+
+U -> S : aggiornaFotoProfilo(file, csrfToken)  <POST /utente/propic-store>
+activate S
+S --> U : foto aggiornata + sessione sincronizzata
+deactivate S
+
+U -> S : salvaIndirizzo(via, numero, cap, citta, provincia, paese, csrfToken)  <POST /utente/indirizzo-store>
+activate S
+S --> U : indirizzo salvato
+deactivate S
+
+U -> S : impostaIndirizzoPredefinito(idIndirizzo, csrfToken)  <POST /utente/indirizzo-default>
+activate S
+S --> U : indirizzo predefinito aggiornato
+deactivate S
+
+note over U, S
+  Operazioni analoghe: indirizzo-edit / indirizzo-update / indirizzo-delete.
+  Alternative: nome vuoto/telefono non valido, foto formato o dimensione errati -> errore
+end note
+@enduml

@@ -1,0 +1,34 @@
+@startuml SSD_UC8_Wishlist
+' System Sequence Diagram - UC8 Gestire wishlist
+title SSD - UC8 Gestire wishlist
+
+skinparam sequenceMessageAlign center
+skinparam participant {
+  BorderColor black
+  BackgroundColor white
+}
+
+actor "Utente Standard" as U
+participant "System\n:NerdVault" as S
+
+U -> S : toggleWishlist(idAnnuncio, csrfToken)  <POST /wishlist/toggle/{id}>
+activate S
+S --> U : preferito aggiunto/rimosso + redirect pagina di origine
+deactivate S
+
+U -> S : apriWishlist()  <GET /wishlist/list>
+activate S
+S --> U : elenco preferiti (annunci non disponibili gia ripuliti)
+deactivate S
+
+U -> S : rimuoviDallaWishlist(idAnnuncio, csrfToken)  <POST /wishlist/remove/{id}>
+activate S
+S --> U : preferito rimosso
+deactivate S
+
+note over U, S
+  Coerenza: se un annuncio entra nel carrello viene tolto dai preferiti.
+  Alternative: annuncio proprio o non attivo -> operazione non consentita.
+  Esclusi account business e admin.
+end note
+@enduml

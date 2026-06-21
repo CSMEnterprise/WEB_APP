@@ -1,0 +1,43 @@
+@startuml SSD_UC14_AdminUtentiSegnalazioni
+' System Sequence Diagram - UC14 Amministrare utenti e segnalazioni
+title SSD - UC14 Amministrare utenti e segnalazioni
+
+skinparam sequenceMessageAlign center
+skinparam participant {
+  BorderColor black
+  BackgroundColor white
+}
+
+actor "Amministratore L1" as U
+participant "System\n:NerdVault" as S
+
+U -> S : apriDashboard()  <GET /admin/index>
+activate S
+S --> U : statistiche (utenti, annunci, segnalazioni, pagamenti)
+deactivate S
+
+U -> S : gestisciUtenti(qUtente)  <GET /admin/utenti>
+activate S
+S --> U : elenco utenti registrati
+deactivate S
+
+U -> S : bannaUtente(idUtente, csrfToken)  <POST /admin/banna-utente>
+activate S
+S --> U : utente bannato + azione tracciata in 'modera'
+deactivate S
+
+U -> S : gestisciSegnalazioni(oggetto, tipologia)  <GET /admin/segnalazioni>
+activate S
+S --> U : elenco segnalazioni filtrato
+deactivate S
+
+U -> S : chiudiSegnalazione(idSegnalazione, csrfToken)  <POST /segnalazione/close/{id}>
+activate S
+S --> U : segnalazione chiusa + azione tracciata
+deactivate S
+
+note over U, S
+  Operazioni analoghe: sblocca-utente, segnalazione/delete.
+  Alternative: utente non admin -> accesso negato (403).
+end note
+@enduml

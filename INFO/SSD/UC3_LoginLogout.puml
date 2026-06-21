@@ -1,0 +1,34 @@
+@startuml SSD_UC3_LoginLogout
+' System Sequence Diagram - UC3 Effettuare login e logout
+title SSD - UC3 Effettuare login e logout
+
+skinparam sequenceMessageAlign center
+skinparam participant {
+  BorderColor black
+  BackgroundColor white
+}
+
+actor "User" as U
+participant "System\n:NerdVault" as S
+
+U -> S : apriLogin()  <GET /auth/login>
+activate S
+S --> U : form di login
+deactivate S
+
+U -> S : login(email, password, csrfToken)  <POST /auth/login>
+activate S
+S --> U : sessione creata (ruolo, id, username) + redirect area utente/admin
+deactivate S
+
+U -> S : logout(csrfToken)  <POST /auth/logout>
+activate S
+S --> U : sessione distrutta + redirect home
+deactivate S
+
+note over U, S
+  Alternative: credenziali non valide, account bannato,
+  email non verificata, sessione scaduta per inattivita
+  (> 30 min) -> redirect login con messaggio dedicato
+end note
+@enduml
