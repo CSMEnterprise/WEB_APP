@@ -25,12 +25,14 @@ package "Infrastruttura persistenza" {
     # primaryKey(): string
     # entityClass(): string
     # columns(): array
-    + find(id): EBaseEntity
+    + find(id): EBaseEntity?
     + insert(source): int
     + updateById(id, source): bool
     + deleteById(id): bool
-    # fetchEntity(sql, params): EBaseEntity
+    # fetchEntity(sql, params): EBaseEntity?
     # fetchEntities(sql, params): array
+    # fetchRows(sql, params): array
+    # fetchColumn(sql, params): mixed
     # execute(sql, params): int
   }
 
@@ -176,6 +178,10 @@ FPersistentManager ..> FAnnuncio
 FPersistentManager ..> FUtenteRegistrato
 FPersistentManager ..> FAccountBusiness
 FPersistentManager ..> FAdmin
+FPersistentManager ..> FCategoria
+FPersistentManager ..> FImmagine
+FPersistentManager ..> FIndirizzo
+FPersistentManager ..> FPasswordReset
 FPersistentManager ..> FCarrello
 FPersistentManager ..> FElementoCarrello
 FPersistentManager ..> FPreferito
@@ -194,6 +200,9 @@ note bottom of FBaseTable
 Classe base comune: CRUD generico,
 query helper, whitelist colonne
 e conversione righe SQL in Entity.
+fetchRows() resta disponibile per
+proiezioni/risultati aggregati non
+rappresentati da una singola Entity.
 end note
 
 @enduml

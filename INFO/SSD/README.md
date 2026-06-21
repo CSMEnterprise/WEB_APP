@@ -10,7 +10,7 @@ del corso:
 - le **frecce piene** sono le operazioni invocate dall'attore (con i parametri);
 - le **frecce tratteggiate** sono i valori/risposte restituiti dal sistema;
 - le operazioni che **modificano lo stato** usano `POST` e includono il
-  `csrfToken` tra i parametri (protezione CSRF, coerente con il progetto).
+  `csrfToken` tra i parametri (protezione CSRF).
 
 ## Elenco
 

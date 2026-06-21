@@ -1,5 +1,4 @@
 -- NerdVault - schema database completo
--- File pulito per creare il database senza modifiche successive alle tabelle.
 -- Importare questo file su un database vuoto.
 -- Se il database contiene gia dati importanti, fare prima un backup.
 
@@ -310,7 +309,7 @@ CREATE TABLE `pagamento` (
   `data` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id_pagamento`),
   UNIQUE KEY `paypal_transaction_id` (`paypal_transaction_id`),
-  KEY `id_annuncio` (`id_annuncio`),
+  UNIQUE KEY `uniq_pagamento_annuncio` (`id_annuncio`),
   KEY `id_acquirente` (`id_acquirente`),
   KEY `id_indirizzo_spedizione` (`id_indirizzo_spedizione`),
   CONSTRAINT `pagamento_ibfk_1`

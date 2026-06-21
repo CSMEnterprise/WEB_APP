@@ -16,6 +16,28 @@ package "Core routing" {
     - requestSegments(): array
     - matchRoute(segments): array
     - callController(className, action, params): bool
+    - methodAllowed(route): bool
+    - csrfAllowed(): bool
+  }
+
+  class Request {
+    + get(key, default): mixed
+    + post(key, default): mixed
+    + files(): array
+    + server(key, default): mixed
+  }
+
+  class Csrf {
+    + token(): string
+    + fieldName(): string
+    + validate(token): bool
+  }
+
+  class SessionManager {
+    + start(): void
+    + get(key, default): mixed
+    + set(key, value): void
+    + has(key): bool
   }
 }
 
@@ -71,11 +93,14 @@ package "Controller marketplace" {
     + formCreazione(): void
     + crea(data, idUtente, files): void
     + aggiorna(data, idUtente, files): void
+    + eliminaImmagine(data, idUtente): void
     + elimina(idAnnuncio, idUtente): void
   }
 
   class WishlistController {
     + lista(idUtente): void
+    + aggiungi(idUtente, idAnnuncio): void
+    + rimuovi(idUtente, idAnnuncio): void
     + toggle(idUtente, idAnnuncio): void
     + svuota(idUtente): void
   }
@@ -164,6 +189,9 @@ FrontController ..> RequireAdmin2
 FrontController ..> RequireBusiness
 FrontController ..> DenyAdmin
 FrontController ..> DenyBusiness
+FrontController ..> Request : metodo, URL e parametri
+FrontController ..> Csrf : valida POST
+FrontController ..> SessionManager : utente corrente
 
 BaseController ..> SmartyView : render view
 BaseController ..> FPersistentManager : operazioni dati
@@ -175,7 +203,10 @@ AdminController ..> FPersistentManager : moderazione
 note top of FrontController
 Il router e definito in routes().
 Ogni route associa path, middleware,
-controller, action e parametri.
+controller, action, parametri e,
+quando necessario, metodi HTTP.
+Le richieste POST sono validate
+tramite token CSRF.
 end note
 
 note bottom of BaseController

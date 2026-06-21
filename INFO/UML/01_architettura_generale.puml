@@ -18,6 +18,10 @@ node "Web server\nApache / XAMPP" as WebServer {
 
 package "Livello Core" as Core {
   component "FrontController\n- normalizza URL\n- risolve route\n- invoca controller" as Front
+  component "Request\nGET, POST, FILES,\nserver vars" as Request
+  component "Csrf\ngenerazione e verifica token" as Csrf
+  component "SessionManager\nsessione utente e ruoli" as SessionManager
+  component "UploadedFile\nsingolo file caricato" as UploadedFile
 }
 
 package "Livello Controller" as ControllerLayer {
@@ -53,18 +57,25 @@ Htaccess --> Index : inoltro a entry point
 Index --> DatabaseWrapper : crea PDO e init()
 Index --> Front : handle()
 
+Front --> Request : legge metodo e URL
+Front --> Csrf : valida richieste POST
 Front --> Middleware : controlli accesso
 Front --> Controllers : dispatch controller/action
 Controllers --|> BaseController
 
+Controllers --> Request : legge input e file
+Controllers --> SessionManager : sessione e ruoli
 Controllers --> PersistentManager : legge/scrive dati
 Controllers --> MailService : invio email
 Controllers --> Uploads : gestione upload
 Controllers --> ServiceException : errori di business
+Request --> UploadedFile : normalizza upload
 
 BaseController --> SmartyView : render view
 SmartyView --> Normalizer : prepara dati
 SmartyView --> Templates : display()
+SmartyView --> Csrf : espone token ai form
+SmartyView --> SessionManager : dati sessione
 
 PersistentManager --> Foundations : delega operazioni
 Foundations --|> BaseTable
@@ -80,6 +91,9 @@ end note
 note bottom of ModelLayer
 Le Foundation sono il layer di persistenza:
 racchiudono accesso al database e regole sui dati.
+Le Entity E... sono oggetti di dominio PHP; gli array
+sono usati ai confini del sistema (request, sessione,
+template) o come proiezioni di query per la vista.
 end note
 
 @enduml
