@@ -35,7 +35,7 @@ class HomeController extends BaseController
         $annunciPerPagina = 12;
         $paginaCorrente = max(1, Request::getInt('page', 1));
         $offsetAnnunci = ($paginaCorrente - 1) * $annunciPerPagina;
-        $isRegularUser = SessionManager::has('user_id') && !SessionManager::has('is_admin') && !SessionManager::has('is_business');
+        $isRegularUser = SessionManager::isRegularUser();
         $excludeHomeUserId = $isRegularUser ? currentUserId() : null;
         $wishlistIds = [];
         $carrelloIds = [];

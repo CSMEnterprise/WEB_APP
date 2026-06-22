@@ -177,7 +177,7 @@ class PagamentoController extends BaseController
             throw new ServiceException('Annuncio non acquistabile.');
         }
 
-        if (FPersistentManager::userOwnsAnnuncio($idUtente, $idAnnuncio)) {
+        if (!$annuncio->isAcquistabileDa($idUtente)) {
             throw new ServiceException('Non puoi acquistare un tuo annuncio.');
         }
 

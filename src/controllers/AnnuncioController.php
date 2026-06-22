@@ -32,7 +32,7 @@ class AnnuncioController extends BaseController
             $utenti = [];
         }
 
-        $isRegularUser = SessionManager::has('user_id') && !SessionManager::has('is_admin') && !SessionManager::has('is_business');
+        $isRegularUser = SessionManager::isRegularUser();
         $wishlistIds = $isRegularUser ? FPersistentManager::wishlistIdsByUser((int) SessionManager::get('user_id')) : [];
         $carrelloIds = $isRegularUser ? FPersistentManager::carrelloAnnuncioIdsByUser((int) SessionManager::get('user_id')) : [];
 
@@ -52,14 +52,13 @@ class AnnuncioController extends BaseController
         }
 
         $annuncio = $annuncioEntity;
-        $annuncioData = $annuncioEntity->toArray();
-        $idVenditore = (int) ($annuncioData['venditore_user_id'] ?? $annuncioEntity->getIdUtente() ?? 0);
+        $idVenditore = $annuncioEntity->getVenditoreUserId();
         $feedbackVenditore = $idVenditore > 0
             ? FPersistentManager::feedbackByVenditore($idVenditore)
             : [];
         $mediaVenditore = $idVenditore > 0 ? FPersistentManager::mediaFeedbackVenditore($idVenditore) : 0.0;
 
-        $isRegularUser = SessionManager::has('user_id') && !SessionManager::has('is_admin') && !SessionManager::has('is_business');
+        $isRegularUser = SessionManager::isRegularUser();
         $wishlistIds = $isRegularUser ? FPersistentManager::wishlistIdsByUser((int) SessionManager::get('user_id')) : [];
         $carrelloIds = $isRegularUser ? FPersistentManager::carrelloAnnuncioIdsByUser((int) SessionManager::get('user_id')) : [];
 

@@ -126,6 +126,25 @@ class EAnnuncio extends EBaseEntity
         $this->stato = 'venduto';
     }
 
+    /**
+     * ID utente del venditore.
+     * Per gli annunci business l'autore è un account business: il vero utente
+     * venditore arriva dalla colonna calcolata `venditore_user_id` (JOIN),
+     * conservata tra i campi extra. Per gli annunci privati coincide con id_utente.
+     * Incapsula qui questa regola così i controller non devono conoscere il nome
+     * della colonna di JOIN né leggerla da toArray().
+     */
+    public function getVenditoreUserId(): int
+    {
+        return (int) ($this->extra['venditore_user_id'] ?? $this->idUtente ?? 0);
+    }
+
+    /** Vero se l'annuncio è acquistabile dall'utente indicato: attivo e non suo. */
+    public function isAcquistabileDa(int $idUtente): bool
+    {
+        return $this->isAttivo() && $this->getVenditoreUserId() !== $idUtente;
+    }
+
     /** Aggiunge un'immagine alla lista. L'ordine è determinato dall'indice dell'array. */
     public function addImmagine(EImmagine $immagine): void
     {

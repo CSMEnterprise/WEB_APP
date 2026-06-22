@@ -99,6 +99,16 @@ final class SessionManager
         return isset($_SESSION[$key]) && !empty($_SESSION[$key]);
     }
 
+    /**
+     * Vero se l'utente loggato è un acquirente "normale": autenticato ma non
+     * amministratore né account business. Centralizza qui la regola, evitando di
+     * replicare l'accesso alle chiavi di sessione nei singoli controller.
+     */
+    public static function isRegularUser(): bool
+    {
+        return self::has('user_id') && !self::has('is_admin') && !self::has('is_business');
+    }
+
     public static function remove(string $key): void
     {
         unset($_SESSION[$key]);
