@@ -1,0 +1,38 @@
+@startuml SSD_UC9_Carrello
+' System Sequence Diagram - UC9 Gestire carrello
+title SSD - UC9 Gestire carrello
+
+skinparam sequenceMessageAlign center
+skinparam participant {
+  BorderColor black
+  BackgroundColor white
+}
+
+actor "Utente Standard" as U
+participant "System\n:NerdVault" as S
+
+U -> S : aggiungiAlCarrello(idAnnuncio, csrfToken)  <POST /carrello/add>
+activate S
+S --> U : carrello creato se assente + riga aggiunta + annuncio tolto dalla wishlist
+deactivate S
+
+U -> S : apriCarrello()  <GET /carrello/list>
+activate S
+S --> U : elenco articoli acquistabili + totale (non disponibili rimossi)
+deactivate S
+
+U -> S : rimuoviDalCarrello(idAnnuncio, csrfToken)  <POST /carrello/remove>
+activate S
+S --> U : elemento rimosso
+deactivate S
+
+U -> S : svuotaCarrello(csrfToken)  <POST /carrello/clear>
+activate S
+S --> U : carrello svuotato
+deactivate S
+
+note over U, S
+  Alternative: annuncio proprio o non attivo -> operazione rifiutata.
+  Esclusi account business e admin.
+end note
+@enduml

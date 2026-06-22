@@ -1,70 +1,298 @@
 <?php
 
-require_once __DIR__ . '/../services/BusinessService.php';
-require_once __DIR__ . '/../services/AnnuncioService.php';
+namespace App\Controllers;
 
-class BusinessController
+use App\Core\SessionManager;
+use App\Entity\{
+    EAccountBusiness,
+    EIndirizzo
+};
+use App\Foundation\FPersistentManager;
+use App\Services\ServiceException;
+use Exception;
+use PDOException;
+
+/**
+ * Gestisce area business: profilo aziendale, sede e ordini ricevuti.
+ */
+class BusinessController extends BaseController
 {
-    private BusinessService $businessService;
-    private AnnuncioService $annuncioService;
-
-    public function __construct(PDO $db)
-    {
-        $this->businessService = new BusinessService($db);
-        $this->annuncioService = new AnnuncioService($db);
-    }
-
+    /**
+     * Mostra profilo business e tutti gli annunci associati all'utente business
+     */
     public function dashboard(int $idUtente): void
     {
-        $business = $this->businessService->findByUserId($idUtente);
-        $annunci  = $this->annuncioService->getByUserId($idUtente);
+        $this->requirePositiveId($idUtente, 'Utente');
 
-        require __DIR__ . '/../views/business/profilo.php';
+        $business = FPersistentManager::businessByUser($idUtente);
+        $annunci = $business
+            ? FPersistentManager::annunciByBusinessIdAndStato((int) $business->getIdAccBusiness(), null)
+            : [];
+
+        $this->view('business/profilo.tpl', compact('business', 'annunci'), 'Area business');
     }
 
+    /**
+     * Mostra il form per creare un utente in account business.
+     */
     public function formCreazione(): void
     {
-        require __DIR__ . '/../views/business/form.php';
+        $this->view('business/form.tpl', [], 'Crea account business');
     }
 
+    /**
+     * Crea l'account business e torna al form con errore in caso di dati non validi.
+     */
     public function creaAccount(array $data, int $idUtente): void
     {
         try {
-            $this->businessService->creaAccount($data, $idUtente);
-            header('Location: index.php?route=business');
+            $idBusiness = $this->createBusinessAccount($data, $idUtente);
+            SessionManager::set('is_business', true);
+            SessionManager::set('business_id', $idBusiness);
+
+            header('Location: /business/dashboard');
             exit;
         } catch (Exception $e) {
             $errore = $e->getMessage();
-            require __DIR__ . '/../views/business/form.php';
+            $this->view('business/form.tpl', compact('errore'), 'Crea account business');
         }
     }
 
+    /**
+     * Aggiorna la sede principale dell'account business.
+     */
     public function salvaIndirizzo(array $data, int $idUtente): void
     {
-        $business = $this->businessService->findByUserId($idUtente);
+        $businessEntity = FPersistentManager::businessByUser($idUtente);
 
-        if (!$business) {
-            header('Location: index.php?route=business');
+        if (!$businessEntity) {
+            header('Location: /business/dashboard');
             exit;
         }
 
         try {
-            $this->businessService->aggiornaIndirizzo(
-                (int) $business['id_acc_business'],
-                $data
-            );
-            header('Location: index.php?route=business');
+            $this->updateBusinessAddress((int) ($businessEntity->getIdAccBusiness() ?? 0), $data);
+
+            header('Location: /business/dashboard');
             exit;
         } catch (Exception $e) {
-            $errore  = $e->getMessage();
-            $annunci = $this->annuncioService->getByUserId($idUtente);
-            require __DIR__ . '/../views/business/profilo.php';
+            $errore = $e->getMessage();
+            $business = $businessEntity;
+            $annunci = FPersistentManager::annunciByBusinessIdAndStato((int) $businessEntity->getIdAccBusiness(), null);
+
+            $this->view('business/profilo.tpl', compact('errore', 'business', 'annunci'), 'Area business');
         }
     }
 
+    /**
+     * Aggiorna le informazioni pubbliche della vetrina business.
+     */
+    public function salvaInfo(array $data, int $idUtente): void
+    {
+        $businessEntity = FPersistentManager::businessByUser($idUtente);
+
+        if (!$businessEntity) {
+            header('Location: /business/dashboard');
+            exit;
+        }
+
+        try {
+            $this->updateBusinessInfo((int) ($businessEntity->getIdAccBusiness() ?? 0), $data);
+
+            header('Location: /business/dashboard');
+            exit;
+        } catch (Exception $e) {
+            $errore = $e->getMessage();
+            $business = $businessEntity;
+            $annunci = FPersistentManager::annunciByBusinessIdAndStato((int) $businessEntity->getIdAccBusiness(), null);
+
+            $this->view('business/profilo.tpl', compact('errore', 'business', 'annunci'), 'Area business');
+        }
+    }
+
+    /**
+     * Mostra gli ordini ricevuti come venditore.
+     */
     public function ordini(int $idUtente): void
     {
-        $ordini = $this->businessService->getOrdiniRicevuti($idUtente);
-        require __DIR__ . '/../views/business/ordini.php';
+        $this->requirePositiveId($idUtente, 'Utente');
+
+        $business = FPersistentManager::businessByUser($idUtente);
+        $ordini = $business
+            ? FPersistentManager::ordiniRicevutiByBusiness((int) $business->getIdAccBusiness())
+            : [];
+
+        $this->view('business/ordini.tpl', compact('ordini'), 'Ordini ricevuti');
+    }
+
+    /**
+     * Valida dati aziendali, crea account business e opzionalmente la sede.
+     */
+    private function createBusinessAccount(array $data, int $idUtente): int
+    {
+        $this->requirePositiveId($idUtente, 'Utente');
+
+        $nomeAzienda = $this->clean($data['nome_azienda'] ?? '');
+        $pIva = $this->clean($data['p_iva'] ?? $data['partita_iva'] ?? '');
+        $emailAziendale = $this->clean($data['email_aziendale'] ?? '');
+        $telefono = $this->clean($data['telefono'] ?? '');
+        $via = $this->clean($data['via'] ?? '');
+        $numero = $this->clean($data['numero'] ?? '');
+        $cap = $this->clean($data['cap'] ?? '');
+        $citta = $this->clean($data['citta'] ?? '');
+        $provincia = $this->clean($data['provincia'] ?? '');
+        $paese = $this->clean($data['paese'] ?? 'Italia');
+
+        $this->validateBusinessData($nomeAzienda, $pIva, $emailAziendale, $telefono, $cap, $provincia, $citta);
+
+        try {
+            $idBusiness = FPersistentManager::createBusiness(EAccountBusiness::fromArray([
+                'id_utente' => $idUtente,
+                'p_iva' => $pIva,
+                'nome_azienda' => $nomeAzienda,
+                'email_aziendale' => $emailAziendale,
+                'telefono' => $telefono !== '' ? $telefono : null,
+            ]));
+
+            if ($via !== '' || $citta !== '') {
+                if ($via === '' || $citta === '') {
+                    throw new ServiceException('Per salvare la sede aziendale devi indicare almeno via e citta.');
+                }
+
+                FPersistentManager::createIndirizzoForBusiness(EIndirizzo::fromArray([
+                    'id_business' => $idBusiness,
+                    'via' => $via,
+                    'numero' => $numero !== '' ? $numero : null,
+                    'cap' => $cap !== '' ? $cap : null,
+                    'citta' => $citta,
+                    'provincia' => $provincia !== '' ? $provincia : null,
+                    'paese' => $paese,
+                    'predefinito' => 1,
+                ]));
+            }
+
+            return $idBusiness;
+        } catch (PDOException $e) {
+            throw new ServiceException('Account business gia esistente o dati gia utilizzati.');
+        }
+    }
+
+    /**
+     * Sostituisce la sede predefinita business con quella appena inviata.
+     */
+    private function updateBusinessAddress(int $idBusiness, array $data): void
+    {
+        $this->requirePositiveId($idBusiness, 'Business');
+
+        $via = $this->clean($data['via'] ?? '');
+        $numero = $this->clean($data['numero'] ?? '');
+        $cap = $this->clean($data['cap'] ?? '');
+        $citta = $this->clean($data['citta'] ?? '');
+        $provincia = $this->clean($data['provincia'] ?? '');
+        $paese = $this->clean($data['paese'] ?? 'Italia');
+
+        if ($via === '' || $citta === '') {
+            throw new ServiceException('Via e citta sono obbligatori.');
+        }
+
+        FPersistentManager::deleteDefaultBusinessAddress($idBusiness);
+        FPersistentManager::createIndirizzoForBusiness(EIndirizzo::fromArray([
+            'id_business' => $idBusiness,
+            'via' => $via,
+            'numero' => $numero !== '' ? $numero : null,
+            'cap' => $cap !== '' ? $cap : null,
+            'citta' => $citta,
+            'provincia' => $provincia !== '' ? $provincia : null,
+            'paese' => $paese,
+            'predefinito' => 1,
+        ]));
+    }
+
+    private function updateBusinessInfo(int $idBusiness, array $data): void
+    {
+        $this->requirePositiveId($idBusiness, 'Business');
+
+        $nomeAzienda = $this->clean($data['nome_azienda'] ?? '');
+        $descrizione = $this->clean($data['descrizione'] ?? '');
+        $emailAziendale = $this->clean($data['email_aziendale'] ?? '');
+        $telefono = $this->clean($data['telefono'] ?? '');
+        $linkSocial = $this->clean($data['link_social'] ?? '');
+
+        if ($nomeAzienda === '' || $emailAziendale === '') {
+            throw new ServiceException('Nome azienda ed email aziendale sono obbligatori.');
+        }
+
+        if (!preg_match('/^[\p{L}0-9 .&\'-]{2,80}$/u', $nomeAzienda)) {
+            throw new ServiceException('Il nome azienda deve contenere 2-80 caratteri validi.');
+        }
+
+        if ($descrizione !== '' && mb_strlen($descrizione) > 500) {
+            throw new ServiceException('La descrizione vetrina deve restare entro 500 caratteri.');
+        }
+
+        if (!filter_var($emailAziendale, FILTER_VALIDATE_EMAIL)) {
+            throw new ServiceException('Email aziendale non valida.');
+        }
+
+        if ($telefono !== '' && !preg_match('/^\+?[0-9 ]{8,15}$/', $telefono)) {
+            throw new ServiceException('Il telefono deve contenere 8-15 cifre e puo iniziare con +.');
+        }
+
+        if ($linkSocial !== '' && !filter_var($linkSocial, FILTER_VALIDATE_URL)) {
+            throw new ServiceException('Il link social deve essere un URL valido.');
+        }
+
+        FPersistentManager::updateBusinessInfo($idBusiness, [
+            'nome_azienda' => $nomeAzienda,
+            'descrizione' => $descrizione !== '' ? $descrizione : null,
+            'email_aziendale' => $emailAziendale,
+            'telefono' => $telefono !== '' ? $telefono : null,
+            'link_social' => $linkSocial !== '' ? $linkSocial : null,
+        ]);
+    }
+
+    /**
+     * Regole minime per dati aziendali italiani usati in registrazione business.
+     */
+    private function validateBusinessData(
+        string $nomeAzienda,
+        string $pIva,
+        string $emailAziendale,
+        string $telefono,
+        string $cap,
+        string $provincia,
+        string $citta
+    ): void {
+        if ($nomeAzienda === '' || $pIva === '' || $emailAziendale === '') {
+            throw new ServiceException('Nome azienda, partita IVA ed email aziendale sono obbligatori.');
+        }
+
+        if (!preg_match('/^[\p{L}0-9 .&\'-]{2,80}$/u', $nomeAzienda)) {
+            throw new ServiceException('Il nome azienda deve contenere 2-80 caratteri validi.');
+        }
+
+        if (!preg_match('/^[0-9]{11}$/', $pIva)) {
+            throw new ServiceException('La partita IVA deve contenere esattamente 11 cifre.');
+        }
+
+        if (!filter_var($emailAziendale, FILTER_VALIDATE_EMAIL)) {
+            throw new ServiceException('Email aziendale non valida.');
+        }
+
+        if ($telefono !== '' && !preg_match('/^\+?[0-9 ]{8,15}$/', $telefono)) {
+            throw new ServiceException('Il telefono deve contenere 8-15 cifre e puo iniziare con +.');
+        }
+
+        if ($cap !== '' && !preg_match('/^[0-9]{5}$/', $cap)) {
+            throw new ServiceException('Il CAP deve contenere esattamente 5 cifre.');
+        }
+
+        if ($provincia !== '' && !preg_match('/^[A-Za-z]{2}$/', $provincia)) {
+            throw new ServiceException('La provincia deve contenere 2 lettere.');
+        }
+
+        if ($citta !== '' && !preg_match('/^[\p{L} .\'-]{2,80}$/u', $citta)) {
+            throw new ServiceException('La citta deve contenere 2-80 caratteri validi.');
+        }
     }
 }

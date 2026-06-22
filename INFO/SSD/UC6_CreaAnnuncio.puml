@@ -1,0 +1,30 @@
+@startuml SSD_UC6_CreaAnnuncio
+' System Sequence Diagram - UC6 Creare un annuncio
+title SSD - UC6 Creare un annuncio
+
+skinparam sequenceMessageAlign center
+skinparam participant {
+  BorderColor black
+  BackgroundColor white
+}
+
+actor "Utente / Business" as U
+participant "System\n:NerdVault" as S
+
+U -> S : apriFormCreazione()  <GET /annuncio/create>
+activate S
+S --> U : form (categorie, campi richiesti)
+deactivate S
+
+U -> S : creaAnnuncio(titolo, idCategoria, statoConservazione, prezzo, descrizione, immagini[], csrfToken)  <POST /annuncio/store>
+activate S
+S --> U : annuncio creato (stato attivo) + redirect dettaglio
+deactivate S
+
+note over U, S
+  Immagini: fino a 5 file JPG/PNG/WEBP, max 3 MB ciascuna,
+  salvate in public/uploads/annunci/{id}.
+  Alternative: campi obbligatori mancanti, prezzo non positivo,
+  stato non ammesso, immagine non valida -> ritorno al form con errore
+end note
+@enduml

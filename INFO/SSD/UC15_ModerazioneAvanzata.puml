@@ -1,0 +1,34 @@
+@startuml SSD_UC15_ModerazioneAvanzata
+' System Sequence Diagram - UC15 Gestire moderazione avanzata
+title SSD - UC15 Gestire moderazione avanzata
+
+skinparam sequenceMessageAlign center
+skinparam participant {
+  BorderColor black
+  BackgroundColor white
+}
+
+actor "Amministratore L2" as U
+participant "System\n:NerdVault" as S
+
+U -> S : apriDashboardModerazione(adminFilter)  <GET /admin/dashboard>
+activate S
+S --> U : storico azioni di moderazione + lista altri admin
+deactivate S
+
+U -> S : bannaAdmin(idAdmin, csrfToken)  <POST /admin/banna-admin>
+activate S
+S --> U : admin L1 bannato + azione registrata nello storico
+deactivate S
+
+U -> S : sbloccaAdmin(idAdmin, csrfToken)  <POST /admin/sblocca-admin>
+activate S
+S --> U : admin L1 sbloccato + azione registrata
+deactivate S
+
+note over U, S
+  Precondizione: livello_sicurezza = 2.
+  Alternative: admin L1 -> accesso negato; non si puo bannare se stesso
+  o admin non moderabili
+end note
+@enduml

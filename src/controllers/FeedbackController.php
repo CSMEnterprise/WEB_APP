@@ -1,61 +1,106 @@
 <?php
 
-require_once __DIR__ . '/../services/FeedbackService.php';
-require_once __DIR__ . '/../services/PaymentService.php';
+namespace App\Controllers;
 
-class FeedbackController
+use App\Entity\EFeedback;
+use App\Foundation\FPersistentManager;
+use App\Services\ServiceException;
+use Exception;
+
+/**
+ * Gestisce creazione e consultazione dei feedback post-acquisto.
+ */
+class FeedbackController extends BaseController
 {
-    private FeedbackService $feedbackService;
-    private PaymentService  $paymentService;
-
-    public function __construct(PDO $db)
-    {
-        $this->feedbackService = new FeedbackService($db);
-        $this->paymentService  = new PaymentService($db);
-    }
-
+    /**
+     * Mostra il form solo all'acquirente del pagamento e solo se non ha gia recensito.
+     */
     public function form(int $idPagamento, int $idAutore): void
     {
-        $pagamento = $this->paymentService->findById($idPagamento);
+        $pagamentoEntity = FPersistentManager::pagamentoById($idPagamento);
+        $pagamento = $pagamentoEntity;
 
-        if (!$pagamento || (int) $pagamento['id_acquirente'] !== $idAutore) {
-            http_response_code(403);
-            require __DIR__ . '/../views/errors/400.php';
+        if (!$pagamentoEntity || $pagamentoEntity->getIdAcquirente() !== $idAutore) {
+            $this->renderError('Non puoi lasciare un feedback per questo pagamento.', 403);
             return;
         }
 
-        if ($this->feedbackService->hasFeedback($idPagamento, $idAutore)) {
-            header('Location: index.php?route=profilo');
+        if (FPersistentManager::feedbackExists($idPagamento, $idAutore)) {
+            header('Location: /utente/profilo');
             exit;
         }
 
-        require __DIR__ . '/../views/feedback/form.php';
+        $this->view('feedback/form.tpl', compact('idPagamento', 'pagamento'), 'Lascia feedback');
     }
 
+    /**
+     * Salva il feedback e, in caso di errore, ripresenta lo stesso form.
+     */
     public function crea(array $data, int $idAutore): void
     {
         try {
-            $this->feedbackService->crea($data, $idAutore);
-            header('Location: index.php?route=profilo');
+            $this->createFeedback($data, $idAutore);
+
+            header('Location: /utente/profilo');
             exit;
         } catch (Exception $e) {
-            $errore   = $e->getMessage();
+            $errore = $e->getMessage();
             $idPagamento = (int) ($data['id_pagamento'] ?? 0);
-            $pagamento   = $this->paymentService->findById($idPagamento);
-            require __DIR__ . '/../views/feedback/form.php';
+            $pagamento = FPersistentManager::pagamentoById($idPagamento);
+
+            $this->view('feedback/form.tpl', compact('errore', 'idPagamento', 'pagamento'), 'Lascia feedback');
         }
     }
 
+    /**
+     * Mostra i feedback scritti o ricevuti dall'utente corrente.
+     */
     public function lista(int $idUtente): void
     {
-        $feedback = $this->feedbackService->getByUserId($idUtente);
-        require __DIR__ . '/../views/feedback/lista.php';
+        $this->requirePositiveId($idUtente, 'Utente');
+
+        $feedback = FPersistentManager::feedbackByUser($idUtente);
+
+        $this->view('feedback/lista.tpl', compact('feedback'), 'I miei feedback');
     }
 
+    /**
+     * Mostra feedback pubblici e media voto di un venditore.
+     */
     public function listaVenditore(int $idVenditore): void
     {
-        $feedback = $this->feedbackService->getByVenditoreId($idVenditore);
-        $media    = $this->feedbackService->getMediaVoto($idVenditore);
-        require __DIR__ . '/../views/feedback/lista_venditore.php';
+        $this->requirePositiveId($idVenditore, 'Venditore');
+
+        $feedback = FPersistentManager::feedbackByVenditore($idVenditore);
+        $media = FPersistentManager::mediaFeedbackVenditore($idVenditore);
+        $venditore = FPersistentManager::utenteById($idVenditore);
+
+        $this->view('feedback/lista_venditore.tpl', compact('feedback', 'media', 'venditore'), 'Feedback venditore');
+    }
+
+    /**
+     * Normalizza dati del form e applica i vincoli prima del salvataggio.
+     */
+    private function createFeedback(array $data, int $idAutore): int
+    {
+        $feedback = EFeedback::fromArray(array_merge($data, [
+            'id_autore' => $idAutore,
+            'valutazione' => (int) ($data['valutazione'] ?? $data['voto'] ?? 0),
+        ]));
+
+        $this->requirePositiveId($feedback->getIdAutore(), 'Autore');
+
+        if ($feedback->getIdPagamento() <= 0) {
+            throw new ServiceException('Pagamento obbligatorio.');
+        }
+
+        if ($feedback->getValutazione() < 1 || $feedback->getValutazione() > 5) {
+            throw new ServiceException('La valutazione deve essere compresa tra 1 e 5.');
+        }
+
+        $commento = $this->clean($feedback->getCommento());
+        $feedback->setCommento($commento !== '' ? $commento : null);
+
+        return FPersistentManager::createFeedback($feedback);
     }
 }

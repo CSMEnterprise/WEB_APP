@@ -1,0 +1,43 @@
+@startuml SSD_UC13_AccountBusiness
+' System Sequence Diagram - UC13 Gestire account business
+title SSD - UC13 Gestire account business
+
+skinparam sequenceMessageAlign center
+skinparam participant {
+  BorderColor black
+  BackgroundColor white
+}
+
+actor "Utente / Account Business" as U
+participant "System\n:NerdVault" as S
+
+U -> S : apriFormBusiness()  <GET /business/create>
+activate S
+S --> U : form creazione account business
+deactivate S
+
+U -> S : creaAccountBusiness(nomeAzienda, partitaIva, emailAziendale, telefono, datiSede?, csrfToken)  <POST /business/store>
+activate S
+S --> U : account business creato + sessione impostata come business + redirect dashboard
+deactivate S
+
+U -> S : apriDashboard()  <GET /business/dashboard>
+activate S
+S --> U : profilo aziendale + annunci vetrina
+deactivate S
+
+U -> S : salvaInfoBusiness(nomeAzienda, descrizione, emailAziendale, telefono, linkSocial, csrfToken)  <POST /business/info-store>
+activate S
+S --> U : informazioni vetrina aggiornate
+deactivate S
+
+U -> S : apriOrdini()  <GET /business/ordini>
+activate S
+S --> U : ordini ricevuti come venditore
+deactivate S
+
+note over U, S
+  Alternative: partita IVA/email aziendale gia usate, dati sede incompleti -> errore.
+  Operazione sede: salvaIndirizzo <POST /business/indirizzo-store>.
+end note
+@enduml

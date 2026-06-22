@@ -1,0 +1,12 @@
+{* Pagina errore 400: richiesta non valida. Mostra il messaggio di errore passato dal controller e un link per tornare alla home. *}
+{include file="layouts/header.tpl"}
+
+<section class="card">
+    <h1>Errore</h1>
+    <div class="alert alert-error">
+        {$errore|default:'Richiesta non valida.'}
+    </div>
+    <p><a class="btn" href="/home/index">Torna alla home</a></p>
+</section>
+
+{include file="layouts/footer.tpl"}

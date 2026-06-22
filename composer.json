@@ -1,0 +1,29 @@
+{
+    "name": "matte/web_app",
+    "license": "Apache-2.0",
+    "require": {
+        "php": ">=8.1",
+        "ext-fileinfo": "*",
+        "ext-pdo": "*",
+        "phpmailer/phpmailer": "^6.9",
+        "smarty/smarty": "^5.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        },
+        "files": [
+            "src/helpers/functions.php",
+            "src/middleware/auth.php",
+            "src/middleware/admin.php",
+            "src/middleware/business.php",
+            "src/middleware/guest.php"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Matteo",
+            "email": "80070764+ErVype@users.noreply.github.com"
+        }
+    ]
+}
