@@ -28,7 +28,7 @@ deactivate S
 
 U -> S : eliminaAnnuncio(idAnnuncio, csrfToken)  <POST /annuncio/delete>
 activate S
-S --> U : annuncio eliminato (DELETE) + redirect lista
+S --> U : annuncio eliminato/rimosso + redirect lista
 deactivate S
 
 note over U, S

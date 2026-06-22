@@ -51,10 +51,11 @@ WEB_APP/
 |   |-- nerdvault.sql
 |   `-- README.md
 |-- INFO/
-|   |-- categorie.txt
-|   |-- Struttura DB.txt
-|   |-- ToDo WEB_APP.txt
-|   `-- altri file di documentazione
+|   |-- Bozze UI/
+|   |-- ER/
+|   |-- SSD/
+|   |-- UML/
+|   `-- documenti PDF di progetto
 |-- assets/
 |-- .github/
 `-- README.md
@@ -75,7 +76,22 @@ WEB_APP/
 - `src/middleware/`: contiene i controlli di accesso per utenti autenticati, admin, business e guest.
 - `src/helpers/`: contiene funzioni comuni, come l'escape HTML.
 - `database/`: contiene lo schema SQL completo per creare il database.
-- `INFO/`: contiene documentazione, appunti, schema DB e materiali del progetto.
+- `INFO/`: contiene la documentazione di progetto consegnabile o consultabile durante la presentazione.
+
+## Documentazione in INFO
+
+La cartella `INFO/` raccoglie i materiali di analisi, progettazione e presentazione del progetto:
+
+- `INFO/Bozze UI/`: contiene le bozze PDF delle principali schermate dell'applicazione, come home, login, registrazione, profilo, carrello, checkout, wishlist, feedback e dashboard amministratore.
+- `INFO/ER/`: contiene lo schema Entity-Relationship del database, utile per spiegare modello concettuale, tabelle principali, relazioni e vincoli.
+- `INFO/SSD/`: contiene i System Sequence Diagram dei principali casi d'uso. I file `.puml` descrivono i singoli flussi, mentre `SSD_NerdVault.pdf` raccoglie la versione esportata.
+- `INFO/UML/`: contiene i diagrammi PlantUML dell'architettura generale, del layer Foundation/persistenza e del routing/controller.
+- `INFO/NerdVault_Architettura.pdf`: documento di supporto sull'architettura dell'applicazione.
+- `INFO/NerdVault_Use_Cases_Documentation_Coerente.pdf`: documento dei casi d'uso.
+- `INFO/presentazione_progetto_Minati_Calabrese_Scipioni(V2).pdf`: documento di presentazione del progetto.
+- `INFO/LICENSE`: licenza del materiale di progetto.
+
+Questi file non sono necessari per l'esecuzione dell'applicazione, ma servono per analizzare e presentare il lavoro svolto: casi d'uso, bozze interfaccia, schema ER, diagrammi UML, SSD e documentazione finale.
 
 ## Namespace e autoload
 

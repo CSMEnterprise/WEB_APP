@@ -1,7 +1,7 @@
 # System Sequence Diagram (SSD) - NerdVault
 
 Questi diagrammi descrivono, per ciascun caso d'uso del documento
-`NerdVault_Use_Cases_Documentation_Coerente.docx`, l'interazione tra l'attore
+`NerdVault_Use_Cases_Documentation_Coerente.pdf`, l'interazione tra l'attore
 (`User`) e il sistema visto come scatola nera (`System`), secondo la convenzione
 del corso:
 

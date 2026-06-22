@@ -23,10 +23,13 @@ deactivate S
 
 U -> S : confermaPagamento(idAnnuncio, idIndirizzo, paypalTransactionId, csrfToken)  <POST /pagamento/conferma>
 activate S
-S --> U : transazione: crea pagamento, marca annuncio venduto,\nrimuove da carrelli/wishlist + redirect esito
+S --> U : pagamento completato + annuncio venduto + redirect esito
 deactivate S
 
 note over U, S
+  Internamente il sistema usa una transazione:
+  crea il pagamento, marca l'annuncio come venduto
+  e rimuove l'annuncio da carrelli/wishlist.
   Variante carrello: checkout-carrello / paypal-carrello / conferma-carrello.
   Alternative: indirizzo non valido, annuncio non piu attivo -> pagamento non completato;
   nel carrello gli elementi non acquistabili vengono saltati/rimossi.
