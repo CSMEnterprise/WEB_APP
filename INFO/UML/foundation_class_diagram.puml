@@ -1,0 +1,159 @@
+@startuml foundation_class_diagram
+' Diagramma delle classi del layer Foundation (persistenza) - NerdVault
+title NerdVault - Class diagram del layer Foundation (persistenza)
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam ArrowColor #444444
+skinparam classAttributeIconSize 0
+skinparam class {
+  BorderColor #555555
+  BackgroundColor #F5F7FA
+  HeaderBackgroundColor #E3E8EF
+}
+skinparam note {
+  BorderColor #B8860B
+  BackgroundColor #FFF8DC
+}
+
+' ── Infrastruttura di persistenza ────────────────────────
+class FDataBase <<singleton>> {
+  - {static} instance : FDataBase
+  - db : PDO
+  + {static} init(pdo) : FDataBase
+  + {static} getInstance() : FDataBase
+  + table(foundationClass) : object
+  + transaction(callback)
+  + count(table, where) : int
+}
+
+class FPersistentManager <<facade>> {
+  + {static} store(entity) : int
+  + {static} load(field, value, class)
+  + {static} transaction(callback)
+  .. annunci / utenti / carrello ..
+  + {static} annuncioById(id) : EAnnuncio
+  + {static} searchAnnunci(...)
+  + {static} utenteById(id) : EUtenteRegistrato
+  + {static} confirmCartPayment(...)
+  + {static} createFeedback(...)
+  + {static} ... (un metodo per operazione)
+}
+
+abstract class FBaseTable {
+  # db : PDO
+  + find(id) : EBaseEntity
+  + all(orderBy) : EBaseEntity[]
+  + loadByField(field, value)
+  + existByField(field, value) : bool
+  + insert(source) : int
+  + updateById(id, source) : bool
+  + deleteById(id) : bool
+  # fetchEntity() / fetchEntities()
+  # hydrate(row) : EBaseEntity
+  # writableRow(source) : array
+  .. astratti ..
+  # {abstract} tableName() : string
+  # {abstract} primaryKey() : string
+  # {abstract} entityClass() : string
+  # {abstract} columns() : array
+}
+
+note right of FBaseTable
+  Ogni repository concreto dichiara
+  tabella, chiave primaria, entity e
+  colonne scrivibili; eredita il CRUD
+  generico e aggiunge query specifiche.
+end note
+
+' ── Repository concreti (una classe per tabella) ─────────
+class FAnnuncio {
+  tabella: annuncio
+  attivi() / search() / findWithDetails()
+}
+class FUtenteRegistrato {
+  tabella: utente_registrato
+  findByEmailForLogin() / createWithVerification()
+}
+class FAccountBusiness {
+  tabella: account_business
+}
+class FAdmin {
+  tabella: admin
+}
+class FCategoria {
+  tabella: categoria
+}
+class FImmagine {
+  tabella: immagine
+}
+class FIndirizzo {
+  tabella: indirizzo
+}
+class FCarrello {
+  tabella: carrello
+}
+class FElementoCarrello {
+  tabella: elemento_carrello
+}
+class FPreferito {
+  tabella: preferito
+}
+class FPagamento {
+  tabella: pagamento
+}
+class FFeedback {
+  tabella: feedback
+}
+class FSegnalazione {
+  tabella: segnalazione
+}
+class FModera {
+  tabella: modera
+}
+class FPasswordReset {
+  tabella: password_reset
+}
+
+' ── Entity ───────────────────────────────────────────────
+abstract class EBaseEntity {
+  # extra : array
+  + {abstract} toArray() : array
+  + {static} fromArray(row) : self
+  + jsonSerialize() : array
+}
+
+note bottom of EBaseEntity
+  Entity concrete: EAnnuncio, EUtenteRegistrato,
+  EAccountBusiness, EAdmin, ECategoria, EImmagine,
+  EIndirizzo, ECarrello, EElementoCarrello, EPreferito,
+  EPagamento, EFeedback, ESegnalazione, EModera,
+  EPasswordReset.
+end note
+
+' ── Relazioni ────────────────────────────────────────────
+FPersistentManager ..> FDataBase : getInstance()
+FPersistentManager ..> FBaseTable : delega operazioni
+FDataBase ..> FBaseTable : table() crea
+FBaseTable ..> EBaseEntity : hydrate()
+
+FBaseTable <|-- FAnnuncio
+FBaseTable <|-- FUtenteRegistrato
+FBaseTable <|-- FAccountBusiness
+FBaseTable <|-- FAdmin
+FBaseTable <|-- FCategoria
+FBaseTable <|-- FImmagine
+FBaseTable <|-- FIndirizzo
+FBaseTable <|-- FCarrello
+FBaseTable <|-- FElementoCarrello
+FBaseTable <|-- FPreferito
+FBaseTable <|-- FPagamento
+FBaseTable <|-- FFeedback
+FBaseTable <|-- FSegnalazione
+FBaseTable <|-- FModera
+FBaseTable <|-- FPasswordReset
+
+FAnnuncio --> FImmagine : usa
+
+@enduml
