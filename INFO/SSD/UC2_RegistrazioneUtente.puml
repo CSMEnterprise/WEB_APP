@@ -27,7 +27,11 @@ S --> U : esito verifica (account abilitato al login)
 deactivate S
 
 note over U, S
-  Alternative: email/username gia usati, password debole,
+  Vincoli (validati lato server): username 3-30 caratteri;
+  telefono obbligatorio (8-15 cifre, '+' iniziale ammesso); nome facoltativo;
+  password >= 10 caratteri con almeno una maiuscola e un carattere speciale;
+  token di verifica email valido 48h.
+  Alternative: email/username gia usati, password non conforme,
   token scaduto -> errore nel form / possibilita di reinvio
   (reinviaVerifica(email) <POST /auth/reinvia-verifica>)
 end note

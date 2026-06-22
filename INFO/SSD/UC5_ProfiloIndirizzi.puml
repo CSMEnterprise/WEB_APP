@@ -26,7 +26,12 @@ activate S
 S --> U : foto aggiornata + sessione sincronizzata
 deactivate S
 
-U -> S : salvaIndirizzo(via, numero, cap, citta, provincia, paese, csrfToken)  <POST /utente/indirizzo-store>
+U -> S : cambiaPassword(passwordAttuale, nuovaPassword, passwordConfirm, csrfToken)  <POST /utente/password>
+activate S
+S --> U : password aggiornata (verifica password attuale + regole robustezza)
+deactivate S
+
+U -> S : salvaIndirizzo(nome?, via, numero, cap, citta, provincia, paese, csrfToken)  <POST /utente/indirizzo-store>
 activate S
 S --> U : indirizzo salvato
 deactivate S
@@ -38,6 +43,9 @@ deactivate S
 
 note over U, S
   Operazioni analoghe: indirizzo-edit / indirizzo-update / indirizzo-delete.
+  Vincoli: nome profilo non vuoto, telefono 8-15 cifre; foto <= 3 MB JPG/PNG/WEBP;
+  indirizzo con via e citta obbligatorie (il primo diventa predefinito);
+  salvaIndirizzo aggiorna anche il nome utente se valorizzato.
   Alternative: nome vuoto/telefono non valido, foto formato o dimensione errati -> errore
 end note
 @enduml
