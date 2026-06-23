@@ -69,6 +69,9 @@
                 {else}
                     {assign var=sellerName value=$annuncio.venditore_username|default:'Venditore'}
                 {/if}
+                {assign var=sellerFeedbackCount value=$annuncio.venditore_feedback_count|default:0}
+                {assign var=sellerRating value=$annuncio.venditore_media_feedback|default:0}
+                {assign var=sellerRatingLabel value=$sellerRating|number_format:1:",":"."}
                 {assign var=isInCart value=$annuncioId|in_array:$carrelloIds}
                 <article class="wl-row">
                     <a class="wl-row-img" href="/annuncio/show/{$annuncioId}">
@@ -87,9 +90,13 @@
                         <div class="wl-row-seller">
                             <span>{$sellerName}</span>
                             {if !empty($annuncio.venditore_business_id)}<span class="nv-pro-badge">PRO</span>{/if}
-                            <span class="va-card-rating">
-                                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"></path></svg>
-                                4.8
+                            <span class="va-card-rating" aria-label="{if $sellerFeedbackCount > 0}Rating venditore {$sellerRatingLabel} su 5{else}Venditore senza recensioni{/if}">
+                                {if $sellerFeedbackCount > 0}
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"></path></svg>
+                                    {$sellerRatingLabel}
+                                {else}
+                                    Nuovo
+                                {/if}
                             </span>
                         </div>
                     </div>
