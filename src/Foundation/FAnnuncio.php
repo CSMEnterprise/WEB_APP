@@ -386,6 +386,8 @@ class FAnnuncio extends FBaseTable
                 COALESCE(a.`id_utente`, ab.`id_utente`) AS venditore_user_id,
                 ab.`id_acc_business` AS venditore_business_id,
                 ab.`nome_azienda` AS venditore_nome_azienda,
+                COALESCE(vf.`media_feedback`, 0) AS venditore_media_feedback,
+                COALESCE(vf.`numero_feedback`, 0) AS venditore_feedback_count,
                 (
                     SELECT i.`url`
                     FROM `immagine` i
@@ -398,6 +400,18 @@ class FAnnuncio extends FBaseTable
             LEFT JOIN `utente_registrato` u ON u.`id_utente` = a.`id_utente`
             LEFT JOIN `account_business` ab ON ab.`id_acc_business` = a.`id_business`
             LEFT JOIN `utente_registrato` bu ON bu.`id_utente` = ab.`id_utente`
+            LEFT JOIN (
+                SELECT
+                    COALESCE(fa.`id_utente`, fab.`id_utente`) AS venditore_id,
+                    AVG(f.`valutazione`) AS media_feedback,
+                    COUNT(f.`id_feedback`) AS numero_feedback
+                FROM `feedback` f
+                JOIN `pagamento` p ON p.`id_pagamento` = f.`id_pagamento`
+                JOIN `annuncio` fa ON fa.`id_annuncio` = p.`id_annuncio`
+                LEFT JOIN `account_business` fab ON fab.`id_acc_business` = fa.`id_business`
+                WHERE COALESCE(fa.`id_utente`, fab.`id_utente`) IS NOT NULL
+                GROUP BY COALESCE(fa.`id_utente`, fab.`id_utente`)
+            ) vf ON vf.`venditore_id` = COALESCE(a.`id_utente`, ab.`id_utente`)
         ";
     }
 
