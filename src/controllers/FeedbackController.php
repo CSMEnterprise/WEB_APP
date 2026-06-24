@@ -94,6 +94,18 @@ class FeedbackController extends BaseController
             throw new ServiceException('Pagamento obbligatorio.');
         }
 
+        // L'autore puo recensire solo i propri acquisti: il controllo va ripetuto
+        // anche qui (non solo nel form GET) per impedire feedback su pagamenti altrui.
+        $pagamento = FPersistentManager::pagamentoById($feedback->getIdPagamento());
+
+        if (!$pagamento || $pagamento->getIdAcquirente() !== $feedback->getIdAutore()) {
+            throw new ServiceException('Non puoi lasciare un feedback per questo pagamento.');
+        }
+
+        if (FPersistentManager::feedbackExists($feedback->getIdPagamento(), $feedback->getIdAutore())) {
+            throw new ServiceException('Hai gia lasciato un feedback per questo acquisto.');
+        }
+
         if ($feedback->getValutazione() < 1 || $feedback->getValutazione() > 5) {
             throw new ServiceException('La valutazione deve essere compresa tra 1 e 5.');
         }
