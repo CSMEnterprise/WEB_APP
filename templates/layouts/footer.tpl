@@ -101,6 +101,7 @@
 
 {* JS globale: toggle visibilità password, navigazione da click su qualsiasi .clickable-card (esclude click su link/button interni) *}
 <script>
+{literal}
 function togglePasswordVisibility(inputId, button) {
     const input = document.getElementById(inputId);
     if (!input) return;
@@ -112,6 +113,28 @@ function togglePasswordVisibility(inputId, button) {
         button.textContent = 'Mostra';
     }
 }
+
+document.querySelectorAll('.js-phone-field').forEach(function (field) {
+    const prefix = field.querySelector('[data-phone-prefix]');
+    const number = field.querySelector('[data-phone-number]');
+    if (!prefix || !number) return;
+
+    function syncPhoneLimit() {
+        const selected = prefix.options[prefix.selectedIndex];
+        const min = selected ? selected.dataset.min : number.getAttribute('minlength');
+        const max = selected ? selected.dataset.max : number.getAttribute('maxlength');
+
+        number.setAttribute('minlength', min);
+        number.setAttribute('maxlength', max);
+        number.setAttribute('pattern', '[0-9]{' + min + ',' + max + '}');
+        number.placeholder = min === max ? max + ' cifre' : min + '-' + max + ' cifre';
+        number.value = number.value.replace(/\D/g, '').slice(0, Number(max));
+    }
+
+    prefix.addEventListener('change', syncPhoneLimit);
+    number.addEventListener('input', syncPhoneLimit);
+    syncPhoneLimit();
+});
 
 document.addEventListener('click', function (event) {
     const card = event.target.closest('.clickable-card[data-href]');
@@ -125,6 +148,7 @@ document.addEventListener('keydown', function (event) {
     event.preventDefault();
     window.location.href = card.dataset.href;
 });
+{/literal}
 </script>
 
 </body>

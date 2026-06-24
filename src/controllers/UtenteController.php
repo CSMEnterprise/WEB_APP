@@ -25,6 +25,24 @@ class UtenteController extends BaseController
     private string $lastRegistrationToken = '';
     private string $lastRegistrationEmail = '';
     private string $lastRegistrationNome = '';
+    private const PHONE_COUNTRY_RULES = [
+        'IT' => ['label' => 'Italia', 'prefix' => '+39', 'min' => 6, 'max' => 10],
+        'FR' => ['label' => 'Francia', 'prefix' => '+33', 'min' => 9, 'max' => 9],
+        'DE' => ['label' => 'Germania', 'prefix' => '+49', 'min' => 5, 'max' => 11],
+        'ES' => ['label' => 'Spagna', 'prefix' => '+34', 'min' => 9, 'max' => 9],
+        'GB' => ['label' => 'Regno Unito', 'prefix' => '+44', 'min' => 7, 'max' => 10],
+        'US' => ['label' => 'Stati Uniti', 'prefix' => '+1', 'min' => 10, 'max' => 10],
+        'CA' => ['label' => 'Canada', 'prefix' => '+1', 'min' => 10, 'max' => 10],
+        'CH' => ['label' => 'Svizzera', 'prefix' => '+41', 'min' => 9, 'max' => 9],
+        'AT' => ['label' => 'Austria', 'prefix' => '+43', 'min' => 4, 'max' => 13],
+        'BE' => ['label' => 'Belgio', 'prefix' => '+32', 'min' => 8, 'max' => 9],
+        'NL' => ['label' => 'Paesi Bassi', 'prefix' => '+31', 'min' => 9, 'max' => 9],
+        'PT' => ['label' => 'Portogallo', 'prefix' => '+351', 'min' => 9, 'max' => 9],
+        'PL' => ['label' => 'Polonia', 'prefix' => '+48', 'min' => 9, 'max' => 9],
+        'RO' => ['label' => 'Romania', 'prefix' => '+40', 'min' => 9, 'max' => 9],
+        'AL' => ['label' => 'Albania', 'prefix' => '+355', 'min' => 8, 'max' => 9],
+        'BR' => ['label' => 'Brasile', 'prefix' => '+55', 'min' => 10, 'max' => 11],
+    ];
 
     public function loginFormOrSubmit(array $data = []): void
     {
@@ -581,7 +599,7 @@ class UtenteController extends BaseController
         $password = (string) ($data['password'] ?? '');
         $passwordConfirm = (string) ($data['password_confirm'] ?? '');
         $nome = $this->clean($data['nome'] ?? '');
-        $telefono = $this->clean($data['telefono'] ?? '');
+        $telefono = $this->normalizeRegistrationPhone($data, !$isBusinessRegistration);
 
         if ($isBusinessRegistration) {
             if ($username === '' || $email === '' || $password === '') {
@@ -597,10 +615,6 @@ class UtenteController extends BaseController
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new ServiceException('Email non valida.');
-        }
-
-        if (!$isBusinessRegistration && !preg_match('/^\+?[0-9 ]{8,15}$/', $telefono)) {
-            throw new ServiceException('Il telefono deve contenere 8-15 cifre e puo iniziare con +.');
         }
 
         $this->validatePasswordPair($password, $passwordConfirm);
@@ -647,7 +661,7 @@ class UtenteController extends BaseController
         $nomeAzienda = $this->clean($data['nome_azienda'] ?? '');
         $pIva = $this->clean($data['p_iva'] ?? $data['partita_iva'] ?? '');
         $emailAziendale = $this->clean($data['email_aziendale'] ?? '');
-        $telefono = $this->clean($data['telefono'] ?? '');
+        $telefono = $this->normalizeRegistrationPhone($data, true);
         $via = $this->clean($data['via'] ?? '');
         $numero = $this->clean($data['numero'] ?? '');
         $cap = $this->clean($data['cap'] ?? '');
@@ -827,6 +841,60 @@ class UtenteController extends BaseController
     }
 
     /**
+     * Normalizza il telefono inserito in registrazione in formato internazionale senza spazi.
+     */
+    private function normalizeRegistrationPhone(array $data, bool $required): string
+    {
+        $hasSplitPhone = array_key_exists('telefono_paese', $data) || array_key_exists('telefono_numero', $data);
+
+        if ($hasSplitPhone) {
+            $country = strtoupper($this->clean($data['telefono_paese'] ?? ''));
+
+            if (!isset(self::PHONE_COUNTRY_RULES[$country])) {
+                throw new ServiceException('Seleziona un paese valido per il telefono.');
+            }
+
+            $rule = self::PHONE_COUNTRY_RULES[$country];
+            $digits = preg_replace('/\D+/', '', (string) ($data['telefono_numero'] ?? ''));
+
+            if ($digits === '') {
+                if ($required) {
+                    throw new ServiceException('Il telefono e obbligatorio.');
+                }
+
+                return '';
+            }
+
+            $length = strlen($digits);
+            $min = (int) $rule['min'];
+            $max = (int) $rule['max'];
+
+            if ($length < $min || $length > $max) {
+                $range = $min === $max ? 'esattamente ' . $max . ' cifre' : $min . '-' . $max . ' cifre';
+                throw new ServiceException('Il numero per ' . $rule['label'] . ' deve contenere ' . $range . '.');
+            }
+
+            return $rule['prefix'] . $digits;
+        }
+
+        $telefono = preg_replace('/[\s.-]+/', '', $this->clean($data['telefono'] ?? ''));
+
+        if ($telefono === '') {
+            if ($required) {
+                throw new ServiceException('Il telefono e obbligatorio.');
+            }
+
+            return '';
+        }
+
+        if (!preg_match('/^\+[1-9][0-9]{7,14}$/', $telefono)) {
+            throw new ServiceException('Il telefono deve includere il prefisso internazionale e restare entro 15 cifre totali.');
+        }
+
+        return $telefono;
+    }
+
+    /**
      * Valida campi specifici della registrazione business.
      */
     private function validateBusinessRegistration(
@@ -854,8 +922,8 @@ class UtenteController extends BaseController
             throw new ServiceException('Email aziendale non valida.');
         }
 
-        if ($telefono !== '' && !preg_match('/^\+?[0-9 ]{8,15}$/', $telefono)) {
-            throw new ServiceException('Il telefono deve contenere 8-15 cifre e puo iniziare con +.');
+        if ($telefono !== '' && !preg_match('/^\+[1-9][0-9]{7,14}$/', $telefono)) {
+            throw new ServiceException('Il telefono deve includere il prefisso internazionale e restare entro 15 cifre totali.');
         }
 
         if ($cap !== '' && !preg_match('/^[0-9]{5}$/', $cap)) {
