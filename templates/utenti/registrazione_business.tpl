@@ -40,7 +40,7 @@
                         </div>
                         <div class="pg-field">
                             <label class="pg-label" for="telefono">Telefono</label>
-                            <input class="pg-input" type="text" id="telefono" name="telefono" value="{$post.telefono|default:''}" placeholder="+39 ..." pattern="\+?[0-9 ]{literal}{8,15}{/literal}" required>
+                            {include file="components/phone_field.tpl"}
                         </div>
                     </div>
                 </div>
