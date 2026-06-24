@@ -95,7 +95,7 @@ class FeedbackController extends BaseController
         }
 
         // L'autore puo recensire solo i propri acquisti: il controllo va ripetuto
-        // anche qui (non solo nel form GET) per impedire feedback su pagamenti altrui.
+        // anche qui per impedire feedback su pagamenti altrui.
         $pagamento = FPersistentManager::pagamentoById($feedback->getIdPagamento());
 
         if (!$pagamento || $pagamento->getIdAcquirente() !== $feedback->getIdAutore()) {
