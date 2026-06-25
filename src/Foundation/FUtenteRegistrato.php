@@ -100,6 +100,22 @@ class FUtenteRegistrato extends FBaseTable
         return $entity instanceof EUtenteRegistrato ? $entity : null;
     }
 
+    /**
+     * Elimina eventuali registrazioni rimaste in sospeso (email mai verificata)
+     * che occupano la stessa email o username. Serve a permettere di ritentare
+     * la registrazione con gli stessi dati quando un tentativo precedente non e
+     * stato completato (es. mail di verifica non arrivata). Gli account gia
+     * verificati non vengono mai toccati. La cancellazione propaga in cascata
+     * agli eventuali dati business collegati (ON DELETE CASCADE).
+     */
+    public function deleteUnverifiedConflicts(string $email, string $username): int
+    {
+        return $this->execute("
+            DELETE FROM `utente_registrato`
+            WHERE `email_verificata` = 0 AND (`email` = ? OR `username` = ?)
+        ", [$email, $username]);
+    }
+
     public function findByVerificationToken(string $token): ?EUtenteRegistrato
     {
         $entity = $this->fetchEntity("
