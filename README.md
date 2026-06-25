@@ -155,14 +155,28 @@ Installare le dipendenze Composer:
 composer install
 ```
 
-### 2. Usare il branch di sviluppo
+### 2. Scegliere il branch corretto
 
-Il branch di lavoro del progetto e' `develop`:
+Il progetto usa due branch principali, con scopi diversi:
+
+- `main`: branch stabile, consigliato per chi vuole solo scaricare il progetto e usare l'app in locale.
+- `develop`: branch di sviluppo, da usare quando si vogliono fare modifiche al codice, correggere bug o aggiungere funzionalita.
+
+Se vuoi solo avviare l'applicazione in locale, resta su `main` e aggiornalo:
+
+```bash
+git checkout main
+git pull origin main
+```
+
+Se invece devi lavorare sul progetto o modificare file, usa `develop`:
 
 ```bash
 git checkout develop
 git pull origin develop
 ```
+
+In questo modo `main` rimane il riferimento piu stabile per l'utilizzo locale, mentre `develop` raccoglie le modifiche in lavorazione.
 
 ### 3. Importare il database
 
@@ -494,6 +508,8 @@ Se l'applicazione e dietro un proxy HTTPS che non espone direttamente HTTPS a
 PHP, impostare `SESSION_COOKIE_SECURE=1` nell'ambiente di produzione.
 
 ## Workflow Git consigliato
+
+Per lavorare sul codice usare sempre il branch `develop`:
 
 ```bash
 git checkout develop
