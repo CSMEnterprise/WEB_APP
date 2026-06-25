@@ -18,6 +18,14 @@
             <p class="muted u-style-133">Clicca il link nell'email per attivare il tuo account. Il link scadra tra <strong class="u-style-132">48 ore</strong>.</p>
         {/if}
 
+        {if !empty($debugLink)}
+            <div class="u-style-085">
+                <p class="u-style-086">Modalita debug - Link di verifica</p>
+                <p class="u-style-087">L'email non viene inviata in modalita debug. Clicca direttamente il link qui sotto:</p>
+                <a class="u-debug-link" href="{$debugLink}">{$debugLink}</a>
+            </div>
+        {/if}
+
         <details class="u-style-135">
             <summary class="u-style-136">Non hai ricevuto l'email?</summary>
             <form class="u-style-137" method="post" action="/auth/reinvia-verifica">

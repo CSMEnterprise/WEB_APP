@@ -426,7 +426,8 @@ class UtenteController extends BaseController
     {
         $email = Request::get('email', '');
         $errore = $this->consumeVerificationMailError();
-        $this->view('utenti/verifica_email_attesa.tpl', compact('email', 'errore'), 'Verifica email');
+        $debugLink = $this->consumeDebugMailLink('verifica');
+        $this->view('utenti/verifica_email_attesa.tpl', compact('email', 'errore', 'debugLink'), 'Verifica email');
     }
 
     /**
@@ -462,7 +463,8 @@ class UtenteController extends BaseController
             $errore = $e->getMessage();
         }
         $email = $data['email'] ?? '';
-        $this->view('utenti/verifica_email_attesa.tpl', compact('email', 'successo', 'errore'), 'Verifica email');
+        $debugLink = $this->consumeDebugMailLink('verifica');
+        $this->view('utenti/verifica_email_attesa.tpl', compact('email', 'successo', 'errore', 'debugLink'), 'Verifica email');
     }
 
     // ----------------------------------------------------------------
