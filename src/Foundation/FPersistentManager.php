@@ -255,6 +255,15 @@ class FPersistentManager
         return self::utenti()->findUnverifiedByEmail($email);
     }
 
+    /**
+     * Libera email/username occupati da registrazioni mai verificate, così
+     * l'utente puo ritentare con gli stessi dati. Non tocca gli account verificati.
+     */
+    public static function purgeUnverifiedRegistration(string $email, string $username): int
+    {
+        return self::utenti()->deleteUnverifiedConflicts($email, $username);
+    }
+
     public static function utenteByVerificationToken(string $token): ?EUtenteRegistrato
     {
         return self::utenti()->findByVerificationToken($token);

@@ -622,15 +622,31 @@ class UtenteController extends BaseController
         $token = bin2hex(random_bytes(32));
         $scadenza = date('Y-m-d H:i:s', strtotime('+48 hours'));
         try {
-            $idUtente = FPersistentManager::createUtenteWithVerification(
+            // Purge dei tentativi mai verificati + insert in un'unica transazione:
+            // se l'insert fallisce non resta nessuna riga sporca nel DB, e i dati
+            // di una registrazione precedente non confermata possono essere riusati.
+            $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+            $idUtente = FPersistentManager::transaction(static function () use (
                 $email,
                 $username,
-                password_hash($password, PASSWORD_DEFAULT),
-                $nome !== '' ? $nome : null,
-                $telefono !== '' ? $telefono : null,
+                $passwordHash,
+                $nome,
+                $telefono,
                 $token,
                 $scadenza
-            );
+            ): int {
+                FPersistentManager::purgeUnverifiedRegistration($email, $username);
+
+                return FPersistentManager::createUtenteWithVerification(
+                    $email,
+                    $username,
+                    $passwordHash,
+                    $nome !== '' ? $nome : null,
+                    $telefono !== '' ? $telefono : null,
+                    $token,
+                    $scadenza
+                );
+            });
         } catch (PDOException $e) {
             $msg = $e->getMessage();
 
