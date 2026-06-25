@@ -28,6 +28,7 @@
                     <div class="pg-field">
                         <label class="pg-label" for="username">Username</label>
                         <input class="pg-input" type="text" id="username" name="username" value="{$post.username|default:''}" placeholder="es. marcocollector" pattern="(?=.*[A-Za-z])[A-Za-z0-9]{literal}{3,30}{/literal}" minlength="3" maxlength="30" title="Usa 3-30 caratteri, solo lettere e numeri, con almeno una lettera." required>
+                        <p class="pg-field-hint">Usa 3-30 caratteri: solo lettere e numeri. Deve contenere almeno una lettera, quindi non puo essere solo numerico.</p>
                     </div>
                     <div class="pg-field">
                         <label class="pg-label" for="email">Email</label>
@@ -39,6 +40,7 @@
                     <div class="pg-field">
                         <label class="pg-label" for="nome">Nome completo</label>
                         <input class="pg-input" type="text" id="nome" name="nome" value="{$post.nome|default:''}" placeholder="Nome e cognome" pattern="[A-Za-z ]{literal}{2,50}{/literal}" minlength="2" maxlength="50" title="Usa solo lettere e spazi, senza numeri o caratteri speciali.">
+                        <p class="pg-field-hint">Inserisci solo lettere e spazi. Non usare numeri, simboli o caratteri speciali.</p>
                     </div>
                     <div class="pg-field">
                         <label class="pg-label" for="telefono">Telefono</label>
