@@ -179,14 +179,13 @@ class UtenteController extends BaseController
                 $data['email'] = $data['email_aziendale'] ?? '';
 
                 // Genera uno username univoco dal nome azienda
-                $base = preg_replace('/[^A-Za-z0-9]/', '_', $data['nome_azienda'] ?? 'business');
+                $base = preg_replace('/[^A-Za-z0-9]/', '', $data['nome_azienda'] ?? 'business');
                 $base = strtolower(trim($base, '_'));
-                $base = preg_replace('/_+/', '_', $base);
-                $base = substr($base, 0, 26);
-                if (strlen($base) < 3) {
-                    $base = 'biz_' . $base;
+                $base = substr($base, 0, 24);
+                if (strlen($base) < 3 || !preg_match('/[A-Za-z]/', $base)) {
+                    $base = 'business';
                 }
-                $data['username'] = $base . '_' . substr(bin2hex(random_bytes(2)), 0, 4);
+                $data['username'] = $base . substr(bin2hex(random_bytes(3)), 0, 6);
 
                 $data['_business_registration'] = true;
                 $idUtente = $this->registerUser($data);
@@ -611,8 +610,10 @@ class UtenteController extends BaseController
             throw new ServiceException('Username, email, password e telefono sono obbligatori.');
         }
 
-        if (!preg_match('/^[A-Za-z0-9_.-]{3,30}$/', $username)) {
-            throw new ServiceException('Lo username deve contenere 3-30 caratteri e puo usare lettere, numeri, punto, trattino e underscore.');
+        $this->validateUsername($username);
+
+        if ($nome !== '') {
+            $this->validatePersonName($nome);
         }
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -858,6 +859,20 @@ class UtenteController extends BaseController
         }
     }
 
+    private function validateUsername(string $username): void
+    {
+        if (!preg_match('/^(?=.*[A-Za-z])[A-Za-z0-9]{3,30}$/', $username)) {
+            throw new ServiceException('Lo username deve contenere 3-30 caratteri, solo lettere e numeri, e almeno una lettera.');
+        }
+    }
+
+    private function validatePersonName(string $nome): void
+    {
+        if (!preg_match('/^[\p{L} ]{2,50}$/u', $nome)) {
+            throw new ServiceException('Il nome completo deve contenere solo lettere e spazi, senza numeri o caratteri speciali.');
+        }
+    }
+
     /**
      * Normalizza il telefono inserito in registrazione in formato internazionale senza spazi.
      */
@@ -928,8 +943,8 @@ class UtenteController extends BaseController
             throw new ServiceException('Nome azienda, partita IVA ed email aziendale sono obbligatori.');
         }
 
-        if (!preg_match('/^[\p{L}0-9 .&\'-]{2,80}$/u', $nomeAzienda)) {
-            throw new ServiceException('Il nome azienda deve contenere 2-80 caratteri validi.');
+        if (!preg_match('/^(?=.*\p{L})[\p{L}0-9 .\'-]{2,80}$/u', $nomeAzienda)) {
+            throw new ServiceException('Il nome azienda deve contenere 2-80 caratteri, almeno una lettera e solo lettere, numeri, spazi, punto, apostrofo o trattino.');
         }
 
         if (!preg_match('/^[0-9]{11}$/', $pIva)) {

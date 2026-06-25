@@ -30,7 +30,7 @@
                     <h3 class="au-form-section-title">Profilo business</h3>
                     <div class="pg-field">
                         <label class="pg-label" for="nome_azienda">Nome azienda</label>
-                        <input class="pg-input" type="text" id="nome_azienda" name="nome_azienda" value="{$post.nome_azienda|default:''}" placeholder="es. MangaVault srl" minlength="2" maxlength="80" required>
+                        <input class="pg-input" type="text" id="nome_azienda" name="nome_azienda" value="{$post.nome_azienda|default:''}" placeholder="es. MangaVault srl" pattern="(?=.*[A-Za-z])[A-Za-z0-9 .'-]{literal}{2,80}{/literal}" minlength="2" maxlength="80" title="Usa 2-80 caratteri, almeno una lettera, e solo lettere, numeri, spazi, punto, apostrofo o trattino." required>
                     </div>
 
                     <div class="pg-field-row">
