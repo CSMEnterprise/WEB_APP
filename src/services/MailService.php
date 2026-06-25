@@ -61,6 +61,11 @@ class MailService
     {
         $link = $this->buildUrl('/auth/verifica-email/' . urlencode($token));
 
+        if (!empty($this->config['debug'])) {
+            $this->debugSalva('verifica', $link, $destinatario);
+            return;
+        }
+
         $mail = $this->crea();
         $mail->addAddress($destinatario, $nome ?: $destinatario);
         $mail->isHTML(true);

@@ -155,14 +155,28 @@ Installare le dipendenze Composer:
 composer install
 ```
 
-### 2. Usare il branch di sviluppo
+### 2. Scegliere il branch corretto
 
-Il branch di lavoro del progetto e' `develop`:
+Il progetto usa due branch principali, con scopi diversi:
+
+- `main`: branch stabile, consigliato per chi vuole solo scaricare il progetto e usare l'app in locale.
+- `develop`: branch di sviluppo, da usare quando si vogliono fare modifiche al codice, correggere bug o aggiungere funzionalita.
+
+Se vuoi solo avviare l'applicazione in locale, resta su `main` e aggiornalo:
+
+```bash
+git checkout main
+git pull origin main
+```
+
+Se invece devi lavorare sul progetto o modificare file, usa `develop`:
 
 ```bash
 git checkout develop
 git pull origin develop
 ```
+
+In questo modo `main` rimane il riferimento piu stabile per l'utilizzo locale, mentre `develop` raccoglie le modifiche in lavorazione.
 
 ### 3. Importare il database
 
@@ -237,10 +251,97 @@ Se `src/config/mail.php` manca, crearlo una sola volta partendo dal template:
 Copy-Item src/config/mail.example.php src/config/mail.php
 ```
 
-Il template parte con debug email attivo, quindi non richiede credenziali SMTP:
-i link di verifica e reset vengono mostrati nell'app. Per usare Mailtrap impostare
-`MAIL_DEBUG=0` e configurare le variabili `MAIL_HOST`, `MAIL_PORT`,
-`MAIL_USERNAME` e `MAIL_PASSWORD`.
+Il progetto supporta due modalita di uso delle email:
+
+- **Modalita debug**, consigliata per lavorare in locale senza configurare un servizio SMTP.
+- **Modalita SMTP/Mailtrap**, utile per provare l'invio reale delle email in un inbox di test.
+
+#### Modalita debug, senza Mailtrap
+
+Questa e la modalita piu semplice per chi scarica il progetto e vuole provarlo in locale.
+Non serve creare un account Mailtrap e non vengono inviate email reali.
+
+Nel file `src/config/mail.php` lasciare `debug` attivo:
+
+```php
+'debug' => true,
+```
+
+oppure, se si usano variabili di ambiente:
+
+```text
+MAIL_DEBUG=1
+```
+
+Con questa configurazione, quando l'app genera un'email di verifica account o di recupero password,
+il link viene mostrato direttamente nella pagina del sito. Basta cliccarlo dal browser per completare
+la verifica o il reset.
+
+Controllare anche `base_url`, perche viene usato per costruire i link:
+
+```php
+'base_url' => 'http://nerdvault.local',
+```
+
+Se non si usa il virtual host `nerdvault.local` e si apre il progetto con l'URL standard di XAMPP,
+impostare invece:
+
+```php
+'base_url' => 'http://localhost/WEB_APP/public',
+```
+
+#### Modalita SMTP/Mailtrap
+
+Usare questa modalita quando si vuole testare l'invio reale delle email.
+In questo caso serve un inbox Mailtrap, o un altro servizio SMTP compatibile.
+
+Nel file `src/config/mail.php` impostare `debug` a `false`:
+
+```php
+'debug' => false,
+```
+
+oppure, se si usano variabili di ambiente:
+
+```text
+MAIL_DEBUG=0
+```
+
+Poi inserire i dati SMTP forniti da Mailtrap:
+
+```php
+'host' => 'sandbox.smtp.mailtrap.io',
+'port' => 2525,
+'encryption' => 'tls',
+'username' => 'USERNAME_MAILTRAP',
+'password' => 'PASSWORD_MAILTRAP',
+'from' => 'no-reply@nerdvault.local',
+'from_name' => 'NerdVault',
+```
+
+Gli stessi valori possono essere configurati anche tramite variabili di ambiente:
+
+```text
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_ENCRYPTION=tls
+MAIL_USERNAME=USERNAME_MAILTRAP
+MAIL_PASSWORD=PASSWORD_MAILTRAP
+MAIL_FROM=no-reply@nerdvault.local
+MAIL_FROM_NAME=NerdVault
+```
+
+Per tornare dalla modalita Mailtrap alla modalita debug, basta rimettere:
+
+```php
+'debug' => true,
+```
+
+oppure:
+
+```text
+MAIL_DEBUG=1
+```
 
 ### 6. Configurare Apache
 
@@ -407,6 +508,8 @@ Se l'applicazione e dietro un proxy HTTPS che non espone direttamente HTTPS a
 PHP, impostare `SESSION_COOKIE_SECURE=1` nell'ambiente di produzione.
 
 ## Workflow Git consigliato
+
+Per lavorare sul codice usare sempre il branch `develop`:
 
 ```bash
 git checkout develop
