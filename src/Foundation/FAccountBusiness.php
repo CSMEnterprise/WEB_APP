@@ -38,8 +38,9 @@ class FAccountBusiness extends FBaseTable
     {
         // Carica il business insieme alla sede predefinita per la pagina profilo.
         $entity = $this->fetchEntity("
-            SELECT ab.*, i.`via`, i.`numero`, i.`cap`, i.`citta`, i.`provincia`, i.`paese`
+            SELECT ab.*, u.`propic`, i.`via`, i.`numero`, i.`cap`, i.`citta`, i.`provincia`, i.`paese`
             FROM `account_business` ab
+            JOIN `utente_registrato` u ON u.`id_utente` = ab.`id_utente`
             LEFT JOIN `indirizzi` i ON i.`id_business` = ab.`id_acc_business` AND i.`predefinito` = 1
             WHERE ab.`id_utente` = ?
             LIMIT 1

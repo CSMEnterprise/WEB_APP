@@ -108,11 +108,16 @@ class SmartyView
         $userId      = (int) SessionManager::get('user_id', 0);
         $businessId  = (int) SessionManager::get('business_id', 0);
         $livello     = (int) SessionManager::get('livello_sicurezza', 1);
+        $displayUsername = (string) SessionManager::get('username', '');
 
-        if ($isLogged && !$isAdmin && $isBusiness && $businessId <= 0) {
+        if ($isLogged && !$isAdmin && $isBusiness) {
             try {
                 $business = FPersistentManager::businessByUser($userId);
                 $businessId = $business ? (int) $business->getIdAccBusiness() : 0;
+                if ($business && $business->getNomeAzienda() !== '') {
+                    $displayUsername = $business->getNomeAzienda();
+                    SessionManager::set('username', $displayUsername);
+                }
                 SessionManager::set('business_id', $businessId);
             } catch (\Throwable $ignored) {
                 $businessId = 0;
@@ -124,7 +129,7 @@ class SmartyView
         $this->smarty->assign('isBusiness',       $isBusiness);
         $this->smarty->assign('userId',           $userId);
         $this->smarty->assign('businessId',       $businessId);
-        $this->smarty->assign('username',         (string) SessionManager::get('username', ''));
+        $this->smarty->assign('username',         $displayUsername);
         $this->smarty->assign('propic',           $this->normalizer->publicPath((string) SessionManager::get('propic', '')));
         $this->smarty->assign('livelloSicurezza', $livello);
 

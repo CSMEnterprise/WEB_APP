@@ -53,7 +53,7 @@ class ViewDataNormalizer
                 continue;
             }
 
-            if (in_array($key, ['url', 'propic', 'immagine_principale'], true)) {
+            if (in_array($key, ['url', 'propic', 'venditore_propic', 'logo', 'immagine_principale'], true)) {
                 $data[$key] = $this->publicPath($value);
             }
         }

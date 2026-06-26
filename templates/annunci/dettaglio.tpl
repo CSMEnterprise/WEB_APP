@@ -17,6 +17,7 @@
     {else}
         {assign var=sellerName value=$annuncio.venditore_username|default:'Venditore'}
     {/if}
+    {assign var=sellerPropic value=$annuncio.venditore_propic|default:''}
 
     <nav class="pg-breadcrumb">
         <a href="/home/index">Home</a>
@@ -158,7 +159,13 @@
 
             <div class="dt-seller">
                 <div class="dt-seller-head">
-                    <span class="dt-seller-av" aria-hidden="true">{$sellerName|substr:0:1|strtoupper}</span>
+                    <span class="dt-seller-av" aria-hidden="true">
+                        {if !empty($sellerPropic)}
+                            <img class="seller-avatar-img" src="{$sellerPropic}" alt="">
+                        {else}
+                            {$sellerName|substr:0:1|strtoupper}
+                        {/if}
+                    </span>
                     <div class="dt-seller-body">
                         <a href="/utente/venditore/{$annuncioOwner}" class="dt-seller-name">
                             {$sellerName}

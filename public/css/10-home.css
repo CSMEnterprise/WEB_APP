@@ -485,6 +485,7 @@
     font-size: 10px;
     font-weight: 800;
     flex: 0 0 18px;
+    overflow: hidden;
 }
 
 .va-card-seller-name {

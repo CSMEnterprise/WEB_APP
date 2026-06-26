@@ -13,6 +13,7 @@
 {if !empty($business)}
     {assign var=businessName value=$business.nome_azienda|default:'NerdVault Store'}
     {assign var=isPublicVetrina value=$isPublicVetrina|default:false}
+    {assign var=openInfoForm value=$openInfoForm|default:false}
     {assign var=annunciTotali value=$annunci|default:[]|count}
     {assign var=annunciAttivi value=0}
     {assign var=annunciVenduti value=0}
@@ -29,17 +30,21 @@
     <section class="bs-banner" aria-label="Vetrina venditore">
         <div class="bs-cover"></div>
         <div class="bs-header">
-            <div class="bs-avatar" aria-hidden="true">{$businessName|truncate:1:"":true|upper}</div>
+            <div class="bs-avatar" aria-hidden="true">
+                {if !empty($business.logo)}
+                    <img class="bs-avatar-img" src="{$business.logo}" alt="">
+                {elseif !empty($business.propic)}
+                    <img class="bs-avatar-img" src="{$business.propic}" alt="">
+                {else}
+                    {$businessName|truncate:1:"":true|upper}
+                {/if}
+            </div>
             <div class="bs-headinfo">
                 <div class="bs-headtop">
                     <h1>{$businessName}</h1>
                     <span class="nv-pro-badge">PRO</span>
                 </div>
                 <p class="bs-handle">{$business.email_aziendale|default:'vetrina@nerdvault.local'}</p>
-                <div class="bs-rating" aria-label="Valutazione venditore">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"></path></svg>
-                    4.9 <span>Feedback verificati</span>
-                </div>
             </div>
             <div class="bs-actions">
                 {if $isPublicVetrina}
@@ -112,7 +117,6 @@
                 <div class="bs-badges">
                     <span>Pagamenti protetti</span>
                     <span>Ordini tracciati</span>
-                    <span>Feedback verificati</span>
                     <span>Catalogo curato</span>
                 </div>
             </section>
@@ -120,16 +124,16 @@
 
         <main class="bs-main">
             <div class="pg-tabs bs-tabs" role="tablist" aria-label="Sezioni vetrina">
-                <button class="pg-tab is-active" type="button" role="tab" aria-selected="true" data-bs-tab="annunci">
+                <button class="pg-tab{if !$openInfoForm} is-active{/if}" type="button" role="tab" aria-selected="{if $openInfoForm}false{else}true{/if}" data-bs-tab="annunci">
                     Annunci <span class="pg-tab-count">{$annunciTotali}</span>
                 </button>
-                <button class="pg-tab" type="button" role="tab" aria-selected="false" data-bs-tab="info">Info vetrina</button>
+                <button class="pg-tab{if $openInfoForm} is-active{/if}" type="button" role="tab" aria-selected="{if $openInfoForm}true{else}false{/if}" data-bs-tab="info">Info vetrina</button>
                 {if !$isPublicVetrina}
                     <button class="pg-tab" type="button" role="tab" aria-selected="false" data-bs-tab="sede">Sede</button>
                 {/if}
             </div>
 
-            <section class="bs-panel is-active" id="vetrina-annunci" data-bs-panel="annunci">
+            <section class="bs-panel{if !$openInfoForm} is-active{/if}" id="vetrina-annunci" data-bs-panel="annunci"{if $openInfoForm} hidden{/if}>
                 <div class="bs-toolbar">
                     <div class="or-filters" aria-label="Filtra annunci per stato">
                         <button class="or-filter is-on" type="button" data-bs-filter="tutti">Tutti <span class="or-filter-count">{$annunciTotali}</span></button>
@@ -178,7 +182,7 @@
                 {/if}
             </section>
 
-            <section class="bs-panel" data-bs-panel="info" hidden>
+            <section class="bs-panel{if $openInfoForm} is-active{/if}" data-bs-panel="info"{if !$openInfoForm} hidden{/if}>
                 <div class="pg-card">
                     <div class="bs-info-head">
                         <div>
@@ -212,12 +216,13 @@
                     </div>
 
                     {if !$isPublicVetrina}
-                        <form class="bs-info-form" method="post" action="/business/info-store" data-bs-info-form hidden>
+                        <form class="bs-info-form" method="post" action="/business/info-store" data-bs-info-form{if !$openInfoForm} hidden{/if}>
                             <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
                             <div class="pg-field-row">
                                 <div class="pg-field">
                                     <label class="pg-label" for="nome_azienda">Nome vetrina</label>
-                                    <input class="pg-input" type="text" id="nome_azienda" name="nome_azienda" value="{$business.nome_azienda|default:''}" minlength="2" maxlength="80" required>
+                                    <input class="pg-input" type="text" id="nome_azienda" name="nome_azienda" value="{$business.nome_azienda|default:''}" pattern="(?=.*[A-Za-zÀ-ÖØ-öø-ÿ])[A-Za-zÀ-ÖØ-öø-ÿ0-9 .'-]{literal}{2,80}{/literal}" minlength="2" maxlength="80" title="Usa 2-80 caratteri, almeno una lettera, e solo lettere, numeri, spazi, punto, apostrofo o trattino." required>
+                                    <p class="pg-field-hint">Gli spazi sono ammessi. Usa almeno una lettera; sono ammessi anche numeri, lettere accentate, punto, apostrofo e trattino.</p>
                                 </div>
                                 <div class="pg-field">
                                     <label class="pg-label" for="email_aziendale">Email aziendale</label>

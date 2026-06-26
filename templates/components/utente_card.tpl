@@ -1,4 +1,10 @@
-{* Componente card utente: mostra avatar (foto o icona fallback), username, nome e link al profilo venditore. Usato nei risultati di ricerca testuale. *}
+{* Componente card utente: mostra avatar, identita pubblica e link al profilo venditore. Usato nei risultati di ricerca testuale. *}
+{assign var=isBusinessResult value=!empty($utente.id_acc_business)}
+{if $isBusinessResult && !empty($utente.nome_azienda)}
+    {assign var=displayName value=$utente.nome_azienda}
+{else}
+    {assign var=displayName value=$utente.username|default:''}
+{/if}
 <div
     class="card clickable-card u-user-result-card"
     data-href="/utente/venditore/{$utente.id_utente|default:0}"
@@ -12,8 +18,10 @@
         {/if}
     </div>
     <div>
-        <strong>{$utente.username|default:''}</strong>
-        {if !empty($utente.nome)}
+        <strong>{$displayName}</strong>
+        {if $isBusinessResult}
+            <p class="muted u-style-011"><span class="nv-pro-badge">PRO</span></p>
+        {elseif !empty($utente.nome)}
             <p class="muted u-style-011">{$utente.nome}</p>
         {/if}
         <a class="btn btn-secondary u-small-profile-link"

@@ -3,6 +3,9 @@
 
 {if !empty($utente)}
     {assign var=displayName value=$utente.username|default:'Utente'}
+    {if $isBusiness && !empty($business.nome_azienda)}
+        {assign var=displayName value=$business.nome_azienda}
+    {/if}
     {assign var=editing value=$editingIndirizzo|default:[]}
     {assign var=indirizziCount value=$indirizziUtente|count_items}
     {assign var=annunciCount value=$annunciUtente|count_items}
@@ -53,7 +56,7 @@
             <div class="pf-id">
                 <span class="pg-pill">{if $isBusiness}Account PRO{else}Account personale{/if}</span>
                 <h1 class="pf-name">{$displayName}</h1>
-                <p class="pg-sub">{if !empty($utente.nome)}{$utente.nome}{else}@{$displayName}{/if} &middot; {if $isBusiness}Area venditore{else}Membro NerdVault{/if}</p>
+                <p class="pg-sub">{if $isBusiness}{if !empty($business.email_aziendale)}{$business.email_aziendale}{else}{$utente.email|default:''}{/if}{elseif !empty($utente.nome)}{$utente.nome}{else}@{$displayName}{/if} &middot; {if $isBusiness}Area venditore{else}Membro NerdVault{/if}</p>
 
                 <div class="pf-info">
                     <div>
@@ -75,21 +78,27 @@
                 </div>
 
                 <div class="pf-actions">
-                    <details class="pf-details">
-                        <summary class="btn" data-variant="dark" data-size="sm"><span aria-hidden="true">&#9998;</span> Modifica dati</summary>
-                        <form class="pf-popover" method="post" action="/utente/update">
-                            <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
-                            <div class="pg-field">
-                                <label class="pg-label" for="nome">Nome</label>
-                                <input class="pg-input" type="text" id="nome" name="nome" value="{$utente.nome|default:''}" required>
-                            </div>
-                            <div class="pg-field">
-                                <label class="pg-label" for="telefono">Telefono</label>
-                                <input class="pg-input" type="text" id="telefono" name="telefono" value="{$utente.telefono|default:''}">
-                            </div>
-                            <button class="btn" type="submit">Salva dati</button>
-                        </form>
-                    </details>
+                    {if $isBusiness}
+                        <a class="btn" data-variant="dark" data-size="sm" href="/business/dashboard?edit=info">Modifica vetrina</a>
+                    {else}
+                        <details class="pf-details">
+                            <summary class="btn" data-variant="dark" data-size="sm"><span aria-hidden="true">&#9998;</span> Modifica dati</summary>
+                            <form class="pf-popover" method="post" action="/utente/update">
+                                <input type="hidden" name="{$csrfField}" value="{$csrfToken}">
+                                <div class="pg-field">
+                                    <label class="pg-label" for="nome">Nome completo</label>
+                                    <input class="pg-input" type="text" id="nome" name="nome" value="{$utente.nome|default:''}" pattern="[A-Za-zÀ-ÖØ-öø-ÿ ]{literal}{2,50}{/literal}" minlength="2" maxlength="50" title="Usa solo lettere e spazi, senza numeri o caratteri speciali." required>
+                                    <p class="pg-field-hint">Usa solo lettere e spazi. Non inserire numeri o caratteri speciali.</p>
+                                </div>
+                                <div class="pg-field">
+                                    <label class="pg-label" for="telefono">Telefono</label>
+                                    <input class="pg-input" type="tel" id="telefono" name="telefono" value="{$utente.telefono|default:''}" pattern="\+?[0-9 ]{literal}{8,15}{/literal}" title="Usa 8-15 cifre; puoi iniziare con +.">
+                                    <p class="pg-field-hint">Puoi lasciare vuoto il campo oppure usare 8-15 cifre, con + iniziale opzionale.</p>
+                                </div>
+                                <button class="btn" type="submit">Salva dati</button>
+                            </form>
+                        </details>
+                    {/if}
 
                     <details class="pf-details">
                         <summary class="btn" data-variant="dark" data-size="sm">Cambia password <span aria-hidden="true">&#128273;</span></summary>

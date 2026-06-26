@@ -670,6 +670,7 @@
     display: grid; place-items: center;
     font-size: 10px; font-weight: 800; color: var(--text);
     flex: 0 0 18px;
+    overflow: hidden;
 }
 .annuncio-card-seller a { color: var(--text); font-weight: 600; }
 .annuncio-card-seller a:hover { color: var(--accent-h); }

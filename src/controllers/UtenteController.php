@@ -81,11 +81,16 @@ class UtenteController extends BaseController
                 SessionManager::set('livello_sicurezza', (int) ($utente['livello_sicurezza'] ?? 1));
                 header('Location: /admin/index');
             } else {
+                $isBusiness = !empty($utente['_is_business']);
+                $displayName = $isBusiness && !empty($utente['nome_azienda'])
+                    ? $this->businessDisplayName($utente['nome_azienda'])
+                    : $utente['username'];
+
                 SessionManager::set('user_id', (int) $utente['id_utente']);
-                SessionManager::set('username', $utente['username']);
+                SessionManager::set('username', $displayName);
                 SessionManager::set('propic', $utente['propic'] ?? null);
                 SessionManager::set('is_admin', false);
-                SessionManager::set('is_business', !empty($utente['_is_business']));
+                SessionManager::set('is_business', $isBusiness);
                 SessionManager::set('business_id', (int) ($utente['id_acc_business'] ?? 0));
                 header('Location: /utente/profilo');
             }
@@ -677,7 +682,7 @@ class UtenteController extends BaseController
     {
         $this->requirePositiveId($idUtente, 'Utente');
 
-        $nomeAzienda = $this->clean($data['nome_azienda'] ?? '');
+        $nomeAzienda = $this->businessDisplayName($data['nome_azienda'] ?? '');
         $pIva = $this->clean($data['p_iva'] ?? $data['partita_iva'] ?? '');
         $emailAziendale = $this->clean($data['email_aziendale'] ?? '');
         $telefono = $this->normalizeRegistrationPhone($data, true);
@@ -972,6 +977,11 @@ class UtenteController extends BaseController
         }
     }
 
+    private function businessDisplayName(?string $value): string
+    {
+        return preg_replace('/\s+/u', ' ', $this->clean($value)) ?? '';
+    }
+
     /**
      * Valida e salva una nuova immagine profilo.
      */
@@ -1026,9 +1036,7 @@ class UtenteController extends BaseController
         $nome = $this->clean($data['nome'] ?? '');
         $telefono = $this->clean($data['telefono'] ?? '');
 
-        if ($nome === '') {
-            throw new ServiceException('Il nome non puo essere vuoto.');
-        }
+        $this->validatePersonName($nome);
 
         if ($telefono !== '' && !preg_match('/^\+?[0-9 ]{8,15}$/', $telefono)) {
             throw new ServiceException('Il telefono deve contenere 8-15 cifre e puo iniziare con +.');
@@ -1164,6 +1172,7 @@ class UtenteController extends BaseController
 
         return [
             'utente' => FPersistentManager::utenteById($idUtente),
+            'business' => $business,
             'indirizziUtente' => $isBusiness ? [] : FPersistentManager::indirizziByUser($idUtente),
             'filtroAnnunci' => $filtroAnnunci,
             'annunciUtente' => $annunci,
