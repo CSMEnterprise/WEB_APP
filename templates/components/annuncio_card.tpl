@@ -12,6 +12,7 @@
 {assign var=sellerFeedbackCount value=$annuncio.venditore_feedback_count|default:0}
 {assign var=sellerRating value=$annuncio.venditore_media_feedback|default:0}
 {assign var=sellerRatingLabel value=$sellerRating|number_format:1:",":"."}
+{assign var=sellerPropic value=$annuncio.venditore_propic|default:''}
 
 <article
     class="annuncio-card va-card clickable-card"
@@ -53,7 +54,13 @@
         <h3 class="va-card-title">{$annuncio.titolo|default:'Annuncio'}</h3>
 
         <div class="annuncio-card-seller va-card-seller">
-            <span class="annuncio-card-seller-av va-card-seller-av">{$sellerName|truncate:1:"":true|upper}</span>
+            <span class="annuncio-card-seller-av va-card-seller-av">
+                {if !empty($sellerPropic)}
+                    <img class="seller-avatar-img" src="{$sellerPropic}" alt="">
+                {else}
+                    {$sellerName|truncate:1:"":true|upper}
+                {/if}
+            </span>
             <a class="va-card-seller-name" href="/utente/venditore/{$annuncioOwner}">{$sellerName}</a>
             {if !empty($annuncio.venditore_business_id)}
                 <span class="seller-pro-badge nv-pro-badge">PRO</span>

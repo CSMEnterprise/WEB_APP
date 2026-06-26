@@ -8,10 +8,10 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/00-layout.css?v=nerdvault-redesign-20260530">
+    <link rel="stylesheet" href="/css/00-layout.css?v=nerdvault-redesign-20260626">
     <link rel="stylesheet" href="/css/01-footer.css?v=nerdvault-redesign-20260530">
-    <link rel="stylesheet" href="/css/02-components.css?v=nerdvault-redesign-20260530">
-    <link rel="stylesheet" href="/css/10-home.css?v=nerdvault-redesign-20260530">
+    <link rel="stylesheet" href="/css/02-components.css?v=nerdvault-redesign-20260626">
+    <link rel="stylesheet" href="/css/10-home.css?v=nerdvault-redesign-20260626">
     <link rel="stylesheet" href="/css/20-annunci-form.css?v=nerdvault-redesign-20260530">
     <link rel="stylesheet" href="/css/30-profilo.css?v=nerdvault-redesign-20260530">
     <link rel="stylesheet" href="/css/31-venditore.css?v=nerdvault-redesign-20260530">

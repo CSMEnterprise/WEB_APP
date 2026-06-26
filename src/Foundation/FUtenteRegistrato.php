@@ -213,14 +213,23 @@ class FUtenteRegistrato extends FBaseTable
         }
 
         return $this->fetchEntities("
-            SELECT `id_utente`, `username`, `nome`, `propic`, `data_registrazione`
-            FROM `utente_registrato`
-            WHERE (`username` LIKE CONCAT('%', ?, '%')
-               OR  `nome` LIKE CONCAT('%', ?, '%'))
-              AND `stato_ban` = 0
-            ORDER BY `username` ASC
+            SELECT
+                u.`id_utente`,
+                u.`username`,
+                u.`nome`,
+                u.`propic`,
+                u.`data_registrazione`,
+                ab.`id_acc_business`,
+                ab.`nome_azienda`
+            FROM `utente_registrato` u
+            LEFT JOIN `account_business` ab ON ab.`id_utente` = u.`id_utente`
+            WHERE (u.`username` LIKE CONCAT('%', ?, '%')
+               OR  u.`nome` LIKE CONCAT('%', ?, '%')
+               OR  ab.`nome_azienda` LIKE CONCAT('%', ?, '%'))
+              AND u.`stato_ban` = 0
+            ORDER BY COALESCE(ab.`nome_azienda`, u.`username`) ASC
             LIMIT 20
-        ", [$q, $q]);
+        ", [$q, $q, $q]);
     }
 
     public function allForAdmin(string $q = ''): array

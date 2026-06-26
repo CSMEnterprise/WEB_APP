@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Core\Request;
 use App\Core\SessionManager;
 use App\Entity\{
     EAccountBusiness,
@@ -28,8 +29,9 @@ class BusinessController extends BaseController
         $annunci = $business
             ? FPersistentManager::annunciByBusinessIdAndStato((int) $business->getIdAccBusiness(), null)
             : [];
+        $openInfoForm = Request::get('edit') === 'info';
 
-        $this->view('business/profilo.tpl', compact('business', 'annunci'), 'Area business');
+        $this->view('business/profilo.tpl', compact('business', 'annunci', 'openInfoForm'), 'Area business');
     }
 
     /**
@@ -49,6 +51,7 @@ class BusinessController extends BaseController
             $idBusiness = $this->createBusinessAccount($data, $idUtente);
             SessionManager::set('is_business', true);
             SessionManager::set('business_id', $idBusiness);
+            SessionManager::set('username', $this->businessDisplayName($data['nome_azienda'] ?? ''));
 
             header('Location: /business/dashboard');
             exit;
@@ -79,8 +82,9 @@ class BusinessController extends BaseController
             $errore = $e->getMessage();
             $business = $businessEntity;
             $annunci = FPersistentManager::annunciByBusinessIdAndStato((int) $businessEntity->getIdAccBusiness(), null);
+            $openInfoForm = true;
 
-            $this->view('business/profilo.tpl', compact('errore', 'business', 'annunci'), 'Area business');
+            $this->view('business/profilo.tpl', compact('errore', 'business', 'annunci', 'openInfoForm'), 'Area business');
         }
     }
 
@@ -97,7 +101,8 @@ class BusinessController extends BaseController
         }
 
         try {
-            $this->updateBusinessInfo((int) ($businessEntity->getIdAccBusiness() ?? 0), $data);
+            $nomeAzienda = $this->updateBusinessInfo((int) ($businessEntity->getIdAccBusiness() ?? 0), $data);
+            SessionManager::set('username', $nomeAzienda);
 
             header('Location: /business/dashboard');
             exit;
@@ -132,7 +137,7 @@ class BusinessController extends BaseController
     {
         $this->requirePositiveId($idUtente, 'Utente');
 
-        $nomeAzienda = $this->clean($data['nome_azienda'] ?? '');
+        $nomeAzienda = $this->businessDisplayName($data['nome_azienda'] ?? '');
         $pIva = $this->clean($data['p_iva'] ?? $data['partita_iva'] ?? '');
         $emailAziendale = $this->clean($data['email_aziendale'] ?? '');
         $telefono = $this->clean($data['telefono'] ?? '');
@@ -208,11 +213,11 @@ class BusinessController extends BaseController
         ]));
     }
 
-    private function updateBusinessInfo(int $idBusiness, array $data): void
+    private function updateBusinessInfo(int $idBusiness, array $data): string
     {
         $this->requirePositiveId($idBusiness, 'Business');
 
-        $nomeAzienda = $this->clean($data['nome_azienda'] ?? '');
+        $nomeAzienda = $this->businessDisplayName($data['nome_azienda'] ?? '');
         $descrizione = $this->clean($data['descrizione'] ?? '');
         $emailAziendale = $this->clean($data['email_aziendale'] ?? '');
         $telefono = $this->clean($data['telefono'] ?? '');
@@ -222,8 +227,8 @@ class BusinessController extends BaseController
             throw new ServiceException('Nome azienda ed email aziendale sono obbligatori.');
         }
 
-        if (!preg_match('/^[\p{L}0-9 .&\'-]{2,80}$/u', $nomeAzienda)) {
-            throw new ServiceException('Il nome azienda deve contenere 2-80 caratteri validi.');
+        if (!preg_match('/^(?=.*\p{L})[\p{L}0-9 .\'-]{2,80}$/u', $nomeAzienda)) {
+            throw new ServiceException('Il nome azienda deve contenere 2-80 caratteri, almeno una lettera e solo lettere, numeri, spazi, punto, apostrofo o trattino.');
         }
 
         if ($descrizione !== '' && mb_strlen($descrizione) > 500) {
@@ -249,6 +254,13 @@ class BusinessController extends BaseController
             'telefono' => $telefono !== '' ? $telefono : null,
             'link_social' => $linkSocial !== '' ? $linkSocial : null,
         ]);
+
+        return $nomeAzienda;
+    }
+
+    private function businessDisplayName(?string $value): string
+    {
+        return preg_replace('/\s+/u', ' ', $this->clean($value)) ?? '';
     }
 
     /**
@@ -267,8 +279,8 @@ class BusinessController extends BaseController
             throw new ServiceException('Nome azienda, partita IVA ed email aziendale sono obbligatori.');
         }
 
-        if (!preg_match('/^[\p{L}0-9 .&\'-]{2,80}$/u', $nomeAzienda)) {
-            throw new ServiceException('Il nome azienda deve contenere 2-80 caratteri validi.');
+        if (!preg_match('/^(?=.*\p{L})[\p{L}0-9 .\'-]{2,80}$/u', $nomeAzienda)) {
+            throw new ServiceException('Il nome azienda deve contenere 2-80 caratteri, almeno una lettera e solo lettere, numeri, spazi, punto, apostrofo o trattino.');
         }
 
         if (!preg_match('/^[0-9]{11}$/', $pIva)) {

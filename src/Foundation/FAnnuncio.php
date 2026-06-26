@@ -383,6 +383,7 @@ class FAnnuncio extends FBaseTable
                 a.*,
                 c.`nome` AS categoria_nome,
                 COALESCE(u.`username`, bu.`username`) AS venditore_username,
+                COALESCE(u.`propic`, bu.`propic`) AS venditore_propic,
                 COALESCE(a.`id_utente`, ab.`id_utente`) AS venditore_user_id,
                 ab.`id_acc_business` AS venditore_business_id,
                 ab.`nome_azienda` AS venditore_nome_azienda,
