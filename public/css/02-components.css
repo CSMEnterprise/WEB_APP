@@ -628,7 +628,7 @@
 .dt-seller-name { display: inline-flex; align-items: center; gap: 8px; color: var(--text); font-size: 14px; font-weight: 900; text-decoration: none; }
 .dt-seller-name:hover { color: var(--accent-h); }
 .dt-seller-meta { font-size: 12px; }
-.dt-seller-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border); }
+.dt-seller-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border); }
 .dt-seller-stats > div { display: flex; flex-direction: column; gap: 2px; }
 .dt-seller-stats strong { color: var(--text); font-size: 18px; font-weight: 900; font-variant-numeric: tabular-nums; }
 .dt-seller-stats span { color: var(--muted-2); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }

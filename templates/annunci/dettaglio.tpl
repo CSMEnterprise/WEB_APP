@@ -186,7 +186,6 @@
                 <div class="dt-seller-stats">
                     <div><strong>{$feedbackCount}</strong><span>recensioni</span></div>
                     <div><strong>{if $feedbackCount > 0}{$mediaVenditore|number_format:1:",":"."}{else}-{/if}</strong><span>valutazione</span></div>
-                    <div><strong>OK</strong><span>feedback verificati</span></div>
                 </div>
             </div>
         </section>
