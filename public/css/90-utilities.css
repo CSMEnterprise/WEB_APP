@@ -198,6 +198,33 @@
     font-family: inherit;
     padding: 0;
 }
+
+.annuncio-gallery-main.dt-gallery-main {
+    aspect-ratio: auto !important;
+    height: min(62vh, 520px) !important;
+    min-height: 420px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.annuncio-gallery-main.dt-gallery-main > img[data-gallery-main] {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+    object-position: center center !important;
+    display: block !important;
+}
+
+@media (max-width: 620px) {
+    .annuncio-gallery-main.dt-gallery-main {
+        height: 360px !important;
+        min-height: 300px;
+    }
+}
+
 .profile-dropdown .u-post-form { display: block; }
 .profile-dropdown .u-post-button {
     border: 0;

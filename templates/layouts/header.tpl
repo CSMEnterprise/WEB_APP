@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="/css/20-annunci-form.css?v=nerdvault-redesign-20260530">
     <link rel="stylesheet" href="/css/30-profilo.css?v=nerdvault-redesign-20260530">
     <link rel="stylesheet" href="/css/31-venditore.css?v=nerdvault-redesign-20260530">
-    <link rel="stylesheet" href="/css/90-utilities.css?v=nerdvault-redesign-20260530">
+    <link rel="stylesheet" href="/css/90-utilities.css?v=nerdvault-redesign-20260627-fit-images">
 </head>
 
 <body>
